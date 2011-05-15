@@ -163,14 +163,13 @@ deactivated:
 	#call print_values;
    SetPulse(0);
    jkEndTarget();
-   rank = GetInv(player, 27);
    success = 0;
 	if(mode == 1)			// target multiple... we do the target selection here
 	{
 		#print("BLINDING: Tapped");
 		call scan_for_victims;
 	}
-	call print_values;
+	#call print_values;
 	#print("BLINDING: doing the stuff...");
 	// now go through the list and decide who we will blind
 	for(j = 0; j < victimlimit; j = j + 1)
@@ -232,7 +231,7 @@ deactivated:
 	#print("BLINDING: Complete");
    active = 0;
    SetInvActivated(player, 27, 0);
-   if(success) SetBinWait(player, 27, 1);
+   if(success) SetBinWait(player, 27, 2);
 
    Return;
 

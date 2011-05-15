@@ -29,11 +29,11 @@ flex        maxDot                           local
 flex        damage                           local
 flex        starthealth                      local
 int         rank                             local
-int         retval=0                         local
+#int         retval=0                         local
 
 sound       gripSound=ForceGrip01.WAV        local
 
-int         limit                            local
+#int         limit                            local
 int         count                            local
 
 int         active=0                         local
@@ -42,6 +42,8 @@ int         targetting=0                     local
 thing		dummy							local
 template	ghost_tpl=+grip_ghost			local
 vector		vel								local
+
+int			old_flags=0						local
 
 message     startup
 message     activated
@@ -60,11 +62,13 @@ code
 startup:
 	player = GetLocalPlayerThing();
 	SetInvActivated(player, 31, 0);
-
-Return;
+	victim = -1;
+	active = 0;
+	Return;
 # .......................................................................
 activated:
 	// Cannot use power if blinded
+	if(active) return;
 	if(GetActorFlags(player) & 0x800) Return;
 	mana = GetInv(player, 14);
 	if(mana >= cost)
@@ -75,14 +79,15 @@ activated:
 		SetInvActivated(player, 31, 1);
 		targetting = 1;
 		SetPulse(0.1);
+		active = 1;
 	}
-
-Return;
+	Return;
 # .......................................................................
 deactivated:
+	if(active) return;
 	call stop_power;
-
-Return;
+	SetBinWait(player, 31, 1.0);
+	Return;
 # .......................................................................
 pulse:
 
@@ -143,6 +148,7 @@ pulse:
 		if(victim != -1)
 		{
 			damage = SkillTarget(victim, player, 31, 0);
+			old_flags = GetPhysicsFlags(victim);		// remember what the original flags were
 			if(damage <= 0.0) return;
 			SetInvActivated(player, 31, 1);
 			// choke animation
@@ -189,7 +195,9 @@ pulse:
 			{
 				// everything is done in the victim's KYLE.COG handler
 				if(!(GetThingFlags(victim) & 0x200))
-				retval = SkillTarget(victim, player, 31, rank);
+				{
+					SkillTarget(victim, player, 31, rank);
+				}
 			}
 			else                                // ENEMY
 			{
@@ -201,40 +209,37 @@ pulse:
 			PlaySoundThing(gripSound, victim, 1.0, -1, -1, 0x80);
 		}	
 	}	
-Return;
+	Return;
 # .......................................................................
 timer:
-
-Return;
+	Return;
 # .......................................................................
 selected:
 	jkPrintUNIString(player, 31);
-
-Return;
+	Return;
 # .......................................................................
 deselected:
 	call stop_power;
-
-Return;
+	Return;
 # .......................................................................
 killed:
-	if(GetSenderRef() != player) Return;
 newplayer:
+	if(GetSenderRef() != player) Return;
 	call stop_power;
-
-Return;
+	Return;
 # .......................................................................
 stop_power:
 #SetCameraFocus(0, player);
+	active = 0;
 	SetPulse(0);
 	SetInvActivated(player, 31, 0);
 	if(victim != -1)
 	{
-		SetPhysicsFlags(victim, 0x43);
+		printint(old_flags);
+		SetPhysicsFlags(victim, old_flags);
 		ClearActorFlags(victim, 0x40000);
 	}
 	victim = -1;
-
-Return;
+	Return;
 # .......................................................................
 end

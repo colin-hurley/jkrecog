@@ -7,16 +7,22 @@
 # [darthslaw]
 #
 # (c) 2007 JK ReCog
-
+flags=0x240
 symbols
 
 message		trigger
 
 # Bryar Templates
 template	tpl2_0=+bryarbolt		local
+template	tpl2_1=+bryarsmack		local
 
 # Stormtrooper Rifle Templates
 template	tpl3_0=+stlaser			local
+template	tpl3_2=+stscopelaser	local
+
+# Thermal Detonator Templates
+template	tpl4_2=+grenade_exp		local
+template	tpl4_2b=+TD_Expl_Sphere	local
 
 # General Variables
 thing		player					local
@@ -29,24 +35,45 @@ end
 code
 
 trigger:
+	player = GetSenderRef();
 	if(GetSourceRef() == 2000)		// bryar modes 0 and 1
 	{
 		# Param 0 = X error
 		# Param 1 = Y error
 		# Param 2 = Damage scale
-		player = GetSenderRef();
 		fire_offset = '0.0135 0.1624 0.0';
 		FireProjectile(player, tpl2_0, -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1), 0), GetParam(2), 0x62, 30, 60);
+		return;
+	}
+	if(GetSourceRef() == 2001)		// bryar mode 2
+	{
+		# No Params
+		fire_offset = '0 0.03 0.025';
+		FireProjectile(player, tpl2_1, -1, -1, fire_offset, '0 0 0', 0, 0, 0, 0);
 		return;
 	}
 	if(GetSourceRef() == 3000)		// stormtrooper rifle modes 0 and 1
 	{
 		# Param 0 = X error
 		# Param 1 = Y error
-		player = GetSenderRef();
 		fire_offset = '0.0168 0.1896 0.00';
 		FireProjectile(player, tpl3_0, -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1), 0), 1.0, 0x60, 25, 50);
 		return; 
+	}
+	if(GetSourceRef() == 3002)		// stormtrooper rifle zoomed
+	{
+		# Param 0 = X error
+		# Param 1 = Y error
+		fire_offset = '0 0 0.037';
+		FireProjectile(player, tpl3_2, -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1), 0), 1.0, 0x60, 25, 50);
+		return; 
+	}
+	if(GetSourceRef() == 4005)		// thermal det - dead man switch
+	{
+		# No Params
+		FireProjectile(player, tpl4_2, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);	// explosion
+		FireProjectile(player, tpl4_2b, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);	// sphere fx
+		return;
 	}
 	return;
 

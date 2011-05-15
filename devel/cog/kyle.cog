@@ -418,7 +418,7 @@ init_kyle:
 	SetInv(player, 11, 500);
 	SetInv(player, 12, 500);
 	SetInv(player, 13, 200);
-	SetInv(player, 15, 3);
+	SetInv(player, 15, 200);
 	
 	SetInv(player, 20, 8.0);
 	SetInv(player, 21, 4.0);

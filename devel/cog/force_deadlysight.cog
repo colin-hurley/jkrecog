@@ -69,12 +69,12 @@ activated:
    if(IsInvActivated(player, 34))
    {
    	call stop_power;
-   	setBinWait(player, 34, 1);
+   	setBinWait(player, 34, 3);
    	return;
    }
 
    mana = GetInv(player, 14);
-   if(mana >= 3*cost)
+   if(mana >= cost)
    {
       SetInvActivated(player, 34, 1);
       rank = GetInv(player, 34);
@@ -95,7 +95,6 @@ activated:
       starthealth = GetThingHealth(player);
 
       SetPulse(0.5);
-      SetBinWait(player, 34, 1);
    }
 
    Return;

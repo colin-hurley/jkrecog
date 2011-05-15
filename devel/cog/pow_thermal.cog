@@ -1,0 +1,133 @@
+# Jedi Knight Cog Script
+#
+# POW_THERMAL.COG
+#
+# POWERUP Script - Thermal Detonators
+#
+# [YB & CYW]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+
+symbols
+
+thing       powerup                          local
+thing       player                           local
+int         bin=4                            local
+sound       pickupsnd=thrmlpu2.wav           local
+sound       respawnsnd=Activate01.wav        local
+flex        amount                           local
+
+int         bin_contents=0                   local
+int         autopickup=0                     local
+
+template	expl_tpl=+grenade_exp			local
+template	sphere_tpl=+TD_Expl_Sphere		local
+sector		sec								local
+vector		pos								local
+
+message		damaged
+message		timer
+message     touched
+message     taken
+message     respawn
+
+end
+
+# ========================================================================================
+
+code
+
+damaged:
+	SetTimerEx(rand() * 0.4, GetSenderRef(), 0, 0);
+	return;
+
+timer:
+	powerup = getSenderID();
+	sec = GetThingSector(powerup);
+	pos = GetThingPos(powerup);
+	SetThingUserData(powerup, 1);	// 1 = blown up
+	TakeItem(powerup, GetLocalPlayerThing());
+	CreateThingAtPos(expl_tpl, sec, pos, '0 0 0');
+	CreateThingAtPos(sphere_tpl, sec, pos, '0 0 0');
+	return;
+	
+touched:
+   player = GetSourceRef();
+   amount = GetInv(player, bin);
+
+   if (amount < GetInvMax(player, bin))
+   {
+      powerup = GetSenderRef();
+      TakeItem(powerup, player);
+   }
+
+   Return;
+
+# ........................................................................................
+
+taken:
+   player = GetSourceRef();
+   powerup = GetSenderRef();
+
+	if(GetThingUserData(powerup) == 1) return;			// was blown up, not taken
+
+   // Print("Thermal Detonators");
+   jkPrintUNIString(player, bin);
+
+   // Do effects.
+   PlaySoundThing(pickupsnd, powerup, 1.0, -1, -1, 0);
+   AddDynamicTint(player, 0.0, 0.0, 0.2);
+
+   // store the old bin contents
+   bin_contents = GetInv(player, bin);
+
+   // Increment powerup amount.
+   ChangeInv(player, bin, 3.0);
+
+   // Check for Auto Pickup
+   autopickup = GetAutoPickup();
+   if((autopickup & 1) && !(autopickup & 2)) // DANGEROUS
+   {
+      if(!bin_contents)
+      {
+         if(!((autopickup & 4) && (GetWeaponPriority(player, GetCurWeapon(player), 0) >= GetWeaponPriority(player, bin, 0))))
+         {
+            if(!((autopickup & 8) && (GetCurWeapon(player) == 10)))
+            {
+               SelectWeapon(player, bin);
+               Return;
+            }
+         }
+      }
+   }
+
+   // Check for Auto Reload
+   if(GetAutoReload() & 1)
+   {
+      if(!bin_contents)
+      {
+         if(!((GetAutoReload() & 2) && (GetCurWeapon(player) == 10)))
+         {
+            // Try to autoselect and see if the best weapon is the TD
+            if(AutoSelectWeapon(player, 2) == 4) SelectWeapon(player, 4);
+         }
+      }
+   }
+
+   Return;
+
+# ........................................................................................
+
+respawn:
+   powerup = GetSenderRef();
+   PlaySoundThing(respawnsnd, powerup, 0.6, 5.0, 10.0, 0);
+
+   Return;
+
+end
+
+
+
+
+

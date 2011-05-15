@@ -78,31 +78,31 @@ startup:
 trigger:
 	if(GetSourceRef() == 1200)				// add a player to the list
 	{
-	jkStringClear();
-	jkStringConcatAsciiString("Player ");
-	jkStringConcatInt(GetParam(0));
-	jkStringConcatAsciiString(" has activated persuasion fx (rank ");
-	jkStringConcatInt(GetParam(1));
-	jkStringConcatAsciiString(").");
-	jkStringOutput(-3, -1);
+	#jkStringClear();
+	#jkStringConcatAsciiString("Player ");
+	#jkStringConcatInt(GetParam(0));
+	#jkStringConcatAsciiString(" has activated persuasion fx (rank ");
+	#jkStringConcatInt(GetParam(1));
+	#jkStringConcatAsciiString(").");
+	#jkStringOutput(-3, -1);
 		if(active <= 0)
 		{
 			SetPulse(0.25);					// if this is the first player in the list, set the pulse on
-			print("pulse on");
+			#print("pulse on");
 		}
 		active = active + 1;				// one more user
 		rank0[GetParam(0)] = GetParam(1);	// rank0[player index] = rank of player (nonzero = on)
 	}
 	else if(GetSourceRef() == 1201)			// remove a player from the list
 	{
-		jkStringClear();
-	jkStringConcatAsciiString("Player ");
-	jkStringConcatInt(GetParam(0));
-	jkStringConcatAsciiString(" has deactivated persuasion fx.");
-	jkStringOutput(-3, -1);
+	#jkStringClear();
+	#jkStringConcatAsciiString("Player ");
+	#jkStringConcatInt(GetParam(0));
+	#jkStringConcatAsciiString(" has deactivated persuasion fx.");
+	#jkStringOutput(-3, -1);
 		if(rank0[GetParam(0)] == 0)			// already deactivated
 		{
-			print("Already deactivated... returning");
+			#print("Already deactivated... returning");
 			return;
 		}
 		active = active - 1;				// one less user
@@ -110,7 +110,7 @@ trigger:
 		{
 			active = 0;						// never let 'active' become negative
 			SetPulse(0);					// switch off pulse
-			print("pulse off");
+			#print("pulse off");
 		}
 		rank0[GetParam(0)] = 0;				// rank0[player index] = 0 (zero = off)
 	}
@@ -126,7 +126,7 @@ pulse:
 		vel = vel + 0.2 * (4 - rank);		// add some extra stars for lower ranks (4=perfect cloak when not moving)
 		for(j = 0.1; j < vel; j = j + 0.1)
 		{
-		printint(j*10);
+			#printint(j*10);
 			SetTimerEx(0.25 * j / vel, 10, player, 0);
 		}
 	}

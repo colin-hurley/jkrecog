@@ -26,10 +26,10 @@ int         rank                             local
 int         mana                             local
 int         bin=32                           local
 
-template    lightning0=+force_lightning      local
-template    lightning1=+force_lightning2     local
-template    lightning2=+force_lightning3     local
-template    lightning3=+force_lightning4     local
+template    lightning0=+f_lightning      local
+template    lightning1=+f_lightning2     local
+template    lightning2=+f_lightning3     local
+template    lightning3=+f_lightning4     local
 
 sound       fireSound=ForceLitning02.wav     local
 int         fireChannel=-1                   local
@@ -118,7 +118,7 @@ selected:
 deactivated:
 	if(!IsInvActivated(player, bin)) return;
 	call stop_power;
-	SetBinWait(player, bin, 1.0);
+	SetBinWait(player, bin, 0.5);
 	Return;
 
 # ........................................................................................

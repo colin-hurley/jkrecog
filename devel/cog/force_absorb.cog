@@ -81,18 +81,18 @@ damaged:
          rank = GetInv(player, 28);
          absorption = rank / 4;
          
-         	jkStringClear();
-         	jkStringConcatAsciiString("Damage: ");
-			jkStringConcatFlex(damage);
+         	#jkStringClear();
+         	#jkStringConcatAsciiString("Damage: ");
+			#jkStringConcatFlex(damage);
          // Convert part of the damage to mana.
          absorbed = 1.5 * damage * absorption;
          ChangeInv(player, 14, absorbed);
-         	jkStringConcatAsciiString(" ; Absorbed: ");
-         	jkStringConcatFlex(absorbed);
+         	#jkStringConcatAsciiString(" ; Absorbed: ");
+         	#jkStringConcatFlex(absorbed);
          damage = damage * (1-absorption);
-         	jkStringConcatAsciiString(" ; Damage taken: ");
-         	jkStringConcatFlex(damage);
-         	jkStringOutput(-3, -1);
+         	#jkStringConcatAsciiString(" ; Damage taken: ");
+         	#jkStringConcatFlex(damage);
+         	#jkStringOutput(-3, -1);
       }
    }
    ReturnEx(damage);
@@ -107,12 +107,11 @@ activated:
       mana = GetInv(player, 14);
       rank = GetInv(player, 28);
       #cost = 10 + (5-rank) * 5;		// ranks 1-4 = 30, 25, 20, 15 mana, respectively 
-      if(mana >= 3*cost)
+      if(mana >= cost)
       {
          SetInvActivated(player, 28, 1);
          PlayMode(player, 24);
          SetPulse(0.5);
-         SetBinWait(player, 28, 1);		// don't let the player deactivate right away
       }
    }
    else
@@ -155,7 +154,7 @@ pulse:
 		call stop_power;
 		return;
 	}
-	// if no dark surge, deduct mana
+	// if no light surge, deduct mana
 	if(GetInv(player, 65) != 1)
 	{
 		ChangeInv(player, 14, -cost);

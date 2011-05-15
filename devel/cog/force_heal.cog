@@ -66,6 +66,7 @@ activated:
 	if(IsInvActivated(player, 25))
 	{
 		call stop_power;
+		SetBinWait(player, 25, 1.0);
 	}
 	else
 	{

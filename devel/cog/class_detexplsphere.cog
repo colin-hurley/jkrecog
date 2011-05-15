@@ -1,0 +1,76 @@
+# Jedi Knight Cog Script
+#
+# class_detexplsphere.cog
+#
+# Class cog for the thermal detonator's explosion sphere
+#
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+symbols
+
+message		created
+message		pulse
+
+model		model1=detsphere1.3do		local
+model		model2=detsphere2.3do		local
+model		model3=detsphere3.3do		local
+model		model4=detsphere4.3do		local
+model		model5=detsphere5.3do		local
+model		model6=detsphere6.3do		local
+model		model7=detsphere7.3do		local
+model		model8=detsphere8.3do		local
+model		model9=detsphere9.3do		local
+model		model10=detsphere10.3do		local
+
+model		curmodel					local
+
+end
+
+# ========================================================================================
+
+code
+
+created:
+	SetThingModel(GetSenderRef(), model1);
+	SetThingPulse(GetSenderRef(), 0.02);
+	return;
+
+pulse:
+	curmodel = GetThingModel(GetSenderRef());
+	if(curmodel == model1)
+		SetThingModel(GetSenderRef(), model2);
+	else
+	if(curmodel == model2)
+		SetThingModel(GetSenderRef(), model3);
+	else
+	if(curmodel == model3)
+		SetThingModel(GetSenderRef(), model4);
+	else
+	if(curmodel == model4)
+		SetThingModel(GetSenderRef(), model5);
+	else
+	if(curmodel == model5)
+		SetThingModel(GetSenderRef(), model6);
+	else
+	if(curmodel == model6)
+		SetThingModel(GetSenderRef(), model7);
+	else
+	if(curmodel == model7)
+		SetThingModel(GetSenderRef(), model8);
+	else
+	if(curmodel == model8)
+		SetThingModel(GetSenderRef(), model9);
+	else
+	if(curmodel == model9)
+		SetThingModel(GetSenderRef(), model10);
+	else
+	{
+		SetThingPulse(GetSenderRef(), 0);
+		DestroyThing(GetSenderRef());
+	}
+	return;
+	
+end
+

@@ -6,6 +6,8 @@
 #  Light Side Power
 #  Bin 26
 #
+# 
+#
 # [darthslaw]
 #
 # [12/05/06]
@@ -26,6 +28,9 @@ flex        mana                             local
 flex        cost=250.0                       local
 int         rank                             local
 flex		vel								local
+
+flex		vel1							local
+flex		vel2							local
 
 sound       persuasionSound=ForcePersuas01.WAV  local
 #sound       persuasionSound2=ForcePersuas02.WAV local
@@ -58,10 +63,13 @@ activated:
    if(IsInvActivated(player, 26))
    {
    		call stop_power;
+   		SetBinWait(player, 26, 1);
    }
    else
    {
       mana = GetInv(player, 14);
+      rank = GetInv(player, 26);
+      cost = 7 - rank;
       if(mana >= cost)
       {
          SetInvActivated(player, 26, 1);
@@ -75,8 +83,6 @@ activated:
          #channel = PlaySoundThing(persuasionSound2, player, 0.0, -1, -1, 0x81);
          #ChangeSoundVol(channel, 1.0, 0.75);
 
-         rank = GetInv(player, 26);
-
          // Set player invisible to AI
          SetActorFlags(player, 0x80);
 
@@ -84,7 +90,15 @@ activated:
          SetThingCurGeoMode(player, 0);
          SendTrigger(-1, 1200, GetPlayerNum(player), rank, 0, 0);
          
-         SetPulse(0.2);
+         # FROM MEMORY:
+		 # 1.68 = run speed
+         # 0.8 = fast walk speed
+         # 0.45 = slow walk speed
+         # 0.33 = crouch speed
+         vel1 = 1.0 + 0.1 * rank;
+         vel2 = 0.7 + 0.05 * rank;
+         
+         SetPulse(0.25);
       }
    }
 
@@ -105,7 +119,8 @@ pulse:
    		return;
    	}
    	vel = VectorLen(GetThingVel(player));
-   	if(vel > 1.5 || (vel > 0.75 && rand() < 0.5))
+   	#printflex(vel);
+   	if(vel > vel1 || (vel > vel2 && rand() > rank * 0.2))
    		ClearActorFlags(player, 0x80);
    	else
    		SetActorFlags(player, 0x80);

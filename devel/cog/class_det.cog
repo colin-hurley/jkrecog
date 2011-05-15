@@ -2,11 +2,14 @@
 #
 # class_det.cog
 #
-# Class Cog - Thermal Detonator 1
+# Class Cog - Thermal Detonators
 #
 # Makes live Thermal Detonator Projectiles tick
+# Also makes timed detonators beep just before exploding.
 #
 # [darthslaw]
+#
+# 3/13/07 - Moved the code from the bouncy det cog into this one, so there is only 1 TD class cog
 #
 # (c) 2007 JK Recog
 
@@ -16,21 +19,28 @@ message		created
 message		removed
 message		timer
 
+sound		warnSound=ThermWarn3.wav		local
 sound		loopSound=ThermLoop02.wav		local
+
+int			channel=-1						local
 
 thing		dummy							local
 thing		player							local
 thing		TD								local
 
+template	expl_sphere=+TD_Expl_Sphere		local
+
 template	tpl								local
+# impact grenades
 template	tpl1=+grenade1					local
 template	tpl2=+actor_grenade				local
+# bouncy grenades
+template	tpl3=+grenade2					local
+template	tpl4=+actor_grenade2			local
+template	tpl5=+spec_grenade				local
 
 int			i								local
 flex		dot								local
-
-#template	mark_tpl=+blastmark				local
-#thing		mark							local
 
 end
 
@@ -39,55 +49,55 @@ code
 created:
 	dummy = GetSenderRef();
 	tpl = GetThingTemplate(dummy);
-	if(tpl != tpl1 && tpl != tpl2) return;		//don't do anything if the template is not the right one
-	PlaySoundThing(loopSound, dummy, 1.0, -1, -1, 0x81);
+	if(tpl == tpl1 || tpl == tpl2)
+	{
+		// if impact grenade, just play the ticking sound and return
+		PlaySoundThing(loopSound, dummy, 1.0, -1, -1, 0x81);
+	}
+	else
+	if(tpl == tpl3 || tpl == tpl4 || tpl == tpl5)
+	{
+		// if bouncy grenade, play ticking sound, and set timers to speed it up and play warning beep
+		channel = PlaySoundThing(loopSound, dummy, 1.0, -1, -1, 0x81);
+		if(channel != -1)
+			SetTimerEx(2.0, dummy + 10, 1, channel);	// timer to increase ticking rate
+		SetTimerEx(2.4, dummy + 10, 2, dummy);			// timer to make warning beep
+	}
 	Return;
 	
 removed:
-	#mark = createThing(mark_tpl, GetSenderRef());
-	#SetThingVel(mark, '0 0 -0.5');				//toward ground
-	#SetTimerEx(0.05, 10, mark, GetThingSignature(mark));	//for clearing thingflag 0x10
-	#SetTimerEx(10.0, 20, mark, GetThingSignature(mark));	//for removing the mark
 	TD = GetSenderRef();
 	tpl = GetThingTemplate(TD);
-	if(tpl != tpl1 && tpl != tpl2) return;		//don't do anything if the template is not the right one
-	for(i=0;i<=GetNumPlayers();i=i+1)
+	if(tpl == tpl1 || tpl == tpl2 || tpl == tpl3 || tpl == tpl4 || tpl == tpl5)
 	{
-		player = GetPlayerThing(i);
-		if(HasLOS(player, TD))
+		KillTimerEx(10 + TD);		// no more timers are needed for this TD
+		// do the light flash effects
+		for(i=0;i<=GetNumPlayers();i=i+1)
 		{
-			dot = ThingViewDot(player, TD);
-			dot = 200 * (3 - VectorDist(GetThingPos(player), GetThingPos(TD))) / 3 * ((dot + 1) / 2 * 0.6 + 0.4);
-			if(dot > 155)
-				dot = 155;
-			if(dot > 0)
-				AddDynamicAdd(player, dot, dot, dot / 1.05);
+			player = GetPlayerThing(i);
+			if(HasLOS(player, TD))
+			{
+				dot = ThingViewDot(player, TD);
+				dot = 200 * (1 - VectorDist(GetThingPos(player), GetThingPos(TD)) / 5) * ((dot + 1) / 2 * 0.6 + 0.4);
+				if(dot > 155)
+					dot = 155;
+				if(dot > 0)
+					AddDynamicAdd(player, dot, dot, dot / 1.05);
+			}
 		}
+		FireProjectile(TD, expl_sphere, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);
 	}
 	return;
-	
+
 timer:
-	if(GetSenderID() == 10)						//check if blast mark is attached to a surface
+	if(GetParam(0) == 1)
 	{
-		if(GetThingSignature(GetParam(0)) != GetParam(1)) return;	//not the same thing...
-		if(!(GetThingAttachFlags(GetParam(0)) & 0x1))				//if not attached to a level surface
-		{
-			DestroyThing(GetParam(0));
-		}
-		else														//else, clear invisibility thingflag
-		{
-			ClearThingFlags(GetParam(0), 0x10);
-		}
+		ChangeSoundPitch(GetParam(1), 1.5, 0.5);						//beep faster...
 	}
-	if(GetSenderID() == 20)
+	else if(GetParam(0) == 2)
 	{
-		if(GetThingSignature(GetParam(0)) != GetParam(1)) return;	//not the same thing...
-		// the dot code needs work -- if you're closer, the dot range should be wider, etc.
-		if(ThingViewDot(GetLocalPlayerThing(), GetParam(0)) < 0.7)	//player not looking at mark
-			DestroyThing(GetParam(0));								//so remove it
-		else
-			SetTimerEx(2, 20, GetParam(0), GetParam(1));			//Try again in a bit
+		PlaySoundThing(WarnSound, GetParam(1), 1.0, -1, -1, 0x80);		//WARNING!!!
 	}
 	return;
-	
+
 end

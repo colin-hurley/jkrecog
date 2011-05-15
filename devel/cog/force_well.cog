@@ -19,6 +19,7 @@ thing       player                           local
 
 int			i								local
 int			forceactive						local
+flex		rate							local
 
 message     startup
 message     pulse
@@ -30,11 +31,11 @@ end
 code
 
 startup:
-   player = GetLocalPlayerThing();
-   Sleep(1.0);
-   SetPulse(0.25);
-
-   Return;
+	player = GetLocalPlayerThing();
+	Sleep(1.0);
+	SetPulse(0.25);
+	rate = 400 / 30 * 0.25;				//30 seconds for full 400 mana points
+	Return;
 
 # ........................................................................................
 
@@ -50,7 +51,7 @@ pulse:
 
 	if(forceactive) return;									//do not charge mana when using a force power
 	
-	ChangeInv(player, 14, 400 / 30 * 0.25);					//30 seconds for full 400 mana points
+	ChangeInv(player, 14, rate);
 
 	if(GetInv(player, 14) > GetInv(player, 20) * 50) SetInv(player, 14, GetInv(player, 20) * 50);
 

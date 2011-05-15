@@ -33,6 +33,7 @@ message		newplayer
 thing		player						local
 
 vector		vel							local
+vector		pos							local
 
 int			count						local
 int			count2						local
@@ -98,13 +99,13 @@ activated:
 		ClearPhysicsFlags(player, 0x100000);		//clear "at surface of water" flag
 		if(getInv(player, 21) > 0)	//if holding key, and has at least one star on power... 
 			SetPulse(0.1);			//...augment jump via force
-		vel = GetThingPos(player);
+		pos = GetThingPos(player);
 		mode = 0;
 	}
 	else if(GetThingFlags(player) & 0x2000000)		//underwater
 	{
 		mode = 1;
-		print("mode = 1");
+		#print("mode = 1");
 		SetPulse(0.1);
 	}
 
@@ -128,17 +129,17 @@ pulse:
 	{
 		if(GetPhysicsFlags(player) & 0x100000 || !(GetThingFlags(player) & 0x2000000))	//reached surface of water
 		{
-			print("surface!");
+			#print("surface!");
 			//SetPulse(0);		//don't disable pulse... player may jump back in and still have the button pressed
 			return;
 		}
-		print("underwater... swimming up");
+		#print("underwater... swimming up");
 		ApplyForce(player, VectorScale(GetThingUVec(player), 15));	//swim up
 		Return;
 	}
 	mana = GetInv(player, 14);
 	SetInvActivated(player, 21, 1);					//show force icon
-	if(VectorZ(GetThingPos(player)) - VectorZ(vel) < 0.07)	//player has risen less than 0.07 jku... stuck?
+	if(VectorZ(GetThingPos(player)) - VectorZ(pos) < 0.07)	//player has risen less than 0.07 jku... stuck?
 		count2 = count2 + 1;		//count the times we don't seem to move up
 	else
 		count2 = 0;					//if we have risen by more than 0.07 jku, reset count
@@ -166,7 +167,7 @@ pulse:
 	{
 		call stop_power;
 	}
-	vel = GetThingPos(player);
+	pos = GetThingPos(player);						// remember for next pulse...
 
 	Return;
 

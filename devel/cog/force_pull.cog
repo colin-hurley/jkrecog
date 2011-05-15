@@ -21,7 +21,7 @@
 #
 # [darthslaw]
 #
-# (C) 2006 JK ReCog
+# (C) 2007 JK ReCog
 
 
 symbols
@@ -50,11 +50,13 @@ int         IsAFlag=0                        local
 int			mode							local
 flex		len								local
 
-template	crosshair_tpl0=+crosshair_green_line_h	local
-template	crosshair_tpl1=+crosshair_green_line_v	local
-template	crosshair_tpl2=+crosshair_green_line_d1	local
-template	crosshair_tpl3=+crosshair_green_line_d2	local
-template	p_tpl							local
+#template	crosshair_tpl0=+crosshair_green_line_h	local
+#template	crosshair_tpl1=+crosshair_green_line_v	local
+#template	crosshair_tpl2=+crosshair_green_line_d1	local
+#template	crosshair_tpl3=+crosshair_green_line_d2	local
+#template	p_tpl							local
+
+template	fire_tpl						local
 
 int			i								local
 
@@ -114,6 +116,7 @@ pulse:
 
 	// Search for all players, actors and items.
 	potential = FirstThingInView(player, 20 + 15 * rank, 5.5, 0x424);
+	#potential = FirstThingInView(player, 20 + 15 * rank, 5.5, 0x42C);
 	while(potential != -1)
 	{
 		if(
@@ -181,9 +184,12 @@ deactivated:
 		if(mana >= cost) 	//if there's enough mana
 		{
 			cost = cost * 5;	// full cost... if mana is less, do a percentage of
-			//potential = FirstThingInView(player, 20 + 10 * rank, 2.0, 0x404);
-			victim = 0;		//if this number is not 0 when we exit this while loop, we haven't pushed anyone
-			potential = FirstThingInView(player, 20 + 10 * rank, 2.0, 0x40C);
+			#potential = FirstThingInView(player, 20 + 10 * rank, 2.0, 0x404);
+			// if victim is not 0 when we exit this while loop, we haven't pushed anyone;
+			// at the end of the 'if(mode == 0)' block, victim gets set to -1, and triggers the following
+			//  'if(victim == -1)' block that will stop the power
+			victim = 0;
+			potential = FirstThingInView(player, 20 + 10 * rank, 2.0, 0x404);
 			while(potential != -1)
 			{
 				if(
@@ -206,10 +212,10 @@ deactivated:
 						}
 					}
 					
-					p_tpl = GetThingTemplate(potential);
-					for(i = 0; i < 4; i = i + 1)
-						if(p_tpl == crosshair_tpl0[i])
-							IsAFlag = 1;				//not really a flag, but this will prevent the crosshairs from being pushed
+					#p_tpl = GetThingTemplate(potential);
+					#for(i = 0; i < 4; i = i + 1)
+					#	if(p_tpl == crosshair_tpl0[i])
+					#		IsAFlag = 1;				//not really a flag, but this will prevent the crosshairs from being pushed
 
 					if(!IsAFlag)
 					{
@@ -255,7 +261,9 @@ deactivated:
 		call stop_power;
 		Return;
 	}
-
+	
+	// FORCE PULL
+	
 	SetPulse(0);
 	jkEndTarget();
 
@@ -274,13 +282,18 @@ deactivated:
 			type = GetThingType(victim);
 			if(type == 2)							  // ACTOR
 			{
-				if(GetActorWeapon(victim, 1) != -1)
+				fire_tpl = GetActorWeapon(victim, 1);
+				#if(fire_tpl != -1 && fire_tpl != punch_tpl)
+				if(fire_tpl != -1)
 				{
 					// Make victim drop powerup.
 					throwThing = SkillTarget(victim, player, 24, 0);
+					// throwthing could be -1 ; suppose the actor cog allows the AI to hold onto the weapon...
 					if(throwThing != -1)
 					{
 						SetActorWeapon(victim, 1, -1);
+						#SetActorWeapon(victim, 1, punch_tpl);
+						// handle puppet changes and such in the actor cog...
 						AmputateJoint(victim, 3);
 					}
 				}
@@ -321,8 +334,8 @@ deactivated:
 				SetTimerEx(1.5, 1, throwThing, 0);
 
 				// Duplicate sends for lost packets
-				SetTimerEx(3.5, 2, throwThing, 0);
-				SetTimerEx(3.6, 2, throwThing, 0);
+				#SetTimerEx(3.5, 2, throwThing, 0);
+				#SetTimerEx(3.6, 2, throwThing, 0);
 
 				if(IsMulti())
 				{
@@ -363,13 +376,14 @@ timer:
 	{
 		// Set back to no gravity after the object had a chance to
 		// settle down for next time they respawn...
-		ClearPhysicsFlags(GetParam(0), 1);
+		#ClearPhysicsFlags(GetParam(0), 1);
 		Return;
 	}
 	else
 	if(GetSenderId() == 3)
 	{
 		// SITH_TF_DISABLED
+		ClearPhysicsFlags(GetParam(0), 1);
 		SetThingFlags(GetParam(0), 0x80000);
 		SetLifeLeft(GetParam(0), 26);
 		Return;
@@ -377,6 +391,7 @@ timer:
 	else
 	if(GetSenderId() == 4)
 	{
+		ClearPhysicsFlags(GetParam(0), 1);
 		SetThingFlags(GetParam(0), 0x80000);
 		SetLifeLeft(GetParam(0), 25.9);
 		Return;

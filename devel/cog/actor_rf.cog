@@ -1,0 +1,177 @@
+# Jedi Knight Cog Script
+#
+# ACTOR_RF.COG
+#
+# ACTOR Script - Standard Ree Yees with Fist
+#
+# 7/28/97 [CR] Doubled saber damage for single player gameplay reasons
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+
+symbols
+
+message		startup
+message     killed
+message     damaged
+message     skill
+message		timer
+
+template    powerup2=+DHealthPack            local
+template    dummybrownRY=reeyeesFIST         local
+template    dummybrownCW=reeyeesCW           local
+template    limb=+RYlimb                     local
+template    limbblack=+RHlimb                local
+thing       newThing                         local
+thing       victim                           local
+int         bin                              local
+flex        rval                             local
+int         damage                           local
+
+thing		bullet							local
+vector		bulletpos						local
+vector		partpos							local
+vector		diff							local
+vector		head_offset						local
+flex		r								local
+template	ghost_tpl=+timed_ghost			local
+
+template	fire_tpl=+TD_flame_pars			local
+template	sourcetpl						local
+template	TD_expl_tpl0=+grenade_exp		local
+template	TD_expl_tpl1=+egrenade_exp		local
+vector		vel								local
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+	head_offset = '0.01 0.02 0.04';
+	return;
+	
+damaged:
+   damage = GetParam(0);
+   victim = GetSenderRef();
+   if(GetParam(1) == 16)                        // saber damage might cause dismemberment
+   {
+      damage = (damage * 2.0);
+      if(GetThingHealth(victim) <= damage) // but only if damage is sufficient to kill
+      {
+         if(rand() < 0.05)                      // random chance
+         {
+            AmputateJoint(victim, 5);
+
+            // we have a brown ree yees
+            if((GetThingTemplate(victim) == dummybrownRY) || (GetThingTemplate(victim) == dummybrownCW))
+               newThing = CreateThingAtPos(limb, GetThingSector(victim), GetThingPos(victim), '0 0 0');
+            else
+               newThing = CreateThingAtPos(limbblack, GetThingSector(victim), GetThingPos(victim), '0 0 0');
+
+            SetThingVel(newThing, '0.0 0.7 1.4');
+         }
+      }
+   }
+	else
+	if(GetParam(1) == 2)					// ENERGY
+	{
+		bullet = GetSourceRef();
+		if(GetThingType(bullet) == 3)			// type = weapon
+		{
+			#print("energy damage");
+			// First check for head shots
+			bulletpos = GetThingPos(bullet);
+			NewThing = FireProjectile(GetSenderRef(), ghost_tpl, -1, -1, head_offset, '0 0 0', 0, 0, 0, 0);
+			partpos = GetThingPos(NewThing);
+			DestroyThing(NewThing);
+			diff = VectorSub(partpos, bulletpos);
+			r = VectorLen(VectorCross(diff, GetThingLVec(bullet)));	// will projectile hit the head?
+			if(r <= 0.03)	// 0.02 = radius of head // VectorZ(diff) < 0.03 && 
+			{
+				#print("Head shot");
+				damage = damage * 5;
+			}
+		}
+	}
+	else
+	if(GetParam(1) == 4)					// FIRE damage
+	{
+		bullet = GetSourceRef();
+		sourcetpl = GetThingTemplate(bullet);
+		if(sourcetpl == TD_expl_tpl0 || sourcetpl == TD_expl_tpl1)
+		{
+			// incinerate victim if he is close enough to the blast and has died from it
+			if(VectorDist(GetThingPos(victim), GetThingPos(bullet)) < 0.5 && GetHealth(victim) <= damage)
+			{
+				damage = 10 * damage;				// make sure the actor really dies
+				SetThingCurGeoMode(victim, 0);
+				StopThing(victim);
+				DetachThing(victim);
+				ClearPhysicsFlags(victim, 0x41);
+				SetThingVel(victim, '0 0 0.4');			// so he doesn't crumple to the ground before the timer can re-clear the physics flags
+				SetTimerEx(1.1, 2, victim, 0);
+				newThing = FireProjectile(victim, fire_tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);
+				vel = VectorScale(VectorNorm(VectorSub(GetThingPos(victim), GetThingPos(bullet))), 0.5);
+				// scale down the Z velocity... looks better this way
+				vel = VectorAdd(vel, VectorSet(0, 0, -0.9 * VectorZ(vel)));
+				SetThingVel(newThing, vel);
+			}
+		}
+	}
+	else
+	if(GetParam(1) == 64)			// SURFACE IMPACT
+	{
+		// Stop the victim's movement if damaged by impact
+		StopThing(victim);
+	}
+   ReturnEx(damage);
+   return;
+
+# ........................................................................................
+
+killed:
+   rval = Rand();
+   if(rval < 0.05)
+   {
+      newThing = FireProjectile(GetSenderRef(), powerup2, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+      SetLifeleft(newThing, 200.0);
+      SetThingLook(newThing, GetThingLVec(victim));
+   }
+
+   return;
+
+# ........................................................................................
+
+skill:
+   bin = GetParam(0);
+   if (bin == 31)                            // Force Grip
+   {
+      ReturnEx(10);                          // return base damage that is taken by this actor.
+      Return;
+   }
+   else
+   if (bin == 34)                            // Deadly Sight
+   {
+      ReturnEx(5);                           // return base damage that is taken by this actor.
+      Return;
+   }
+   ReturnEx(-1);
+   return;
+
+timer:
+	if(GetSenderID() == 2)
+	{
+		DetachThing(GetParam(0));
+		ClearPhysicsFlags(GetParam(0), 0x41);
+		StopThing(GetParam(0));
+		return;
+	}
+	return;
+
+end
+
+

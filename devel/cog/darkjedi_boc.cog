@@ -1,0 +1,212 @@
+# Jedi Knight Cog Script
+#
+# DARKJEDI_BOC.COG
+#
+# DARK JEDI Script - Boc
+#
+# [YB]
+#
+# 8/22 [CR] Added ability to turn on force powers from other COG.
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+symbols
+
+message        startup
+message        newplayer
+message        damaged
+message        killed
+message        user0
+message        user1
+message        skill
+
+thing          darkjedi                      mask=0xfff
+
+material       tip_mat=saberpurple0.mat      local
+material       side_mat=saberpurple1.mat     local
+
+template       tpl_wall=+ssparks_wall        local
+template       tpl_blood=+ssparks_blood      local
+template       tpl_saber=+ssparks_saber      local
+
+int            victim                        local
+int            forcepower                    local
+int            forcepulse                    local
+
+template       destProj=+force_dest_p3       local
+sound          destSound=ForceDestruct01.wav local
+
+flex           autoAimFOV=10                 local
+flex           autoAimMaxDist=5              local
+
+template       repel=+force_repel            local
+
+sound          s1z=I00bo01z.wav              local
+sound          s2z=I00bo02z.wav              local
+sound          s3z=I00bo03z.wav              local
+sound          s4z=I00bo04z.wav              local
+sound          s5z=I00bo05z.wav              local
+sound          s6z=I00bo06z.wav              local
+sound          s7z=I00bo07z.wav              local
+sound          s71=I00bo071.wav              local
+sound          s72=I00bo072.wav              local
+sound          s73=I00bo073.wav              local
+
+int            snd=-1                        local
+int            okay                          local
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+newplayer:
+   jkSetSaberInfo(darkjedi, side_mat, tip_mat, 0.003, 0.001, 0.110, tpl_wall, tpl_blood, tpl_saber);
+   jkSetFlags(darkjedi, 0x15);
+
+   Return;
+
+# ........................................................................................
+
+killed:
+   SetPulse(0);
+   jkSetFlags(darkjedi, 0x8);
+
+   snd = PlaySoundThing(s1z, darkjedi, 1.0, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(1);
+
+   snd = PlaySoundThing(s71, darkjedi, 1.0, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(0.01);
+
+   snd = PlaySoundThing(s1z, darkjedi, 0.33, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(0.01);
+
+   snd = PlaySoundThing(s2z, darkjedi, 0.66, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(1);
+
+   snd = PlaySoundThing(s72, darkjedi, 1.0, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(1);
+
+   snd = PlaySoundThing(s73, darkjedi, 1.0, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(1.5);
+
+   snd = PlaySoundThing(s7z, darkjedi, 1.0, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(1);
+
+   snd = PlaySoundThing(s2z, darkjedi, 0.5, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(0.01);
+
+   snd = PlaySoundThing(s4z, darkjedi, 0.5, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(0.5);
+
+   snd = PlaySoundThing(s2z, darkjedi, 0.5, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   Sleep(0.5);
+
+   snd = PlaySoundThing(s2z, darkjedi, 0.33, -1, -1, 0x180);
+   Sleep(GetSoundLen(snd));
+   StopSound(snd, 0);
+
+   Return;
+
+# ........................................................................................
+
+damaged:
+   damage = GetParam(0);
+   damageType = GetParam(1);
+
+   if (damageType & 1)                       // IMPACT
+      damage = damage / 2;
+   else
+   if (damageType & 2)                       // ENERGY
+      damage = damage / 2;
+   else
+   if (damageType & 4)                       // FIRE
+      damage = damage / 10;
+   else
+   if (damageType & 8)                       // FORCE
+      damage = damage;
+   else
+   if (damageType & 16)                      // SABER
+      damage = damage;
+
+   ReturnEx(damage);
+
+   Return;
+
+# ........................................................................................
+
+user1:
+   // Receives message from 20b_camera.cog or 20_rahnlines.cog
+   okay = 1;
+   return;
+
+
+user0:
+   // Don't start using force powers until message is received
+   if(okay == 0) return;
+
+   victim = GetParam(0);
+   forcepower = GetParam(1);
+
+   if (forcepower == 1)
+   {
+      // Print("Force Power 2 : FORCE DESTRUCTION");
+      PlayMode(darkjedi, 24);
+      Sleep(0.3);
+      // He could die during the sleep
+      if(GetThingHealth(darkjedi) <= 0) Return;
+
+      AddDynamicTint(victim, 0.3, 0.0, 0.15);
+      FireProjectile(darkjedi, destProj, destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
+   }
+   else
+   if (forcepower == 2)
+   {
+      // Print("Force Power 2 : FORCE REPEL...");
+      PlayMode(darkjedi, 35);
+      Sleep(0.3);
+      // He could die during the sleep
+      if(GetThingHealth(darkjedi) <= 0) Return;
+
+      CreateThing(repel, darkjedi);
+   }
+   else
+   if (forcepower == 3)
+   {
+      // Print("Force Power 3");
+   }
+   Return;
+
+# ........................................................................................
+
+skill:
+   bin = GetParam(0);
+   if (bin == 31)                            // Force Grip
+   {
+      ReturnEx(0.5);                         // Mostly immune...
+      Return;
+   }
+   else
+   if (bin == 34)                            // Deadly Sight
+   {
+      ReturnEx(5);
+      Return;
+   }
+
+   ReturnEx(-1);
+   Return;
+
+end
+

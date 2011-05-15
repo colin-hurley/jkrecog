@@ -1,0 +1,262 @@
+# Jedi Knight Cog Script
+#
+# ACTOR_RY.COG
+#
+# ACTOR Script - Standard ReeYees with Thermals
+#
+# 7/28/97 [CR] Doubled saber damage for single player gameplay reasons
+# 8/18/97 [CR] Removed old 50% resistance to fire damage
+# 3/7/07 [darthslaw] Tweaked the force pull code and killed code
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+
+symbols
+
+message		startup
+message     killed
+message     damaged
+message     skill
+message		pulse
+message		timer
+
+template    powerup=+DDetonator              local
+template    powerup2=+DHealthPack            local
+template    powerup3=+DSingle                local
+template    grenade=+spec_grenade            local
+template    dummybrownRY=reeyees             local
+template    dummybrownRY2=reeyeesS           local
+template    limb=+RYlimb                     local
+template    limbblack=+RHlimb                local
+thing       newThing                         local
+thing       victim                           local
+int         bin                              local
+int         senderref=-1                     local
+#ai          flee_ai=noweapon.ai              local
+ai			punch_ai=rypundefault.ai		local
+template	punch_tpl=+ry_punch				local
+flex        rval                             local
+int         damage                           local
+
+thing		bullet							local
+vector		bulletpos						local
+vector		partpos							local
+vector		diff							local
+vector		head_offset						local
+flex		r								local
+template	ghost_tpl=+timed_ghost			local
+
+template	fire_tpl=+TD_flame_pars			local
+template	sourcetpl						local
+template	TD_expl_tpl0=+grenade_exp		local
+template	TD_expl_tpl1=+egrenade_exp		local
+vector		vel								local
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+	head_offset = '0.01 0.02 0.04';
+	return;
+
+damaged:
+	damage = GetParam(0);
+	victim = GetSenderRef();
+	if(GetParam(1) == 16)                     // saber damage might cause dismemberment
+	{
+		damage = (damage * 2.0);
+		if(GetThingHealth(victim) <= damage) // but only if damage is sufficient to kill
+		{
+			if(rand() < 0.05)                   // random chance
+			{
+				AmputateJoint(victim, 5);
+				
+				// we have a brown ree yees
+				if((GetThingTemplate(victim) == dummybrownRY) || (GetThingTemplate(victim) == dummybrownRY2))
+					newThing = CreateThingAtPos(limb, GetThingSector(victim), GetThingPos(victim), '0 0 0');
+				else
+					newThing = CreateThingAtPos(limbblack, GetThingSector(victim), GetThingPos(victim), '0 0 0');
+				SetThingVel(newThing, '0.0 0.7 1.4');
+			}
+		}
+	}
+	else
+	if(GetParam(1) == 2)					// ENERGY DAMAGE
+	{
+		bullet = GetSourceRef();
+		if(GetThingType(bullet) == 3)			// type = weapon
+		{
+			#print("energy damage");
+			// First check for head shots
+			bulletpos = GetThingPos(bullet);
+			NewThing = FireProjectile(GetSenderRef(), ghost_tpl, -1, -1, head_offset, '0 0 0', 0, 0, 0, 0);
+			partpos = GetThingPos(NewThing);
+			DestroyThing(NewThing);
+			diff = VectorSub(partpos, bulletpos);
+			r = VectorLen(VectorCross(diff, GetThingLVec(bullet)));	// will projectile hit the head?
+			if(r <= 0.03)	// 0.02 = radius of head // VectorZ(diff) < 0.03 && 
+			{
+				#print("Head shot");
+				damage = damage * 5;
+			}
+		}
+	}
+	else
+	if(GetParam(1) == 4)					// FIRE damage
+	{
+		bullet = GetSourceRef();
+		sourcetpl = GetThingTemplate(bullet);
+		if(sourcetpl == TD_expl_tpl0 || sourcetpl == TD_expl_tpl1)
+		{
+			// incinerate victim if he is close enough to the blast and has died from it
+			if(VectorDist(GetThingPos(victim), GetThingPos(bullet)) < 0.5 && GetHealth(victim) <= damage)
+			{
+				damage = 10 * damage;				// make sure the actor really dies
+				SetThingCurGeoMode(victim, 0);
+				StopThing(victim);
+				DetachThing(victim);
+				ClearPhysicsFlags(victim, 0x41);
+				SetThingVel(victim, '0 0 0.4');			// so he doesn't crumple to the ground before the timer can re-clear the physics flags
+				SetTimerEx(1.1, 2, victim, 0);
+				newThing = FireProjectile(victim, fire_tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);
+				vel = VectorScale(VectorNorm(VectorSub(GetThingPos(victim), GetThingPos(bullet))), 0.5);
+				// scale down the Z velocity... looks better this way
+				vel = VectorAdd(vel, VectorSet(0, 0, -0.9 * VectorZ(vel)));
+				SetThingVel(newThing, vel);
+			}
+		}
+	}
+	else if(GetParam(1) == 64)				// SURFACE IMPACT DAMAGE
+	{
+		// Stop the victim's movement if damaged by impact
+		StopThing(victim);
+	}
+	ReturnEx(damage);
+	return;
+
+# ........................................................................................
+
+killed:
+	victim = GetSenderRef();
+	SetThingPulse(victim, 0);
+	rval = Rand();
+	newThing = -1;
+	if(GetActorWeapon(victim, 1) == punch_tpl)	// if he's been force pulled and has no detonators
+	{
+		if(rval < 0.1)	// Health Pack
+		{
+			newThing = FireProjectile(victim, powerup2, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+			SetLifeLeft(newThing, 200.0);
+		}
+	}
+	else
+	{
+		if(rval < 0.25)	// belt of detonators
+		{
+			newThing = FireProjectile(victim, powerup, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(newThing), 0.4), '0 0 0.4'));
+			SetLifeLeft(newThing, 200.0);
+		}
+		else
+		if(rval < 0.6)	// single detonator
+		{
+			newThing = FireProjectile(victim, powerup3, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+			SetLifeLeft(newThing, 200.0);
+			SetPhysicsFlags(newThing, 0x21);	// make the detonator bounce, and fall with gravity
+			SetThingMass(newThing, 1.0);		// instead of 10, like the _powerup template gives it
+			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(newThing), 0.4), '0 0 0.4'));
+			SetLifeleft(newThing, 200.0);
+		}
+		else
+		if(rval < 0.90)	// live detonator
+		{
+			newThing = FireProjectile(victim, grenade, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(newThing), 0.4), '0 0 0.4'));
+			#newThing = CreateThing(grenade, victim);
+		}
+		else
+		if(rval < 0.95)	// health pack
+		{
+			newThing = FireProjectile(victim, powerup2, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+			SetLifeLeft(newThing, 200.0);
+		}
+	}
+	if(newThing != -1) SetThingLook(newThing, GetThingLVec(victim));
+	return;
+
+# ........................................................................................
+
+skill:
+	bin = GetParam(0);
+	senderref = GetSenderRef();
+	if (bin == 24)                            // Force Pull
+	{
+		if(GetActorWeapon(senderref, 1) != punch_tpl)	// haven't been pulled yet
+		{
+			rval = Rand();
+			if(rval < 0.50)
+			{
+				newThing = CreateThing(powerup, senderref);
+				SetLifeleft(newThing, 3.0);
+				ReturnEx(newthing);
+			}
+			else
+			{
+				newThing = CreateThing(powerup3, senderref);
+				SetLifeleft(newThing, 30.0);
+				ReturnEx(newThing);
+			}
+			// now make this reeyees punch only
+			SetTimerEx(0.1, 10, senderref, 0);
+			SetThingPulse(senderref, 5);	// make the pulse repeat these changes, for savegame's sake
+			return;
+		}
+	}
+   else
+   if (bin == 31)                            // Force Grip
+   {
+      ReturnEx(10);                          // return base damage that is taken by this actor.
+      return;
+   }
+   else
+   if (bin == 34)                            // Deadly Sight
+   {
+      ReturnEx(5);                           // return base damage that is taken by this actor.
+      return;
+   }
+   ReturnEx(-1);
+   return;
+
+pulse:
+	AISetClass(GetSenderRef(), punch_ai);
+	SetActorWeapon(GetSenderRef(), 1, punch_tpl);
+	SetActorFlags(GetSenderRef(), 0x20000);
+	ParseArg(GetSenderRef(), "puppet=ryfist.pup soundclass=ryfist.snd");
+	return;
+
+timer:
+	if(GetSenderID() == 2)
+	{
+		DetachThing(GetParam(0));
+		ClearPhysicsFlags(GetParam(0), 0x41);
+		StopThing(GetParam(0));
+		return;
+	}
+	if(GetSenderID() == 10)
+	{
+		AISetClass(GetParam(0), punch_ai);
+		SetActorWeapon(GetParam(0), 1, punch_tpl);
+		SetActorFlags(GetParam(0), 0x20000);
+		ParseArg(GetParam(0), "puppet=ryfist.pup soundclass=ryfist.snd");
+		return;
+	}
+	return;
+
+end
+
+

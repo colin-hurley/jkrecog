@@ -103,7 +103,7 @@ activated:
 	if(!IsInvActivated(player, 29))
 	{
 		cost = (4 - rank) * 2 + 4;  // ranks 1-4 = 10, 8, 6, 4 mana per pulse, respectively
-		if(GetInv(player, 14) > 4*cost)
+		if(GetInv(player, 14) > cost)
 		{
 			SetInvActivated(player, 29, 1);
 			rank = GetInv(player, 29);	// rank will be 4, w/o cheats
@@ -126,7 +126,6 @@ activated:
 			SetThingFlags(player, 4);
 			
 			SetPulse(0.5);
-			SetBinWait(player, 29, 1);
 		}
 	}
 	else

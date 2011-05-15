@@ -215,7 +215,7 @@ crosshairs		118		1.0	1.0	0x022	cog=item_crosshair.cog
 crosshairs		119		0.0	1.0	0x000	cog=inv_crosshair.cog
 
 # bin 120 = waggle item
-f_grip			120		1.0	1.0	0x022	cog=item_waggle.cog
+waggle			120		1.0	1.0	0x022	cog=item_waggle.cog
 
 # bin 121 = headbob stub, 122 = headbob item; offset is set in inv_crosshair.cog
 f_persuasion		121		1.0	1.0	0x022	cog=item_headbob.cog
@@ -226,10 +226,12 @@ headbob			122		-1.0	1.0	0x000	cog=inv_headbob.cog
 
 # just a dummy bin for the crosshair style; updated by inv_crosshair.cog
 # setting this bin will NOT affect crosshairs at all; it's here so the strifle and crossbow cogs can fire crosshairs while zoomed
-xhair_style		124		0.0	100.0	0x000
+#xhair_style		124		0.0	100.0	0x000
 
 f_pull			130		1.0	1.0	0x122	cog=item_function.cog
 client			140		0.0	0.0	0x000	cog=client_jkrecog.cog
+
+safesave		145		1.0	1.0	0x002	cog=item_safesave.cog
 
 ## End new items section ##	
 

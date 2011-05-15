@@ -28,11 +28,14 @@ keyframe    mountAnim=bryvmnt.key               local
 keyframe    dismountAnim=bryvdis.key            local
 keyframe    povfireAnim=bryvpst1.key            local
 keyframe    holsterAnim=kyhlstr.key             local
+keyframe	povsmackanim=bryvsmack.key			local
+keyframe	smackanim=kybrysmack.key			local
 
 sound       outSound=pistout1.wav               local
 sound       mountSound=df_bry_ready.wav         local
 sound       dismountSound=PutWeaponAway01.wav   local
 sound       fireSound=pistol-1.wav              local
+sound		fireSound2=SwingFist04.wav			local
 
 #template    projectile=+bryarbolt               local
 
@@ -76,7 +79,7 @@ message     autoselect
 message     fire
 message     timer
 message		user2					# for Fire 3 'activated'
-message		user3					# for fire 3 'deactivated'
+#message		user3					# for fire 3 'deactivated'
 message		user4					# for waggle control
 
 end
@@ -128,7 +131,7 @@ fire:
    SetPOVShake('0.0 -.003 0.0', '1.0 0.0 0.0', .05, 80.0);
    
 	#dummy = FireProjectile(player, projectile, fireSound, 8, '0.0135 0.1624 0.0', '0 0 0', 1.0, 0x20, autoAimFOV, autoAimFOV*2);
-	PlaySoundThing(fireSound, player, 1.0, -1.0, -1.0, 0x0);
+	PlaySoundThing(fireSound, player, 1.0, -1.0, -1.0, 0x80);
 	PlayMode(player, 8);
 	err = GetInv(player, xhair_bin);
 	if(err > 0)
@@ -160,10 +163,11 @@ activated:
    }
    jkSetWaggle(player, '0 0 0', 0);
    waggle = 0;
+
 	if(mode == 0)
 	{
 		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.2, 0, 0, 0);
-		firing = 1;
+		charging = 0;
 		powerBoost = GetInv(player, 63);
 		ActivateWeapon( player, fireWait/powerBoost, mode );
 	}
@@ -172,7 +176,6 @@ activated:
 		// don't need a min error for charge up fire, since it fires only once per hold of the fire button
 		// but disable any possible existing min err
 		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
-		firing = 1;
 		charging = 1;
 		ActivateWeapon(player, 0, mode);
 		if(channel == -1) channel = PlaySoundThing(chargeSound, player, 0.0, -1, -1, 0x181);
@@ -195,7 +198,6 @@ deactivated:
    delayTime = DeactivateWeapon( player, mode );
    powerBoost = GetInv(player, 63);
    SetMountWait(player, fireWait/powerBoost);
-   firing = 0;
    KillTimerEx(10);
 	if(channel != -1)
 	{
@@ -247,7 +249,7 @@ deactivated:
 		}
 		jkPlayPOVKey(player, povfireAnim, 1, 0x38);
 	}
-	PlaySoundThing(fireSound, player, 1.0, -1.0, -1.0, 0x0);
+	PlaySoundThing(fireSound, player, 1.0, -1.0, -1.0, 0x80);
 	PlayMode(player, 8);
 	if(err > 0)
 		SendTrigger(-1, 2000, 2 * (rand() - 0.5) * err, 2 * (rand() - 0.5) * err, charge, 0.0);
@@ -279,7 +281,10 @@ selected:
 	waggle = 1;
 	jkSetWaggle(player, waggle_vec, waggle_spd);
 	SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
-	firing = 0;
+	firing = 1;
+	#print("Bryar: Fire 3 disabled");
+	SetTimerEx(0.3, 3, 0, 0);	// set a timer to allow special fire
+	charging = 0;
 
    // Clear saber flags, and allow activation of the weapon
    jkClearFlags(player, 0x5);
@@ -297,6 +302,8 @@ deselected:
    jkPlayPOVKey(player, dismountAnim, 0, 0x18);
    
    firing = 1;	// not really firing, but keep fire3 from activating
+   #print("Bryar: Fire 3 disabled");
+   charging = 0;
    
    holsterWait = GetKeyLen(holsterAnim);
    SetMountWait(player, holsterWait);
@@ -351,6 +358,12 @@ timer:
 		StopKey(player, holsterTrack, 0.0);
 		return;
 	}
+	if(GetSenderID() == 3)
+	{
+		firing = 0;
+		#print("Bryar: Fire 3 enabled");
+		return;
+	}
 	if(GetSenderID() == 10)
 	{
 		if(GetParam(1) == 1)
@@ -358,29 +371,39 @@ timer:
 			ChangeSoundVol(GetParam(0), 1.0, 0.6);
 			//different pitches based on how much ammo we have
 			inv = GetInv(player, 11);
-			if(inv >= 4) ChangeSoundPitch(GetParam(0), 1.0, 1.6);
-			else if(inv >= 3) ChangeSoundPitch(GetParam(0), 0.9, 1.2);
-			else if(inv >= 2) ChangeSoundPitch(GetParam(0), 0.8, 0.8);
-			else ChangeSoundPitch(GetParam(0), 0.7, 0.4);
+			if(inv >= 4) ChangeSoundPitch(GetParam(0), 1.15, 2.0);
+			else if(inv >= 3) ChangeSoundPitch(GetParam(0), 1.0, 1.5);
+			else if(inv >= 2) ChangeSoundPitch(GetParam(0), 0.85, 1.0);
+			else ChangeSoundPitch(GetParam(0), 0.7, 0.5);
 		}
 		return;
 	}
-	if(GetSenderID() == 30)
+	if(GetSenderID() == 20)
 	{
-		firing = 0;
+		SendTrigger(-1, 2001, 0, 0, 0, 0);	// fire bryar smack template
 		return;
 	}
 	Return;
 
 user2:
 	if(firing) return;
+	player = GetLocalPlayerThing();
 	firing = 1;
-	print("SMACK!");
+	jkPlayPOVKey(player, povsmackanim, 3, 0xA);	// No Loop + Restart if playing already
+	PlayKey(player, smackanim, 2, 0xA);
+	PlaySoundThing(fireSound2, player, 1.0, -1.0, -1.0, 0x80);
+	SetTimerEx(0.2, 20, 0, 0);						// small delay before firing projectile
+	SetTimerEx(0.6, 3, 0, 0);						// a delay before we can smack again
+	SetMountWait(player, 0.7);						// a delay before we can change weapons
+	SetFireWait(player, 0.7);						// a delay before we can shoot again
+	powerBoost = GetInv(player, 63);				// do we have a power boost?
+	ChangeFireRate(player, FireWait/powerBoost);	// counteract the effect that SetFireWait has on the fire rate
 	Return;
 
-user3:
-	SetTimerEx(FireWait, 30, 0, 0);
-	Return;
+#user3:
+#	print("BRYAR COG: USER 3 MESSAGE ACTIVATED");
+#	SetTimerEx(FireWait, 3, 0, 0);
+#	Return;
 
 user4:
 	waggle_vec = VectorSet(GetParam(0), GetParam(1), GetParam(2));

@@ -1,0 +1,145 @@
+# Jedi Knight Cog Script
+#
+# ITEM_SHIELDS.COG
+#
+# ITEM Script - Shields
+#  Bin 60
+#
+# Modified to slowly charge while not taking damage.  Shield will only charge itself to 50
+# points of strength.
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+
+symbols
+
+thing			player
+
+flex			shields
+flex			shieldsLeft
+flex			damage
+flex			halfdamage
+flex			type
+
+sound			hitsnd=KShieldHit01.wav
+
+message		startup
+message		newplayer
+message		pulse
+message		killed
+message		damaged
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+	player = GetLocalPlayerThing();
+	SetPulse(3.0);		// 20 points / min
+	return;
+
+newplayer:
+	if(player == GetSenderRef())
+		SetPulse(3.0);
+	return;
+
+killed:
+	if(GetSenderRef() == player)		// shields should not charge while dead
+		SetPulse(0);
+	return;
+
+pulse:
+	shields = GetInv(player, 60);
+	SetPulse(3.0);						// reset rate here, for when "damaged" changes it
+	// if shields are charged or the player is dead, return
+	if(shields >= 50 || GetHealth(player) <= 0)
+		return;
+	ChangeInv(player, 60, 1);			// give the player one more point of shield power
+	return;
+
+damaged:
+	player = GetSenderRef();
+	shields = GetInv(player, 60);
+	damage = GetParam(0);
+	
+	if(shields > 0)
+	{
+		type = GetParam(1);
+		shieldsLeft = shields;
+	
+		// If damage from energy or fire.
+		if((type == 2) || (type == 4))
+		{
+			SetPulse(10);		// delay the charging of the shield
+			AddDynamicTint(player, 0, damage/50, 0);
+			PlaySoundThing(hitsnd, player, 1.0, -1, -1, 128);
+	
+			// Shields do full protection until they are at 50 or less.
+			shieldsLeft = shields - damage;
+			if(shieldsLeft > 50)
+			{
+				damage = 0;
+			}
+			else
+				if(shields > 50)
+			{
+				damage = damage - (shields - 50);
+			}
+	
+			// Scale what damage is left by shields.
+			if(damage > 0)
+			{
+				damage = damage * (1 - shieldsLeft / 50);
+			}
+	
+			// Inventory system will minimize shields at 0.
+			SetInv(player, 60, shieldsLeft);
+		}
+
+		// If damage from saber.
+		if(type == 16)
+		{
+			SetPulse(10);		// delay the charging of the shield
+			AddDynamicTint(player, 0, damage/50, 0);
+         PlaySoundThing(hitsnd, player, 1.0, -1, -1, 0);
+	
+         // Shields do half protection
+			halfdamage = damage / 2;
+			damage     = halfdamage;
+			
+			shieldsLeft = shields - damage;
+			if(shieldsLeft > 50)
+			{
+				damage = 0;
+			}
+			else
+			{
+				if(shields > 50)
+				{
+					damage = damage - (shields - 50);
+				}
+			}
+	
+			// Scale what damage is left by shields.
+			if(damage > 0)
+			{
+				damage = damage * (1 - shieldsLeft / 50);
+			}
+	
+			// Inventory system will minimize shields at 0.
+			SetInv(player, 60, shieldsLeft);
+
+			// add the original half damage back
+			damage = damage + halfdamage;
+		}
+	}
+
+	ReturnEx(damage);
+	Return;
+
+end
+

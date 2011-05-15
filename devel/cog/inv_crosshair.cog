@@ -67,6 +67,8 @@ int			style_bin=124	local
 int			style=0			local
 #int			headbob=0		local
 
+int			temp_style		local
+
 end
 
 # ========================================================================================
@@ -80,7 +82,7 @@ startup:
 #	else
 #		call crosshairs_off;
 newplayer:
-	SetInv(player, style_bin, style);
+	#SetInv(player, style_bin, style);
 	player = GetLocalPlayerThing();
 	SetPulse(0.01);
 	return;
@@ -90,7 +92,7 @@ activated:
 	style = style + 1;
 	if(style > 3)
 		style = 0;
-	SetInv(player, style_bin, style);
+	#SetInv(player, style_bin, style);
 	goto which_crosshair;
 	return;
 # ........................................................................................
@@ -107,49 +109,55 @@ pulse:
 	if(GetCurrentCamera() != 0) return;						// only internal view should have crosshairs
 	if(style == 0) return;									// crosshairs off
 	master_offset = VectorSet(0.0008, 0.05, 0.0358 + head_offset);
+
+	temp_style = style;
+	if(IsInvActivated(player, 23))		// if force seeing is on, fire the green crosshairs instead
+		temp_style = 1;
+	temp_style = temp_style - 1;
+
 	if(weapon == 2)				// Bryar Pistol
 	{
-		offset = 0.0032 + err * 0.002;
+		offset = 0.0016 + err * 0.0015;
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
-		FireProjectile(player, crosshair3_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, -offset));
-		FireProjectile(player, crosshair3_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(offset, 0, 0));
-		FireProjectile(player, crosshair3_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair3_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(-offset, 0, 0));
-		FireProjectile(player, crosshair3_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair3_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 	}
 	else if(weapon == 3)		// Stormtrooper Rifle
 	{
-		offset = 0.0032 + err * 0.002;
+		offset = 0.0016 + err * 0.0015;
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
-		FireProjectile(player, crosshair3_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, -offset));
-		FireProjectile(player, crosshair3_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(offset, 0, 0));
-		FireProjectile(player, crosshair3_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair3_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(-offset, 0, 0));
-		FireProjectile(player, crosshair3_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair3_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 	}
 	else if(weapon == 6)		// Repeater
 	{
-		offset = 0.003 + err * 0.003;
+		offset = 0.0016 + err * 0.002;
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
-		FireProjectile(player, crosshair6_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair6_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 
 		xhair_offset = VectorAdd(master_offset, VectorSet(0.866 * offset, 0, -0.5 * offset));
-		FireProjectile(player, crosshair6_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair6_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 
 		xhair_offset = VectorAdd(master_offset, VectorSet(-0.866 * offset, 0, -0.5 * offset));
-		FireProjectile(player, crosshair6_tpl2_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		FireProjectile(player, crosshair6_tpl2_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 	}
 	return;
 	

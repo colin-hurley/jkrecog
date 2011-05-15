@@ -1,0 +1,366 @@
+# Jedi Knight Cog Script
+#
+# DARKJEDI_JEREC.COG
+#
+# DARK JEDI Script - Jerec
+#
+# Modified to fire ReCog-style lightning bolts. Now Jerec fires a continuous stream of lightning, rather
+#  than a single bolt.  The strength and range of the bolts, and the strength of Force Destruction, are
+#  now dependant on the player's game difficulty, so a player on easy will fight a less powerful Jerec
+#  than would a player on Hard -- on Hard, Jerec is uber powerful with his attacks, and the player can
+#  easily die if he is not on his toes.  This all balances out though, since your own force attacks are
+#  also more powerful in ReCog.
+# I also increased Jerec's resistance to impact damage, so that force push can't be used as a cheap win.
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+symbols
+
+message		startup
+message		newplayer
+message		damaged
+message		killed
+message		user0
+message		user1
+message		pulse
+message		timer
+message		skill
+
+thing		darkjedi						mask=0xfff
+
+material	tip_mat=saberred0.mat			local
+material	side_mat=saberred1.mat			local
+
+template	tpl_wall=+ssparks_wall			local
+template	tpl_blood=+ssparks_blood		local
+template	tpl_saber=+ssparks_saber		local
+
+int			victim							local
+int			forcepower						local
+int			forcepulse						local
+
+flex		damage							local
+int			damagetype						local
+
+template	lightning_tpl0=+f_lightning2	local
+template	lightning_tpl1=+f_lightning3	local
+template	lightning_tpl2=+f_lightning4	local
+
+sound		lightningSound=ForceLitning02.wav	local
+int			lightningChannel=-1					local
+
+vector		vec								local
+int			bolt							local
+int			limit							local
+int			limit2							local
+int			count							local
+int			rank							local
+
+flex		r								local
+flex		startHealth						local
+
+template	destProj0=+f_dest_p5			local
+template	destProj1=+f_dest_p6			local
+template	destProj2=+f_dest_p7			local
+sound		destSound=ForceDestruct01.wav	local
+
+flex		autoAimFOV=10					local
+flex		autoAimMaxDist=5				local
+
+sound		pullSound=ForcePull01.WAV		local
+
+template	tpl0=BryarPistol				local
+template	tpl1=BryarPistol				local
+template	tpl2=BryarPistol				local
+template	tpl3=STrifle					local
+template	tpl4=SingleDetonator			local
+template	tpl5=Crossbow					local
+template	tpl6=RepeaterGun				local
+template	tpl7=RailGun					local
+template	tpl8=SingleSeqCharge			local
+template	tpl9=ConcRifle					local
+
+int			PulledWeapon					local
+int			okay							local
+
+int			bin								local
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+	forcepulse = 0;
+	SetTimerEx(10, 100, 0, 0);
+newplayer:
+   jkSetSaberInfo(darkjedi, side_mat, tip_mat, 0.003, 0.001, 0.101, tpl_wall, tpl_blood, tpl_saber);
+   jkSetFlags(darkjedi, 0x5);
+	if(GetDifficulty() == 2)
+	{
+	   	limit = 7;
+	   	limit2 = 6;
+	   	rank = 4;
+	}
+	else if(GetDifficulty() == 1)
+	{
+		limit = 5;
+		limit2 = 5;
+		rank = 3;
+	}
+	else
+	{
+		limit = 3;
+		limit2 = 4;
+		rank = 2;
+	}
+
+   Return;
+
+# ........................................................................................
+
+killed:
+   jkSetFlags(darkjedi, 0x8);
+	if(forcepulse == 1) call stop_lightning;
+	if(forcepulse == 4) call stop_grip;
+   Return;
+
+# ........................................................................................
+
+damaged:
+   damage = GetParam(0);
+   damageType = GetParam(1);
+
+   if(damageType & 1)                        // FISTS / DEBRIS IMPACT
+      damage = damage / 2;
+   else
+   if(damageType & 2)                        // ENERGY
+      damage = damage / 2;
+   else
+   if(damageType & 4)                        // FIRE
+      damage = damage / 10;
+   else
+   if(damageType & 8)                        // FORCE
+      damage = damage;
+   else
+   if(damageType & 16)                       // SABER
+      damage = damage;
+   else
+   if(damageType & 64)                       // SURFACE IMPACT
+      damage = damage / 5;
+
+   ReturnEx(damage);
+   Return;
+
+# ........................................................................................
+
+user1:
+   // Receives message from 21b_camera.cog or 21_rahnlines.cog
+   okay = 1;
+   return;
+
+
+user0:
+   // Don't start using force powers until message is received
+   // also dont activate more than one power at a time
+   if(okay == 0 || forcepulse > 0) return;
+
+   victim = GetParam(0);
+   forcepower = GetParam(1);
+
+   if(forcepower == 1)
+   {
+		r = rand();
+		// if player is far enough away and random chance permits, do grip instead of lightning
+		if(VectorDist(GetThingPos(darkjedi), GetThingPos(victim)) > 0.5 && r < 0.4)
+		{
+			// Print("Force Power 4 : FORCE GRIP");
+			if(!IsInvActivated(victim, 29))
+			{
+				PlayMode(darkjedi, 36);				// play the DJ's grip anim
+				SetActorFlags(darkjedi, 0x40000);	// make DJ stay in place
+				Sleep(0.3);							// pause
+				// He could die during the sleep
+				if(GetThingHealth(darkjedi) <= 0) Return;
+				SetActorFlags(victim, 0x40000);		// make the victim stay in place
+				PlayMode(victim, 25);				// play victim's choke anim
+				count = 0;
+				forcepulse = 4;						// indicate which power is active
+				starthealth = GetThingHealth(darkjedi);
+				SetPulse(0.5);
+			}
+		}
+		// else, should probably do lightning, but occasionally don't do anything
+		else if(r < 0.85)
+		{
+			// Print("Force Power 1 : FORCE LIGHTNING...");
+			bolt = 1;
+			forcepulse = 1;
+			SetPulse(0.15 / limit);
+			if(lightningChannel == -1) lightningChannel = PlaySoundThing(lightningSound, darkjedi, 1.0, -1, -1, 0x81);
+			SetTimerEx(1.5, 10, 0, 0);		// set a timer to stop the power
+			PlayMode(darkjedi, 35);
+		}
+   }
+   else
+   if(forcepower == 2)
+   {
+      // Print("Force Power 2 : FORCE DESTRUCTION");
+      AddDynamicTint(victim, 0.3, 0.0, 0.15);
+      FireProjectile(darkjedi, destProj0[rank-2], destSound, 24, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist );
+      PlayMode(darkjedi, 35);
+   }
+   else
+	if(forcepower == 3)
+	{
+		// Print("Force Power 3 : FORCE PULL");
+		if(!IsInvActivated(victim, 28))
+		{
+			if(GetHealth(victim) > 0)
+			{
+				if((GetCurWeapon(victim) != 1) && (GetCurWeapon(victim) != 10))
+				{
+					PlayMode(darkjedi, 36);
+					SetTimerEx(0.3, 30, victim, 0);
+				}
+			}
+		}
+	}
+
+   Return;
+
+# ........................................................................................
+
+pulse:
+	if(forcepulse == 1)	// lightning
+	{
+		if(GetThingHealth(darkjedi) < 1)	// DJ killed
+		{
+			call stop_lightning;
+			return;
+		}
+		// It's zapping time!
+		if(bolt == 1) vec = VectorSet((rand() - 0.5) * 2.0, (rand() - 0.5) * 1.5, 0);
+		else if(bolt == 2) vec = VectorSet((rand() - 0.5) * 5.0, 7.5 + (rand() - 0.5) * 4.5, 0);
+		else if(bolt == 3) vec = VectorSet((rand() - 0.5) * 5.0, -7.5 - (rand() - 0.5) * 4.5, 0);
+		else if(bolt == 4) vec = VectorSet((rand() - 0.5) * 4.0, 15 + (rand() - 0.5) * 4.5, 0);
+		else if(bolt == 5) vec = VectorSet((rand() - 0.5) * 4.0, -15 - (rand() - 0.5) * 4.5, 0);
+		else if(bolt == 6) vec = VectorSet((rand() - 0.5) * 3.0, 22.5 + (rand() - 0.5) * 4.5, 0);
+		else if(bolt == 7) vec = VectorSet((rand() - 0.5) * 3.0, -22.5 - (rand() - 0.5) * 4.5, 0);
+		else vec = '0 0 0';						//just in case... make sure the vector is defined
+		FireProjectile(darkjedi, lightning_tpl0[rank-2], -1, -1, '-0.025 0.01 0', vec, 1.0, 0x0, 0, 0);
+		bolt = bolt + 1;
+		if(bolt > limit) bolt = 1;
+	}
+	else if(forcepulse == 4)	// grip
+	{
+		if(
+			(count > limit2) ||
+			(GetThingHealth(darkjedi) < starthealth) ||
+			(GetHealth(victim) < 1) ||
+			!HasLOS(darkjedi, victim)
+		)
+		{
+			call stop_grip;
+			Return;
+		}
+		
+		// Print("You are taking Grip damage");
+		jkPrintUNIString(victim, 300);
+		
+		DamageThing(victim, 5, 0x8, darkjedi);		// damage the victim
+
+		count = count + 1;
+	}
+
+   Return;
+
+# ........................................................................................
+
+timer:
+if(GetSenderID() == 100)
+{
+	printflex(GetHealth(darkjedi));
+	SetTimerEx(5.5, 100, 0, 0);
+	return;
+}
+	if(GetSenderID() == 10)						// Lightning (stop power)
+	{
+		call stop_lightning;
+		return;
+	}
+	if(GetSenderID() == 30)						// PULL (part 1)
+	{
+		victim = GetParam(0);
+		PlaySoundThing(pullSound, victim, 1.0, -1, -1, 0x80);
+		
+		// Create a powerup corresponding to the current weapon
+		PulledWeapon = CreateThingAtPos(tpl0[GetCurWeapon(victim)], GetThingSector(victim), GetThingPos(victim), '0 0 0');
+		
+		// Set the created powerup to no collide for now...
+		SetCollideType(PulledWeapon, 0);
+		
+		// ...and set a timer to make it collide again later
+		SetTimerEx(0.3, 31, PulledWeapon, 0);
+		
+		// Throw the powerup at the DJ
+		ApplyForce(PulledWeapon, VectorScale(VectorNorm(VectorSub(GetThingPos(darkjedi), GetThingPos(victim))), 30));
+		
+		// Remove the weapon from the player
+		ChangeInv(victim, GetCurWeapon(victim), -1);
+		
+		SelectWeapon(victim, 1);
+		return;
+	}
+	if(GetSenderId() == 31)                    // Pull (part 2)
+	{
+		// A pulled weapon must be made takeable again
+		SetCollideType(GetParam(0), 1);
+		
+		// Set gravity to them so they don't float around
+		SetPhysicsFlags(GetParam(0), 1);
+		
+		// Make the powerup last hours
+		SetLifeLeft(GetParam(0), 36000);
+		return;
+	}
+   Return;
+
+# ........................................................................................
+
+skill:
+   bin = GetParam(0);
+   if(bin == 31)                             // Force Grip
+   {
+      ReturnEx(10);
+      Return;
+   }
+   else
+   if(bin == 34)                             // Deadly Sight
+   {
+      ReturnEx(5);
+      Return;
+   }
+
+   ReturnEx(-1);
+   Return;
+
+stop_lightning:
+	SetPulse(0);
+	if(lightningChannel != -1) StopSound(lightningChannel, 0.1);
+	lightningChannel = -1;
+	forcepulse = 0;
+	return;
+
+stop_grip:
+	SetPulse(0);							// exit pulse
+	ClearActorFlags(victim, 0x40000);		// allow him to move again
+	ClearActorFlags(darkjedi, 0x40000);		// allow him to move again
+	forcepulse = 0;							// no force power active now
+	return;
+
+end
+

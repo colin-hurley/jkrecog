@@ -61,18 +61,18 @@ startup:
 # ........................................................................................
 
 activated:
-   mana = GetInv( player, 14 );
-   if(mana > 4*cost)
-   {
+	mana = GetInv( player, 14 );
+	if(mana > cost)
+	{
 		rank = GetInv(player, 33);
-      if(GetInv(player, 64) != 1) ChangeInv(player, 14, -(3*cost));
-      pulsecount = 1;
-      maxpulsecount = 2 + 2 * rank; // ranks 1-4 = 4, 6, 8, 10 counts, respectively
+		if(GetInv(player, 64) != 1) ChangeInv(player, 14, -(3*cost));
+		pulsecount = 1;
+		maxpulsecount = 2 + 2 * rank; // ranks 1-4 = 4, 6, 8, 10 counts, respectively
 		AddDynamicTint(player, 0.12, 0.00, 0.06);
-      SetPulse(0.5);
-      SetInvActivated(player, 33, 1);	// turn on icon
-      channel = PlaySoundThing(chargeSound, player, 1.0, -1, -1, 0x80);
-   }
+		SetPulse(0.5);
+		SetInvActivated(player, 33, 1);	// turn on icon
+		channel = PlaySoundThing(chargeSound, player, 1.0, -1, -1, 0x80);
+	}
 
    Return;
 
