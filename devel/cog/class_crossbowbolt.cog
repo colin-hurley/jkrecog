@@ -1,0 +1,31 @@
+# Jedi Knight Cog Script
+#
+# class_crossbowbolt.cog
+#
+# This COG causes an extra physical damage to be inflicted to victims hit by the bolt.
+#
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+symbols
+
+message		touched
+
+thing		bullet		local
+thing		victim		local
+
+end
+
+# ========================================================================================
+
+code
+
+touched:
+	bullet = GetSenderRef();
+	victim = GetSourceRef();
+	DamageThing(victim, 15, 0x1, bullet);
+	return;
+
+end
+

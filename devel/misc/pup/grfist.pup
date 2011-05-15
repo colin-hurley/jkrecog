@@ -1,0 +1,46 @@
+# puppet file for punching Greedo (gr.3do)
+# JK ReCog
+Mode=0					# Idle
+stand           gridle.key	0x00	0	0	# standing
+walk            grwalk_p.key	0x01	2	2	# walk
+run         	grrun.key	0x01	2	2	# run
+walkback        grwalk_p.key	0x01	2	2	# walk backwards
+strafeleft      grwalk_p.key	0x01	2	2	# strafe left
+straferight     grwalk_p.key	0x01	2	2	# strafe right
+death           grcrumpl.key	0x14	5	5	# die
+death          grdie.key	0x14	5	5	# alt. die
+hit             grhit.key	0x28	1	4	# hit
+choke       	grchoke.key	0x28	4	4	# choke
+turnleft    	grwalk_p.key	0x00	2	2	# shufflin' left
+turnright   	grwalk_p.key	0x00	2	2	# shufflin' right
+
+mode=1, basedon=0			# alerted
+stand		grstnd_p.key	0x00	0	0	# idle
+walk		grwalk_p.key	0x01	2	2	# walk
+fire		grpunch.key	0x28	1	4	# fire/punch
+turnleft    	grwalk_p.key	0x00	2	2	# shufflin' left
+turnright   	grwalk_p.key	0x00	2	2	# shufflin' right
+
+mode=3, basedon=0
+stand           grchoke.key    0x00	0	0
+walk            grchoke.key    0x00	2	2
+run         	grchoke.key    0x00	2	2
+walkback        grchoke.key    0x00	2	2
+strafeleft      grchoke.key    0x00	2	2
+straferight     grchoke.key    0x00	2	2
+turnleft    	grchoke.key    0x00	2	2
+turnright   	grchoke.key    0x00	2	2
+
+mode=4, basedon=3
+
+joints
+0=1	# 0 = head
+1=11	# 1 = neck
+2=20	# 2 = torso
+3=21	# 3 = primary weapon fire
+4=21	# 4 = secondard weapon fire
+5=13	# 5 = primary weapon aiming joint
+6=13	# 6 = secondary weapon aiming joint
+end
+
+

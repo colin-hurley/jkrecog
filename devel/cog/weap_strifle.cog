@@ -56,6 +56,7 @@ int         mode                                local
 
 int			xhair_bin=119						local
 int			hbob_bin=122						local
+int			scope_bin=123						local
 #int			style_bin=124						local
 
 flex		err									local
@@ -120,6 +121,7 @@ code
 
 startup:
 newplayer:
+	player = GetLocalPlayerThing();
 	jkSetWaggle(player, '0 0 0', 0);
 	waggle = 0;
 	zoom_color_handle = -1;
@@ -128,7 +130,7 @@ newplayer:
 	return;
 
 killed:
-	if(GetSenderRef() == GetLocalPlayerThing())	// player is the sender
+	if(GetSenderRef() == player)	// player is the sender
 	{
 		call zoomreset;
 	}
@@ -147,7 +149,8 @@ fire:
    // Check Ammo - If we are out, autoselect best weapon.
    // It should always use two energy cells, but -- as in DF --
    // allow the last fire if there is only one left...
-   if(GetInv(player, 11) < 1.0)
+   // or three for scope mode
+   if((GetInv(player, 11) < 1.0 && !zoomed) || (GetInv(player, 11) < 3.0 && zoomed))
    {
       PlaySoundThing(outSound, player, 1.0, -1, -1, 0x80);
       if((GetAutoSwitch() & 1))
@@ -155,14 +158,18 @@ fire:
       Return;
    }
 
-   // Get random aiming error
-   err = GetInv(player, xhair_bin);
-   rVec = VectorSet((Rand()-0.5)*3 * err, (Rand()-0.5)*3 * err, 0.0);
-   if(zoomed)
-   {
-   		if(mode == 0)
+	// Get random aiming error
+	err = GetInv(player, xhair_bin);
+	if(zoomed)
+	{
+		if(mode == 0)
 		{
+			if(IsThingCrouching(player))
+				rVec = VectorSet((Rand()-0.5)*1.5 * err, (Rand()-0.5)*1.5 * err, 0.0);
+			else
+				rVec = VectorSet((Rand()-0.5)*3 * (err+0.2), (Rand()-0.5)*3 * (err+0.2), 0.0);
 			ChangeInv( player, 11, -5.0 );					//cost 5 ammo for sniper shots
+			ChangeInv( player, xhair_bin, 1.0 );			// massive recoil
 			powerBoost = GetInv(player, 63);
 			ChangeFireRate(player, fireWaitZoomed/powerBoost);
 			// although we do not set a min error while firing zoomed, we can have some error from movement
@@ -179,9 +186,13 @@ fire:
 		{
 			return;			// shouldn't get here, but if we do, just return;
 		}
-   }
+	}
 	else
 	{
+		if(IsThingCrouching(player))
+			rVec = VectorSet((Rand()-0.5)*4.5 * err, (Rand()-0.5)*4.5 * err, 0.0);
+		else
+			rVec = VectorSet((Rand()-0.5)*7 * (err+0.1), (Rand()-0.5)*7 * (err+0.1), 0.0);
 		if(mode == 0)
 		{	
 			ChangeInv( player, 11, -1.0 );					//cost 1 ammo for slow shots
@@ -206,11 +217,11 @@ fire:
 # ........................................................................................
 
 activated:
-   player = GetSourceRef();
-   mode = GetSenderRef();
+	player = GetSourceRef();
+	mode = GetSenderRef();
 	jkSetWaggle(player, '0 0 0', 0);
 	waggle = 0;
-   powerBoost = GetInv(player, 63);
+	powerBoost = GetInv(player, 63);
 	if(zoomed)
 	{
 		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
@@ -248,15 +259,26 @@ activated:
 			ActivateWeapon(player, fireWaitZoomed/powerBoost, mode);
 		}
    	}
-	else if(mode == 0)
-	{
-		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.3, 0, 0, 0);
-		ActivateWeapon(player, fireWait0[mode]/powerBoost, mode);
-	}
-	else
-	{
-		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.7, 0, 0, 0);
-		ActivateWeapon(player, fireWait0[mode]/powerBoost, mode);
+   	else		// else not zoomed
+   	{
+		// Check Ammo - If we are out, autoselect best weapon.
+		if(GetInv(player, 11) < 1.0)
+		{
+			PlaySoundThing(outSound, player, 1.0, -1, -1, 0x80);
+			if((GetAutoSwitch() & 1))
+				SelectWeapon(player, AutoSelectWeapon(player, 1));
+			Return;
+		}
+		if(mode == 0)
+		{
+			SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.3, 0, 0, 0);
+			ActivateWeapon(player, fireWait0[mode]/powerBoost, mode);
+		}
+		else
+		{
+			SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.7, 0, 0, 0);
+			ActivateWeapon(player, fireWait0[mode]/powerBoost, mode);
+		}
 	}
    Return;
 
@@ -494,6 +516,7 @@ startzoom:
 	d_zoom = 0.25;
 	zoomdir = 1;
 	zoomed = 1;
+	SetInv(player, scope_bin, 1);
 	pulsecount = 3;
 	zoomcount = 0;
 	SetPulse(0.01);
@@ -507,6 +530,7 @@ startzoom:
 
 zoomreset:
 	zoomed = 0;
+	SetInv(player, scope_bin, 0);
 	zoom = 0.0;
 	zoomdir = 0;
 	SetCameraFocus(0, GetLocalPlayerThing());

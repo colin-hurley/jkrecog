@@ -213,7 +213,7 @@ skill:
 			}
 			// now make this reeyees punch only
 			SetTimerEx(0.1, 10, senderref, 0);
-			SetThingPulse(senderref, 5);	// make the pulse repeat these changes, for savegame's sake
+			SetThingPulse(senderref, 2);	// make the pulse repeat these changes, for savegame's sake
 			return;
 		}
 	}

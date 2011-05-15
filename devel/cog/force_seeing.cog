@@ -33,6 +33,9 @@ int         old_flags=0                      local
 
 int         effectHandle=-1                  local
 
+flex		dlight							local
+flex		light=0.5						local
+
 message     startup
 message     shutdown
 message     activated
@@ -52,7 +55,7 @@ startup:
    player = GetLocalPlayerThing();
    old_flags = GetMapModeFlags();
    call stop_power;
-
+	dlight = 0.05;
    Return;
 
 # ........................................................................................
@@ -68,7 +71,7 @@ activated:
    if(!IsInvActivated(player, 23))
    {
       mana = GetInv(player, 14);
-      if(mana >= (5*cost))			// don't let the player "run on fumes"
+      if(mana >= (3*cost))			// don't let the player "run on fumes"
       {
 		SetInvActivated(player, 23, 1);
 
@@ -88,28 +91,51 @@ activated:
          ChangeSoundVol(channel, 0.4, 0.75);
 
          effectHandle = newColorEffect(0, 1, 1, 0, 0, 0, 0, 0, 0, 1.0);
-         EnableIRMode(0.3 + 0.05 * rank, 1);
+
+		if(!GetInv(player, 123))	// if weapon scope is not active
+			EnableIRMode(light, 1);
+
          old_flags = GetMapModeFlags();
          SetMapModeFlags(cur_flags);
          #SetTimerEx(5 + 5 * rank, 1, 0, 0);
          SetPulse(0.5);
+         SetBinWait(player, 23, 0.5);	// small delay until next button press will be accepted
       }
    }
-   else		// player has opted to deactivate power
-   {
-   	call stop_power;
-   }
-   SetBinWait(player, 23, 1);	// small delay until next button press will be accepted
+	else		// player has opted to deactivate power
+	{
+		// if crouching, change light level
+		if(isThingCrouching(player))
+		{
+			if(light >= 1.0)
+			{
+				light = 1.0;
+				dlight = -0.05;
+			}
+			if(light <= 0.25)
+			{
+				dlight = 0.05;
+				light = 0.25;
+			}
+			light = light + dlight;
+			if(!GetInv(player, 123))	// if weapon scope is not active
+				EnableIRMode(light, 1);
+		}
+		// else turn off power
+		else
+		{
+			call stop_power;
+			SetBinWait(player, 23, 0.2);	// small delay until next button press will be accepted
+		}
+	}
 
    Return;
 
 # ........................................................................................
 
 timer:
-   call stop_power;
 
    Return;
-
 
 # ........................................................................................
 
@@ -119,7 +145,10 @@ pulse:
    {
       call stop_power;
    }
-
+   
+	if(!GetInv(player, 123))	// if weapon scope is not active
+		EnableIRMode(light, 1);
+   
 	if(GetInv(player, 14) < 1.0)		// out of mana
 		call stop_power;
 

@@ -207,7 +207,10 @@ goal15                  115             0       1000    0x040
 # New Items #
 #############
 
+# bin 116 = dodge feature
 dodge			116		1.0	1.0	0x000	cog=inv_dodge.cog
+
+# bin 117 = persuasion twinkle effects
 twinkle_fx		117		1.0	1.0	0x000	cog=inv_persuasionfx.cog
 
 # bin 118 = crosshair item stub, 119 = crosshair item
@@ -221,17 +224,18 @@ waggle			120		1.0	1.0	0x022	cog=item_waggle.cog
 f_persuasion		121		1.0	1.0	0x022	cog=item_headbob.cog
 headbob			122		-1.0	1.0	0x000	cog=inv_headbob.cog
 
-# for the stormtrooper rifle and crossbow scopes; offset and junk is set in inv_crosshair.cog
-#riflezoom		123		0.0	5.0	0x000
+# bin 123 = a boolean value for whether a weapon has its scope activated
+scopeactive		123		0.0	1.0	0x000
 
-# just a dummy bin for the crosshair style; updated by inv_crosshair.cog
-# setting this bin will NOT affect crosshairs at all; it's here so the strifle and crossbow cogs can fire crosshairs while zoomed
-#xhair_style		124		0.0	100.0	0x000
-
+# bin 130 = Fire 3
 f_pull			130		1.0	1.0	0x122	cog=item_function.cog
+
+# bin 140 = client cog
 client			140		0.0	0.0	0x000	cog=client_jkrecog.cog
 
+# bin 145 = Safe Save feature
 safesave		145		1.0	1.0	0x102	cog=item_safesave.cog
+
 
 ## End new items section ##	
 

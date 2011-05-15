@@ -24,6 +24,13 @@ template	tpl3_2=+stscopelaser	local
 template	tpl4_2=+grenade_exp		local
 template	tpl4_2b=+TD_Expl_Sphere	local
 
+# Bowcaster Templates
+template	tpl5_0=+crossbowbolt			local
+template	tpl5_1=+expl_crossbowbolt		local
+template	tpl5_0a=+crossbowbolt2			local
+template	tpl5_1a=+expl_crossbowbolt2		local
+template	tpl5_2=+bcscopebolt				local
+
 # General Variables
 thing		player					local
 vector		fire_offset				local
@@ -74,6 +81,36 @@ trigger:
 		FireProjectile(player, tpl4_2, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);	// explosion
 		FireProjectile(player, tpl4_2b, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);	// sphere fx
 		return;
+	}
+	if(GetSourceRef() == 5000)		// bowcaster modes 1 and 2
+	{
+		# Param 0 = X error
+		# Param 1 = Y error
+		# Param 2 = Fire Mode
+		# Param 3 = Number of bolts
+		fire_offset = '0.0207 0.0888 0.00';
+		if(GetParam(3) >= 1)	// at least 1 shot
+		{
+			FireProjectile(player, tpl5_0[GetParam(2)], -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1), 0), 1.0, 0x60, 30, 60);
+		}
+		if(GetParam(3) >= 3)	// at least 3 shots
+		{
+			FireProjectile(player, tpl5_0a[GetParam(2)], -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1) + 6, 0), 1.0, 0x60, 30, 60);
+			FireProjectile(player, tpl5_0a[GetParam(2)], -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1) - 6, 0), 1.0, 0x60, 30, 60);
+		}
+		if(GetParam(3) >= 5)	// at least 5 shots
+		{
+			FireProjectile(player, tpl5_0a[GetParam(2)], -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1) + 12, 0), 1.0, 0x60, 30, 60);
+			FireProjectile(player, tpl5_0a[GetParam(2)], -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1) - 12, 0), 1.0, 0x60, 30, 60);
+		}
+	}
+	if(GetSourceRef() == 5002)		// bowcaster zoomed
+	{
+		# Param 0 = X error
+		# Param 1 = Y error
+		fire_offset = '0 0 0.037';
+		FireProjectile(player, tpl5_2, -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1), 0), 1.0, 0x60, 25, 50);
+		return; 
 	}
 	return;
 

@@ -2,13 +2,32 @@
 #
 # WEAP_CROSSBOW.COG
 #
-# WEAPON 5 Script - Crossbow
+# WEAPON 5 script - Bowcaster
+#
+# Powerful blaster that fires energy-coated metallic bolts, that cause both physical
+#  and energy damage to those who are hit. Very accurate, and equipped with a scope,
+#  but has a slow rate of fire.
 #
 # - Affected by MagSealed sectors/surfaces.
 #
-# [YB & CYW]
+# This weapon now features the following fire modes:
+#  Fire 1 = Regular Bolts
+#  Fire 2 = Explosive Bolts
+#  Fire 3 = Scope zoom
 #
-# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+# Regular bolts deal much more damage up close than at distances.
+# Explosive bolts tend not to deal as much damage as regular bolts, but still cause
+#  good damage to enemies further away from the shooter, as well as in a small area
+#  around the explosion.
+# Both regular and explosive bolts can be charged up to fire more bolts.
+# Sniper shots cause massive damage, and penetrate victims in the bullet's path.
+#  this makes it easy to take down enemies that are lined up. However, the rate of
+#  fire is very poor, and the range of the scope is less than impressive.  Also, to
+#  increase accuracy, you should remain stationary.
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
 
 
 symbols
@@ -29,22 +48,22 @@ sound       chargeSound=BCChargeUp.wav          local
 sound       fireSound2=BCFire02.wav             local
 sound       outSound=trprout.wav                local
 
-template    projectilea0=+crossbowbolt            local
-template    projectilea1=+expl_crossbowbolt            local
+#template    projectilea0=+crossbowbolt            local
+#template    projectilea1=+expl_crossbowbolt            local
 
-template    projectileb0=+crossbowbolt2          local
-template    projectileb1=+expl_crossbowbolt2          local
+#template    projectileb0=+crossbowbolt2          local
+#template    projectileb1=+expl_crossbowbolt2          local
 
-template    projectile3=+crossbowbolt3          local
+#template    projectile3=+crossbowbolt3          local
+
+vector      rVec                                local
 
 flex        fireWait=0.6                        local
+flex        fireWaitZoomed=1.6                  local
 flex        delayTime                           local
-flex        autoAimFOV=30                       local
-flex        autoAimMaxDist=10                   local
 flex        powerBoost                          local
 flex        holsterWait                         local
-
-vector      vec                                 local
+flex		vol									local
 
 thing       player                              local
 
@@ -53,16 +72,53 @@ int         trackID=-1                          local
 int         channel=-1                          local
 int         holsterTrack                        local
 
+int			xhair_bin=119						local
+int			hbob_bin=122						local
+int			scope_bin=123						local
+
+flex		err						local
+flex		head_offset				local
+
+int			waggle=0				local
+vector		waggle_vec				local
+flex		waggle_spd				local
+
+template	cam_tpl=+timed_ghost	local
+thing		cam						local
+flex		zoom=0.0				local
+flex		d_zoom					local
+int			zoomdir=0				local
+int			zoomed=0				local
+int			zoommode=0				local	# 0 = auto, 1 = manual
+int			pulsecount				local
+int			initialzoomed			local
+int			zoom_color_handle=-1	local
+int			zoom_color				local
+int			zoomcount				local
+int			scopeactive				local
+flex		dist					local
+thing		potential				local
+flex		dot						local
+flex		maxdot					local
+thing		target					local
+int			bolts					local
+
+template	crosshair_scope=+crosshair_green_scope			local
+
 message     startup
+message     newplayer
+message     killed
 message     activated
+message     fire
 message     deactivated
 message     selected
 message     deselected
-message     newplayer
 message     autoselect
-message     fire
-message     killed
 message     timer
+message		pulse
+message		user4					# waggle control
+message		user2					# start zoom
+message		user3					# hold zoom
 
 end
 
@@ -71,74 +127,164 @@ end
 code
 
 startup:
-   player = GetLocalPlayerThing();
+newplayer:
+	player = GetLocalPlayerThing();
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
+	zoom_color_handle = -1;
+	scopeactive = 0;
+	call zoomreset;
+	if(channel != -1)
+	{
+		StopSound(channel, 0.1);
+		channel = -1;
+	}
+	return;
 
+# ........................................................................................
+
+killed:
+   if (player == GetSenderRef())
+   {
+		call zoomreset;
+      if(channel != -1)
+      {
+         StopSound(channel, 0.1);
+         channel = -1;
+      }
+   }
    Return;
 
 # ........................................................................................
 
 activated:
-   mode = GetSenderRef();
 
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
-
-   // Check Ammo - If we are out, autoselect best weapon.
-   if(GetInv(player, 12) < 2.0)
-   {
-      if((GetAutoSwitch() & 1))
-         SelectWeapon(player, AutoSelectWeapon(player, 1));
-      else
-         PlaySoundThing(outSound, player, 1.0, -1, -1, 0x80);
-
-      Return;
-   }
-
-
-      ActivateWeapon(player, 0, mode);
-
-      if(channel == -1)
-      {
-         channel = PlaySoundThing(chargeSound, player, 0.0, -1, -1, 0x181);
-
-         if(channel != -1)
-         {
-            ChangeSoundPitch(channel, 0.3, 0.01);
-            Sleep(0.03);
-
-            // looks stupid... but if the user taps quickly deactivated:
-            // gets called during the sleep, and channel becomes invalid !
-            if(channel != -1)
-            {
-               ChangeSoundVol(channel, 1.0, 0.6);
-               ChangeSoundPitch(channel, 1.0, 1.2);
-            }
-         }
-      }
-
-   Return;
+	player = GetSourceRef();
+	mode = GetSenderRef();
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
+	powerBoost = GetInv(player, 63);
+	initialzoomed = zoomed;
+	if(zoomed)
+	{
+		// no min error for sniper shots
+		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
+		if(mode == 1)	// Zoomed fire2 = change zoom mode
+		{
+			zoommode = 1 - zoommode;
+			if(zoommode)	// Switch to Manual
+			{
+				if(scopeactive)			// if the FIRE3 button is held now...
+				{
+					zoomdir = 1;		// zoom in
+					pulsecount = 4;		// don't let the user tap out right now
+					d_zoom = 2.5;		// zoom in
+				}
+				else					// Else, if FIRE3 button is not being pressed
+				{
+					zoomdir = 0;		// so that it will switch to 1 on next hotkey activation
+					d_zoom = zoom;		// make sure we don't go anywhere now
+				}
+				#print("Manual Zoom Mode");
+				jkStringClear();
+				jkStringConcatAsciiString("Manual Zoom Mode");
+				jkStringOutput(-1, -1);		// destination of -1 prints to local player only
+			}
+			else			// Switch to Auto
+			{
+				#print("Automatic Zoom Mode");
+				jkStringClear();
+				jkStringConcatAsciiString("Automatic Zoom Mode");
+				jkStringOutput(-1, -1);		// destination of -1 prints to local player only
+			}
+		}
+		else		// Zoomed Fire1 = fire sniper bolt
+		{
+			ActivateWeapon(player, fireWaitZoomed/powerBoost, mode);
+		}
+   	}
+   	else		// else not zoomed
+   	{
+		// Check Ammo - If we are out, autoselect best weapon.
+		if(GetInv(player, 12) < 2.0)
+		{
+			PlaySoundThing(outSound, player, 1.0, -1, -1, 0x80);
+			if((GetAutoSwitch() & 1))
+				SelectWeapon(player, AutoSelectWeapon(player, 1));
+			Return;
+		}
+		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
+		ActivateWeapon(player, 0, mode);
+		if(channel == -1)
+		{
+			channel = PlaySoundThing(chargeSound, player, 0.0, -1, -1, 0x181);
+			
+			if(channel != -1)
+			{
+				ChangeSoundPitch(channel, 0.3, 0.01);
+				Sleep(0.03);
+				
+				// looks stupid... but if the user taps quickly deactivated:
+				// gets called during the sleep, and channel becomes invalid !
+				if(channel != -1)
+				{
+					ChangeSoundVol(channel, 1.0, 0.6);
+					ChangeSoundPitch(channel, 1.0, 1.2);
+				}
+			}
+		}
+	}
+	Return;
 
 # ........................................................................................
 
 fire:
-   // Check that the player is still alive.
-   if(GetThingHealth(player) <= 0) Return;
+	// Check that the player is still alive.
+	if(GetThingHealth(player) <= 0) Return;
+	
+	// Check Ammo - If we are out, autoselect best weapon.
+	if(GetInv(player, 12) < 3.0)
+	{
+		PlaySoundThing(outSound, player, 1.0, -1, -1, 0x80);
+		SelectWeapon(player, AutoSelectWeapon(player, 1));
+		Return;
+	}
 
-   // Check Ammo - If we are out, autoselect best weapon.
-   if(GetInv(player, 12) < 2.0)
-   {
-      SelectWeapon(player, AutoSelectWeapon(player, 1));
-      Return;
-   }
+	// Get random aiming error
+	err = GetInv(player, xhair_bin);
+	if(zoomed)
+	{
+		if(mode == 0)
+		{
+			if(isThingCrouching(player))
+				rVec = VectorSet((Rand()-0.5)*1.5 * err, (Rand()-0.5)*1.5 * err, 0.0);
+			else
+				rVec = VectorSet((Rand()-0.5)*3 * (err+0.2), (Rand()-0.5)*3 * (err+0.2), 0.0);
+			ChangeInv( player, 12, -4.0 );	// 4 ammo for sniper shots
+			ChangeInv( player, xhair_bin, 1.0 );	// massive recoil
+			powerBoost = GetInv(player, 63);
+			ChangeFireRate(player, fireWaitZoomed/powerBoost);
+			// although we do not set a min error while firing zoomed, we can have some error from movement
+			SendTrigger(-1, 5002, VectorX(rVec), VectorY(rVec), 1.0, 0.0);
+			vol = zoom / 1.1;
+			if(vol > 1) vol = 1;
+			PlaySoundLocal(fireSound2, vol, 0.0, 0x0);
+			SetPOVShake('0.0 -.003 0.0', VectorScale(rVec, err + 0.1), .05, 80.0);
+			PlaySoundThing(fireSound2, player, 1.0, -1.0, -1.0, 0x80);
+			PlayMode(player, 8);
+			jkPlayPOVKey( player, povfireAnim, 1, 0x38 );
+		}
+		else
+		{
+			return;			// shouldn't get here, but if we do, just return;
+		}
+	}
+	else
+	{
+		return; // shouldn't get here if not zoomed
+	}
 
-   SetPOVShake('0.0 -.01 0.0', '2.0 0.0 0.0', .05, 80.0);
-   FireProjectile(player, projectile3, fireSound2, 18, '0.0207 0.0888 0.00', '0 0 0', 1.0, 0x20, autoAimFOV, autoAimFOV*2);
-   ChangeInv(player, 12, -2.0);
-   jkPlayPOVKey(player, povfireAnim, 1, 0x38);
-
-   powerBoost = GetInv(player, 63);
-   ChangeFireRate(player, fireWait/powerBoost);
-
-   Return;
+	Return;
 
 
 # ........................................................................................
@@ -146,62 +292,66 @@ fire:
 deactivated:
    mode = GetSenderRef();
 
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
 
-      delayTime = DeactivateWeapon(player, mode);
+	delayTime = DeactivateWeapon(player, mode);
+	SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
 
-      if(channel != -1)
-      {
-         StopSound(channel, 0);
-         channel = -1;
-      }
+	if(channel != -1)
+	{
+		StopSound(channel, 0);
+		channel = -1;
+	}
 
-      // Set a delay, even if we don't fire here.
-      SetMountWait(player, fireWait/powerBoost);
+	if(initialzoomed) return;	// only if we started zoomed
 
-      // Make sure both keys are up before continuing.
-      if (GetCurWeaponMode() != -1) Return;
+	// Set a delay, even if we don't fire here.
+	SetMountWait(player, fireWait/powerBoost);
+	
+	// Make sure both keys are up before continuing.
+	if (GetCurWeaponMode() != -1) Return;
+	
+	// make sure we still have ammo
+	if(GetInv(player, 12) < 2.0) Return;
+	
+	SetPOVShake('0.0 -.01 0.0', '2.0 0.0 0.0', .05, 80.0);
+	bolts = 1;
+	PlaySoundThing(fireSound2, player, 1.0, -1.0, -1.0, 0x80);
+	PlayMode(player, 18);
+	
+	ChangeInv(player, 12, -2.0);
+	
+	if(delayTime > 0.6)
+	{
+		if(GetInv(player, 12) > 1.0)
+		{
+			bolts = 3;
+			ChangeInv(player, 12, -2.0);
+		}
+	}
+	
+	if(delayTime > 1.2)
+	{
+		if(GetInv(player, 12) > 1.0)
+		{
+			bolts = 5;
+			ChangeInv(player, 12, -2.0);
+		}
+	}
 
-      // make sure we still have ammo
-      if(GetInv(player, 12) < 2.0) Return;
+	if(isThingCrouching(player))
+		rVec = VectorSet((Rand()-0.5)*5 * err, (Rand()-0.5)*5 * err, 0.0);
+	else
+		rVec = VectorSet((Rand()-0.5)*8 * (err+0.2), (Rand()-0.5)*8 * (err+0.2), 0.0);
 
-      // Always fire one projectile straight-ahead
-      SetPOVShake('0.0 -.01 0.0', '2.0 0.0 0.0', .05, 80.0);
-      if(delayTime > 0.9) vec = VectorSet(1.2 * (rand() - 0.5), 1.2 * (rand() - 0.5), 0);
-      else vec = '0 0 0';
-      FireProjectile(player, projectilea0[mode], fireSound2, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimFOV*2);
+	SendTrigger(-1, 5000, VectorX(rVec), VectorY(rVec), mode, bolts);
+	
+	// Play animation and set delay.
+	jkPlayPOVKey(player, povfireAnim, 1, 0x38);
+	powerBoost = GetInv(player, 63);
 
-      ChangeInv(player, 12, -2.0);
-
-      if(delayTime > 0.6)
-      {
-         if(GetInv(player, 12) > 1.0)
-         {
-         	vec = VectorSet(1.5 * (rand() - 0.5), 6.0 + 2.0 * (rand() - 0.5), 0);
-            FireProjectile(player, projectileb0[mode], -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
-            vec = VectorSet(1.5 * (rand() - 0.5), -6.0 + 2.0 * (rand() - 0.5), 0);
-            FireProjectile(player, projectileb0[mode], -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
-            ChangeInv(player, 12, -2.0);
-         }
-      }
-
-      if(delayTime > 1.2)
-      {
-         if(GetInv(player, 12) > 1.0)
-         {
-         	vec = VectorSet(1.2 * (rand() - 0.5), 12.0 + 2.0 * (rand() - 0.5), 0);
-            FireProjectile(player, projectileb0[mode], -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
-            vec = VectorSet(1.2 * (rand() - 0.5), -12.0 + 2.0 * (rand() - 0.5), 0);
-            FireProjectile(player, projectileb0[mode], -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
-            ChangeInv(player, 12, -2.0);
-         }
-      }
-
-      // Play animation and set delay.
-      jkPlayPOVKey(player, povfireAnim, 1, 0x38);
-      powerBoost = GetInv(player, 63);
-
-   Return;
+	Return;
 
 # ........................................................................................
 
@@ -213,7 +363,9 @@ selected:
    jkSetPOVModel(player, povModel);
    SetArmedMode(player, 1);
    jkSetWeaponMesh(player, weaponMesh);
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
+	SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
 
    // Play sound and animation.
    PlaySoundThing(mountSound, player, 1.0, -1, -1, 0x80);
@@ -238,7 +390,7 @@ selected:
 deselected:
    PlaySoundThing(dismountSound, player, 1.0, -1, -1, 0x80);
    jkPlayPOVKey(player, dismountAnim, 0, 18);
-   
+   call zoomreset;
    holsterWait = GetKeyLen(holsterAnim);
    SetMountWait(player, holsterWait);
    holsterTrack = PlayKey(player, holsterAnim, 1, 0x4);
@@ -248,39 +400,9 @@ deselected:
       jkStopPOVKey(player, trackID, 0);
       trackID = -1;
    }
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
    
-   if(channel != -1)
-   {
-      StopSound(channel, 0.1);
-      channel = -1;
-   }
-
-   Return;
-
-# ........................................................................................
-
-killed:
-   if (player == GetSenderRef())
-   {
-      if(channel != -1)
-      {
-         StopSound(channel, 0.1);
-         channel = -1;
-      }
-   }
-   Return;
-
-# ........................................................................................
-
-newplayer:
-//   // Make sure that if the player is respawning, the old mount isn't playing anymore.
-//   if (trackID != -1)
-//   {
-//      jkStopPOVKey(player, trackID, 0);
-//      trackID = -1;
-//   }
-
    if(channel != -1)
    {
       StopSound(channel, 0.1);
@@ -317,6 +439,200 @@ autoselect:
 timer:
    StopKey(player, holsterTrack, 0.0);
    Return;
+
+user4:
+	waggle_vec = VectorSet(GetParam(0), GetParam(1), GetParam(2));
+	waggle_spd = GetParam(3);
+	if(waggle) jkSetWaggle(player, waggle_vec, waggle_spd);
+	Return;
+
+pulse:
+	pulsecount = pulsecount + 1;
+	zoomcount = zoomcount + 1;
+	if(zoomcount > 5) zoomcount = 0;
+
+	if(GetCurrentCamera() == 1) CycleCamera();	// force internal view
+	if(zoommode == 1)		// MANUAL zoom mode
+	{
+		if(zoom < d_zoom)						// if we can still zoom in
+		{
+			zoom = zoom + 0.01 * pulsecount;
+			if(zoom > d_zoom) zoom = d_zoom;	// if we zoomed in too far
+		}
+		else if(zoom > d_zoom)					// if we can still zoom out
+		{
+			zoom = zoom - 0.01 * pulsecount;
+			if(zoom < d_zoom) zoom = d_zoom;	// if we zoomed out too far
+		}
+		if(zoom < 0.25)							// if we zoomed all the way out, exit scope mode
+		{
+			call zoomreset;
+			return;
+		}
+	}
+	else					// AUTO zoom mode
+	{
+		if(zoomcount == 0)	// only auto zoom so often...
+		{
+			potential = FirstThingInView(player, 10, 100, 0x404);
+			maxdot = 0;
+			target = -1;
+			while(potential != -1)
+			{
+				dot = ThingViewDot(player, potential);
+				// if potential can be seen, is not the player himself, is most directly in front, and is not dying
+				if(
+					(HasLOS(player, potential)) &&
+					(potential != player) &&
+					(dot > maxdot) &&
+					!(GetThingFlags(potential) & 0x200)
+				)
+				{
+					maxdot = dot;
+					target = potential;
+				}
+				potential = NextThingInView();
+			}
+			if(target != -1)
+			{
+				dist = VectorDist(GetThingPos(player), GetThingPos(target));
+				// various zoom levels
+				#if(dist > 4.25) d_zoom = 4.00;
+				#else if(dist > 4.00) d_zoom = 3.75;
+				#else if(dist > 3.75) d_zoom = 3.50;
+				#else if(dist > 3.50) d_zoom = 3.25;
+				#else if(dist > 3.25) d_zoom = 3.00;
+				#else if(dist > 3.00) d_zoom = 2.75;
+				#else
+				if(dist > 2.75) d_zoom = 2.50;
+				else if(dist > 2.50) d_zoom = 2.25;
+				else if(dist > 2.25) d_zoom = 2.00;
+				else if(dist > 2.00) d_zoom = 1.75;
+				else if(dist > 1.75) d_zoom = 1.50;
+				else if(dist > 1.50) d_zoom = 1.25;
+				else if(dist > 1.25) d_zoom = 1.00;
+				else if(dist > 1.00) d_zoom = 0.75;
+				else if(dist > 0.75) d_zoom = 0.50;
+				else d_zoom = 0.25;
+			}
+			else
+			{
+				d_zoom = 0.25;		// zoom to 0.25
+			}
+		}
+		if(zoom < d_zoom)
+		{
+			zoom = zoom + 0.2;
+			if(zoom > d_zoom) zoom = d_zoom;
+		}
+		else if(zoom > d_zoom)
+		{
+			zoom = zoom - 0.2;
+			if(zoom < d_zoom) zoom = d_zoom;
+		}
+	}
+	head_offset = GetInv(player, hbob_bin);
+	cam = FireProjectile(player, cam_tpl, -1, -1, VectorSet(0, zoom, 0.04 + head_offset), '0 0 0', 0, 0, 0, 0);
+	SetThingPos(cam, VectorAdd(GetThingPos(cam), VectorScale(GetThingLVec(cam), -0.1)));
+	SetCameraFocus(0, cam);
+	FireProjectile(cam, crosshair_scope, -1, -1, '0 0.05 0', '0 0 0', 0, 0, 0, 0);
+	if(IsInvActivated(player, 23))
+	{
+		EnableIRMode(1.0, 1.0);		// force seeing will give us a fully lit view
+		if(zoom_color == 0)			// if the wrong color
+		{
+			if(zoom_color_handle != -1) FreeColorEffect(zoom_color_handle);
+			zoom_color = 1;			// set to the right color
+			zoom_color_handle = newColorEffect(1, 0, 0, 0, 0, 0, 0, 0, 0, 1.0);
+		}
+	}
+	else
+	{
+		EnableIRMode(0.3, 1.0);		// else, dimmed level, fully lit things
+		if(zoom_color == 1)			// if the wrong color
+		{
+			if(zoom_color_handle != -1) FreeColorEffect(zoom_color_handle);
+			zoom_color = 0;			// set to the right color
+			zoom_color_handle = newColorEffect(0, 1, 0, 0, 0, 0, 0, 0, 0, 1.0);
+		}
+	}
+	return;
+
+user2:
+	scopeactive = 1;
+	if(zoommode == 1)		// Manual
+	{
+		if(zoomed)						// if zoomed, tell the pulse to start zooming in/out
+		{
+			pulsecount = 0;
+			zoomcount = 0;
+			zoomdir = 1 - zoomdir;
+			if(zoomdir == 1) d_zoom = 2.5;	// zoom toward 2.5
+			else d_zoom = 0.0;				// zoom toward 0.0
+		}
+		else
+		{
+			call startzoom;			// else, start the zoom
+			d_zoom = 2.5;
+		}
+	}
+	else					// Auto
+	{
+		if(zoomed) call zoomreset;		// if we hit the button while zoomed in auto mode, zoom out
+		else call startzoom;			// else, start the zoom
+	}
+	return;
+
+user3:
+	scopeactive = 0;
+	if(zoommode == 1)
+	{
+		d_zoom = zoom;		// stop zooming
+		if(pulsecount < 4)
+		{
+			call zoomreset;
+		}
+	}
+	// Auto zoommode (mode 0) only receives on/off toggle messages in user2... nothing to do here in user3 
+	return;
+
+startzoom:
+	zoom = 0.25;
+	d_zoom = 0.25;
+	zoomdir = 1;
+	zoomed = 1;
+	SetInv(player, scope_bin, 1);
+	pulsecount = 3;
+	zoomcount = 0;
+	SetPulse(0.01);
+	if(zoom_color_handle != -1) FreeColorEffect(zoom_color_handle);
+	if(IsInvActivated(player, 23))
+	{
+		zoom_color_handle = newColorEffect(1, 0, 0, 0, 0, 0, 0, 0, 0, 1.0);
+		zoom_color = 1;
+		EnableIRMode(1.0, 1.0);		// force seeing will give us a fully lit view
+	}
+	else
+	{
+		zoom_color_handle = newColorEffect(0, 1, 0, 0, 0, 0, 0, 0, 0, 1.0);
+		zoom_color = 0;
+		EnableIRMode(0.3, 1.0);		// else, dimmed level, fully lit things
+	}
+	return;
+
+zoomreset:
+	zoomed = 0;
+	SetInv(player, scope_bin, 0);
+	zoom = 0.0;
+	zoomdir = 0;
+	SetCameraFocus(0, GetLocalPlayerThing());
+	SetPulse(0);
+	if(zoom_color_handle != -1) FreeColorEffect(zoom_color_handle);
+	zoom_color_handle = -1;
+	// Don't disable IR mode if IR Goggles or Force Seeing are on...
+	if(!IsInvActivated(player, 41) && !IsInvActivated(player, 23))
+		DisableIRMode();
+	return;
 
 end
 

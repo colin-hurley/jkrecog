@@ -1,0 +1,83 @@
+# Jedi Knight Cog Script
+#
+# class_sniperbolt.cog
+#
+# This COG fires a projectile 0.1 JKU ahead when the original projectile makes contact
+# with an actor or player.
+#
+# When the Bowcaster fires a bolt in zoomed mode, the projectile causes increased
+# physical damage due to the high momentum. In addition, the bolt spins more rapidly,
+# enabling it to drill through nearly anyone that is unfortunate enough to be in the way.
+# 
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+flags=0x240
+
+symbols
+
+message		touched
+
+thing		bullet		local
+thing		victim		local
+thing		dummy		local
+thing		parent		local
+
+template	tpl			local
+
+vector		lvec		local
+vector		hitdir		local
+
+flex		offset		local
+
+end
+
+# ========================================================================================
+
+code
+
+touched:
+
+	bullet = GetSenderRef();
+	victim = GetSourceRef();
+	
+	DamageThing(victim, 50, 0x1, bullet);	// deal extra physical damage to victim
+	
+	// Get some details about the bullet
+	parent = GetThingParent(bullet);
+	tpl = GetThingTemplate(bullet);
+	lvec = GetThingLVec(bullet);
+	
+	// We don't want to fire from an invalid thing reference, so make sure there's something
+	if(parent == -1)
+	{
+		// FireProjectile caused my game to crash, so we have to use CreateThing() here...
+		dummy = CreateThing(tpl, bullet);
+	}
+	else
+	{
+		// Use FireProjectile() to preserve player-as-parent relationship among bullets
+		dummy = FireProjectile(parent, tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);
+	}
+printint(victim);
+	// Calculate the hit position offset
+	##hitdir = VectorNorm(VectorSub(GetThingPos(victim), GetThingPos(bullet)));	// unit vector from bullet to actor
+	##hitdir = VectorScale(hitdir, GetThingMoveSize(victim));						// scale to actor radius
+
+	// Calculate how far ahead to fire the projectile (plus a little leeway), to avoid multiple contacts
+	##offset = 0.025 + 2 * VectorDot(hitdir, lvec);
+	offset = 0.1;
+	// Move the new bullet ahead of the old bullet
+	##hitdir = VectorScale(hitdir, -1);
+	##SetThingPos(dummy, VectorAdd( VectorAdd( GetThingPos(victim), hitdir ), VectorScale(lvec, offset) ));
+	SetThingPos(dummy, VectorAdd(GetThingPos(bullet), VectorScale(lvec, offset) ));
+	// Give the new bullet the same lookvector
+	SetThingLook(dummy, lvec);
+	// Give it the same velocity as the old bullet
+	SetThingVel(dummy, GetThingVel(bullet));
+	
+	return;
+
+end
+

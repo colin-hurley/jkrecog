@@ -30,7 +30,8 @@ thing       victim                           local
 int         bin                              local
 int         senderref=-1                     local
 #ai          flee_ai=noweapon.ai              local
-ai			punch_ai=rypundefault.ai		local
+#ai			punch_ai=rypundefault.ai		local
+ai			punch_ai=grfist.ai		local
 template	punch_tpl=+ry_punch				local
 int         damage                           local
 
@@ -61,6 +62,7 @@ startup:
 damaged:
    damage = GetParam(0);
    victim = GetSenderRef();
+   printflex(damage);
    if(GetParam(1) == 16)                     // saber damage might cause dismemberment
    {
       damage = (damage * 2.0);
@@ -156,7 +158,12 @@ skill:
    bin = GetParam(0);
    if (bin == 24)                            // Force Pull
    {
-      senderref = GetSenderRef();
+		senderref = GetSenderRef();
+   		if(GetActorWeapon(senderref, 1) == punch_tpl)	// already been pulled?
+   		{
+   			returnex(-1);
+   			return;
+   		}
       newThing = CreateThing(powerup, senderref);
       SetLifeleft(newThing, 30.0);
       ReturnEx(newThing);
@@ -165,7 +172,7 @@ skill:
 		#AISetClass(senderref, flee_ai);
 		#AIFlee(senderref, GetLocalPlayerThing());
 		SetTimerEx(0.1, 10, senderref, 0);
-		SetThingPulse(senderref, 5);	// make the pulse repeat these changes, for savegame's sake 
+		SetThingPulse(senderref, 2);	// make the pulse repeat these changes, for savegame's sake 
 		return;
    }
    else
@@ -189,7 +196,9 @@ pulse:
 	AISetClass(GetSenderRef(), punch_ai);
 	SetActorWeapon(GetSenderRef(), 1, punch_tpl);
 	SetActorFlags(GetSenderRef(), 0x20000);
-	ParseArg(GetSenderRef(), "puppet=ryfist.pup soundclass=ryfist.snd");
+	AmputateJoint(GetSenderRef(), 3);
+	ParseArg(GetSenderRef(), "puppet=ryfist.pup");
+	ParseArg(GetSenderRef(), "soundclass=ryfist.snd");
 	return;
 
 timer:
@@ -205,7 +214,8 @@ timer:
 		AISetClass(GetParam(0), punch_ai);
 		SetActorWeapon(GetParam(0), 1, punch_tpl);
 		SetActorFlags(GetParam(0), 0x20000);
-		ParseArg(GetParam(0), "puppet=ryfist.pup soundclass=ryfist.snd");
+		ParseArg(GetParam(0), "puppet=ryfist.pup");
+		ParseArg(GetParam(0), "soundclass=ryfist.snd");
 		return;
 	}
 	return;

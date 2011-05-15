@@ -17,10 +17,10 @@
 symbols
 
 message			startup
-message created
-message          killed
-message          skill
-message          damaged
+message			pulse
+message			killed
+message			skill
+message			damaged
 message			timer
 
 template         powerup=+DGreedoPistol  local
@@ -30,7 +30,9 @@ int              damage                  local
 int				damageType				local
 int              bin                     local
 int              senderref=-1            local
-ai               flee_ai=noweapon.ai     local
+ai			punch_ai=rypundefault.ai		local
+#ai			punch_ai=grfist.ai		local
+template	punch_tpl=+gr_punch				local
 
 thing		bullet							local
 vector		bulletpos						local
@@ -119,8 +121,9 @@ damaged:
 
 killed:
 	victim = GetSenderRef();
+	SetThingPulse(victim, 0);
 	// If he hasn't lost his weapon already somehow.
-	if (GetActorWeapon( victim, 1 ) != -1)
+	if (GetActorWeapon( victim, 1 ) != punch_tpl)
 	{
 		AmputateJoint( victim, 3 );
 		newThing = FireProjectile(victim, powerup, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
@@ -136,15 +139,19 @@ skill:
    bin = GetParam(0);
    if (bin == 24)       // Force Pull
    {
-      senderref = GetSenderRef();
-      newThing = CreateThing(powerup, GetSenderRef());
-      SetLifeleft(newThing, 30.0);
-      ReturnEx(newThing);
-
-      AISetClass(senderref, flee_ai);
-      AIFlee(senderref, GetLocalPlayerThing());
-
-      return;
+		senderref = GetSenderRef();
+   		if(GetActorWeapon(senderref, 1) == punch_tpl)	// already been pulled?
+   		{
+   			returnex(-1);
+   			return;
+   		}
+		newThing = CreateThing(powerup, senderref);
+		SetLifeleft(newThing, 30.0);
+		ReturnEx(newThing);
+		// Instead of fleeing the player, make this rodian punch
+		SetTimerEx(0.1, 10, senderref, 0);	// after force pull cog makes its default changes
+		SetThingPulse(senderref, 2);	// make the pulse repeat these changes, for savegame's sake 
+		return;
    }
    else
    if (bin == 31)       // Force Grip
@@ -170,6 +177,27 @@ timer:
 		StopThing(GetParam(0));
 		return;
 	}
+	if(GetSenderID() == 10)
+	{
+		AISetClass(GetParam(0), punch_ai);
+		SetActorWeapon(GetParam(0), 1, punch_tpl);
+		SetThingFireOffset(GetParam(0), '0 0 0.03');
+		SetActorFlags(GetParam(0), 0x20000);
+		ParseArg(GetParam(0), "soundclass=grfist.snd");
+		ParseArg(GetParam(0), "puppet=grfist.pup");
+		return;
+	}
+	return;
+
+pulse:
+	senderref = GetSenderRef();
+	AmputateJoint( senderref, 3 );
+	AISetClass(senderref, punch_ai);
+	SetActorWeapon(senderref, 1, punch_tpl);
+	SetThingFireOffset(senderref, '0 0 0.03');
+	SetActorFlags(senderref, 0x20000);
+	ParseArg(senderref, "soundclass=grfist.snd");
+	ParseArg(senderref, "puppet=grfist.pup");
 	return;
 
 end

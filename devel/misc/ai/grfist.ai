@@ -1,0 +1,23 @@
+# Jedi Knight AI File
+#
+# GRFIST.AI
+#
+# Ree Yees with Fists AI
+# All difficulty levels
+#
+# [CR]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+alignment=-1.0, rank=0.5, fov=200, maxstep=0.5, sightdist=5.0, heardist=2.0, accuracy=1.00
+
+#instinct			args
+########################################
+
+Jump					2000.0, 0.2, 0.2
+LookForTarget   	500.0, 35000.0
+Listen          	0.33, 2.0
+PrimaryFire     	1500.0, 0.6, 0.15, 0.00, 0.0, 200.0, 0.0, 0.0, 0.00, 0.00
+Follow          	0.0, 0.05, 0.0, 1.0
+OpenDoors
+Talk            	10000.0, 0.10

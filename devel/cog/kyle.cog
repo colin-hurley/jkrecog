@@ -66,8 +66,12 @@ int         blockTrack=-1                    local
 
 int         griptrackID=-1                   local
 
+flex		lasthealth						local
+flex		curhealth						local
+
 message     startup
 message     killed
+message		pulse
 message     newplayer
 message     timer
 message     blocked
@@ -84,7 +88,8 @@ code
 
 startup:
    player = GetLocalPlayerThing();
-
+SetPulse(5);
+lasthealth = GetHealth(player);
    if(!IsMulti()) call init_kyle;
 
    // Bubbles
@@ -130,9 +135,32 @@ killed:
 
 damaged:
    if(GetParam(1) == 32) call make_bubbles;
-
    ReturnEx(GetParam(0));
    Return;
+
+pulse:
+	curhealth = GetHealth(player);
+	if(curhealth <= 0)			// if dead, stop healing
+	{
+		SetPulse(0);
+		return;
+	}
+	if(curhealth >= 25)			// if we are above 25 health, don't do anything
+	{
+		lasthealth = curhealth;
+		SetPulse(2);	// 2 seconds to next heal check
+		return;
+	}
+	if(curhealth < lasthealth)	// if we were hurt since last heal, delay continued healing
+	{
+		lasthealth = curhealth;
+		SetPulse(10);	// 10 second delay before next heal check
+		return;
+	}
+	lasthealth = curhealth;
+	HealThing(player, 1);
+	SetPulse(5);	// 5 seconds to next heal check
+	return;
 
 # ........................................................................................
 
@@ -166,7 +194,8 @@ newplayer:
 
    // Start Bubbles
    SetTimerEx(2 + 5 * rand(), 2, 0, 0);
-
+SetPulse(5);
+lasthealth = GetHealth(player);
    Return;
 
 # ........................................................................................

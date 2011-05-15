@@ -102,6 +102,10 @@ pulse:
 	head_offset = GetInv(player, hbob_bin);
 	SetPOVShake(VectorSet(0, 0, head_offset), '0 0 0', 0, 0);
 	err = GetInv(player, bin);
+	if(isThingCrouching(player))	// reduce apparent error a bit if crouching
+	{
+		err = 0.8 * err;
+	}
 	weapon = GetCurWeapon(player);
 	vel = VectorLen(GetThingVel(player));
 	if(err > (0.9*vel + min_err))
@@ -136,7 +140,23 @@ pulse:
 	}
 	else if(weapon == 3)		// Stormtrooper Rifle
 	{
-		offset = 0.0016 + err * 0.0015;
+		offset = 0.0016 + err * 0.0023;
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
+		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, -offset));
+		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(offset, 0, 0));
+		FireProjectile(player, crosshair3_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(-offset, 0, 0));
+		FireProjectile(player, crosshair3_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+	}
+	else if(weapon == 5)		// Bowcaster
+	{
+		offset = 0.0016 + err * 0.002;
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
 		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
