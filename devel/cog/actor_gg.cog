@@ -1,0 +1,169 @@
+# Jedi Knight Cog Script
+#
+# ACTOR_GG.COG
+#
+# Actor COG for Gammorian Guards
+# Possibly creates powerups upon death
+# Resitances to certain types of damage
+#
+# [CR]
+#
+# 7/28/97 [CR] Doubled saber damage for single player gameplay reasons
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+#
+# ========================================================================================
+symbols
+
+message         killed
+message         skill
+message         damaged
+message			startup
+message			timer
+
+template        powerup=+DHealthPack    local
+template        powerup1=+DBactaTank    local
+thing           newThing                local
+int             bin                     local
+flex            rval                    local
+flex            damageType              local
+flex            damage             local
+
+thing		victim							local
+thing		bullet							local
+vector		bulletpos						local
+vector		partpos							local
+vector		diff							local
+vector		head_offset						local
+flex		r								local
+template	ghost_tpl=+timed_ghost			local
+template	fire_tpl=+TD_flame_pars			local
+template	sourcetpl						local
+template	TD_expl_tpl0=+grenade_exp		local
+template	TD_expl_tpl1=+egrenade_exp		local
+vector		vel								local
+
+end
+
+# ========================================================================================
+
+code
+startup:
+	head_offset = '0.0 0.02 0.05';
+	return;
+
+killed:
+	rval = Rand();
+	victim = GetSenderRef();
+	if (rval < 0.1)
+	{
+		newThing = FireProjectile(victim, powerup, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+		SetLifeleft(newThing, 200.0);
+		SetThingLook(newThing, GetThingLVec(victim));
+	}
+	else if (rval < 0.15)
+	{
+		newThing = FireProjectile(victim, powerup1, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+		SetLifeleft(newThing, 200.0);
+		SetThingLook(newThing, GetThingLVec(victim));
+	}
+	return;
+
+# ........................................................................................
+
+skill:
+	bin = GetParam(0);
+	if (bin == 31)       // Force Grip
+	{
+		ReturnEx(10);     // return base damage that is taken by this actor.
+		return;
+	}
+	else
+	if (bin == 34)       // Deadly Sight
+	{
+		ReturnEx(5);      // return base damage that is taken by this actor.
+		return;
+	}
+	ReturnEx(-1);
+	return;
+
+# ........................................................................................
+
+damaged:
+	damage = GetParam(0);
+	damageType = GetParam(1);
+	victim = GetSenderRef();
+
+	if(damageType == 1)						// FISTS
+	{
+		damage = damage / 2;
+	}
+	else
+	if(damageType == 2)						// ENERGY
+	{
+		bullet = GetSourceRef();
+		if(GetThingType(bullet) == 3)			// type = weapon
+		{
+			bulletpos = GetThingPos(bullet);
+			NewThing = FireProjectile(GetSenderRef(), ghost_tpl, -1, -1, head_offset, '0 0 0', 0, 0, 0, 0);
+			partpos = GetThingPos(NewThing);
+			DestroyThing(NewThing);
+			diff = VectorSub(partpos, bulletpos);
+			r = VectorLen(VectorCross(diff, GetThingLVec(bullet)));	// will projectile hit the head?
+			if(r <= 0.03)	// 0.02 = radius of head 
+			{
+				#print("Head shot");
+				damage = damage * 5;
+			}
+		}
+	}
+	else
+	if(damageType == 4)						// FIRE damage
+	{
+		bullet = GetSourceRef();
+		sourcetpl = GetThingTemplate(bullet);
+		if(sourcetpl == TD_expl_tpl0 || sourcetpl == TD_expl_tpl1)
+		{
+			if(VectorDist(GetThingPos(victim), GetThingPos(bullet)) < 0.5 && GetHealth(victim) <= damage)
+			{
+				damage = 10 * damage;				// make sure the actor really dies
+				SetThingCurGeoMode(victim, 0);
+				StopThing(victim);
+				DetachThing(victim);
+				ClearPhysicsFlags(victim, 0x41);
+				SetThingVel(victim, '0 0 0.4');			// so he doesn't crumple to the ground before the timer can re-clear the physics flags
+				SetTimerEx(1.1, 2, victim, 0);
+				newThing = FireProjectile(victim, fire_tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);
+				vel = VectorScale(VectorNorm(VectorSub(GetThingPos(victim), GetThingPos(bullet))), 0.5);
+				// scale down the Z velocity... looks better this way
+				vel = VectorAdd(vel, VectorSet(0, 0, -0.9 * VectorZ(vel)));
+				SetThingVel(newThing, vel);
+			}
+		}
+	}
+	else
+	if(damageType == 16)					// SABER
+	{
+		damage = damage * 2;
+	}
+	else
+	if(damageType == 64)					// SURFACE IMPACT
+	{
+		// Stop the victim's movement if damaged by impact
+		StopThing(victim);
+	}
+	ReturnEx(damage);
+	return;
+
+timer:
+	if(GetSenderID() == 2)
+	{
+		DetachThing(GetParam(0));
+		ClearPhysicsFlags(GetParam(0), 0x41);
+		StopThing(GetParam(0));
+		return;
+	}
+	return;
+
+end
+

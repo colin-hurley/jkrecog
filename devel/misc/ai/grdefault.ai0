@@ -1,0 +1,30 @@
+# Jedi Knight AI File
+#
+# GRDEFAULT.AI0
+#
+# Greedo AI
+# Easy difficulty
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+alignment=-1.0, rank=0.5, fov=180, maxstep=0.6, sightdist=5.0, heardist=2.0, accuracy=0.10
+
+#instinct			args
+###############################################
+	
+LookForTarget		500.0, 50000.0
+Listen          	1.00, 3.0
+PrimaryFire		750.0, 0.6, 0.9, 0.30, 0.0, 100.0, 0.0, 0.00, 5.0, 500.0
+PrimaryFire		650.0, 0.7, 3.0, 0.15, 0.9, 200.0, 0.5, 0.0, 0.0, 0.0
+BlindFire       	2000.0, 0.40, 0, 0.8, 0.0, 0.10
+Follow	        	0.6, 2.0
+OpenDoors
+ReturnHome
+#Retreat         	0.50, 0.25, 1000.0, 1.0
+#Flee            	1.5, 10000.0, 1.0
+Talk            	10000.0, 0.10
+Dodge           	0.1, 0.1
+Withdraw		5000.0, 0.6
+

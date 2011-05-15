@@ -2,6 +2,8 @@
 #
 # ITEM_SAFESAVE.COG
 #
+# Bin 145
+#
 # When activated, will scan the level for the presence of templates defined in the static.jkl
 # file, and when the level has none, the game will autosave.
 #
@@ -16,10 +18,15 @@ symbols
 message		startup
 message		activated
 message		pulse
+message		timer
 
 int			i				local
 int			j				local
 int			things			local
+
+thing		player			local
+
+int			bin=145			local
 
 template	t				local
 
@@ -119,29 +126,29 @@ end
 code
 
 startup:
+	player = GetLocalPlayerThing();
 	if(!IsMulti())		// if not MP, make this item available
-		SetInvAvailable(GetLocalPlayerThing(), 145, 1);
+		SetInvAvailable(player, bin, 1);
 	else
-		SetInvAvailable(GetLocalPlayerThing(), 145, 0);
-	active = 0;
+		SetInvAvailable(player, bin, 0);
+	SetInvActivated(player, bin, 0);
 	things = GetThingCount();
 	return;
 
 activated:
-	if(active)
+	if(IsInvActivated(player, bin))
 	{
-		print("SAFE SAVE: Safe Save aborted");
-		active = 0;
+		print("Safe Save scan aborted");
 		SetPulse(0);
+		SetInvActivated(player, bin, 0);
 		return;
 	}
 	else
 	{
-		print("SAFE SAVE: Safe Save activated");
-		print("Hit key again to abort scan");
-		active = 1;
 		pulsecount = 0;
-		SetPulse(0.5);
+		SetTimer(0.1);		// give the crosshairs a moment to turn off
+		SetInvActivated(player, bin, 1);
+		SetBinWait(player, bin, 0.25);
 		return;
 	}
 	return;
@@ -163,18 +170,26 @@ pulse:
 	{
 		if(pulsecount == 0)
 		{
-			print("SAFE SAVE: Not safe to save game; Continuing scan...");
+			print("Cannot Safe Save game yet; Continuing scan...");
 		}
 		pulsecount = pulsecount + 1;
 		if(pulsecount > 10) pulsecount = 0;		// reset count for next "not safe" message
 	}
 	else
 	{
-		active = 0;
 		SetPulse(0);
 		AutosaveGame();			// save the game
-		print("SAFE SAVE: Game autosaved; Ending scan...");
+		print("Game Safe Saved");
+		SetInvActivated(player, bin, 0);
 	}
 	return;
+
+timer:
+	call pulse;			// do a check here
+	if(safe) return;	// if it saved okay, don't activate the pulse
+	print("Safe Save scan activated; Activate item again to abort");
+	SetPulse(0.5);
+	return;
+
 end
 

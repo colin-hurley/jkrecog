@@ -159,7 +159,7 @@ killed:
 		if(rval < 0.25)	// belt of detonators
 		{
 			newThing = FireProjectile(victim, powerup, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
-			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(newThing), 0.4), '0 0 0.4'));
+			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(victim), 0.4), '0 0 0.4'));
 			SetLifeLeft(newThing, 200.0);
 		}
 		else
@@ -169,14 +169,14 @@ killed:
 			SetLifeLeft(newThing, 200.0);
 			SetPhysicsFlags(newThing, 0x21);	// make the detonator bounce, and fall with gravity
 			SetThingMass(newThing, 1.0);		// instead of 10, like the _powerup template gives it
-			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(newThing), 0.4), '0 0 0.4'));
+			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(victim), 0.4), '0 0 0.4'));
 			SetLifeleft(newThing, 200.0);
 		}
 		else
 		if(rval < 0.90)	// live detonator
 		{
 			newThing = FireProjectile(victim, grenade, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
-			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(newThing), 0.4), '0 0 0.4'));
+			SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(victim), 0.4), '0 0 0.4'));
 			#newThing = CreateThing(grenade, victim);
 		}
 		else

@@ -135,9 +135,10 @@ damaged:
 
 killed:
    rval = Rand();
+   victim = GetSenderRef();
    if(rval < 0.05)
    {
-      newThing = FireProjectile(GetSenderRef(), powerup2, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
+      newThing = FireProjectile(victim, powerup2, -1, -1, '0.03 0.03 0', '0 0 0', 0, 0, 0, 0);
       SetLifeleft(newThing, 200.0);
       SetThingLook(newThing, GetThingLVec(victim));
    }

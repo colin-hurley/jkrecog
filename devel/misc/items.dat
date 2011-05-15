@@ -231,7 +231,7 @@ headbob			122		-1.0	1.0	0x000	cog=inv_headbob.cog
 f_pull			130		1.0	1.0	0x122	cog=item_function.cog
 client			140		0.0	0.0	0x000	cog=client_jkrecog.cog
 
-safesave		145		1.0	1.0	0x002	cog=item_safesave.cog
+safesave		145		1.0	1.0	0x102	cog=item_safesave.cog
 
 ## End new items section ##	
 

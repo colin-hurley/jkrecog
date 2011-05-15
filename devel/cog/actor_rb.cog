@@ -131,9 +131,8 @@ damaged:
 		StopThing(victim);
 		#print("Damaged by impact; Stopping thing movement");
 	}
-
-   ReturnEx(damage);
-   return;
+	ReturnEx(damage);
+	return;
 
 # ........................................................................................
 
@@ -144,9 +143,9 @@ killed:
    {
       AmputateJoint(victim, 3);
       newThing = FireProjectile(victim, powerup, -1, -1, '0.03 0.03 -0.01', '0 0 0', 0, 0, 0, 0);
-      SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(newThing), 0.4), '0 0 0.4'));
-      SetLifeleft(newThing, 200.0);
       SetThingLook(newThing, GetThingLVec(victim));
+      SetThingVel(newThing, VectorAdd(VectorScale(GetThingLVec(victim), 0.4), '0 0 0.4'));
+      SetLifeleft(newThing, 200.0);
    }
 
    return;

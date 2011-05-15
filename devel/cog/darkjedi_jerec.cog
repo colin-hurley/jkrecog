@@ -95,7 +95,7 @@ code
 
 startup:
 	forcepulse = 0;
-	SetTimerEx(10, 100, 0, 0);
+
 newplayer:
    jkSetSaberInfo(darkjedi, side_mat, tip_mat, 0.003, 0.001, 0.101, tpl_wall, tpl_blood, tpl_saber);
    jkSetFlags(darkjedi, 0x5);
@@ -281,12 +281,6 @@ pulse:
 # ........................................................................................
 
 timer:
-if(GetSenderID() == 100)
-{
-	printflex(GetHealth(darkjedi));
-	SetTimerEx(5.5, 100, 0, 0);
-	return;
-}
 	if(GetSenderID() == 10)						// Lightning (stop power)
 	{
 		call stop_lightning;
