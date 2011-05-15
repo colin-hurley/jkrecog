@@ -166,16 +166,16 @@ World templates 1000
 #Name			Parent			Values
 _weaponn          none              orient=(0.000000/0.000000/0.000000) type=weapon collide=1 move=physics thingflags=0x20000000 timer=10.000000 mass=5.000000 physflags=0x200 maxrotvel=90.000000 damageclass=0x2 typeflags=0x1
 _explosionn       none              orient=(0/0/0) type=explosion typeflags=0x1 damageclass=0x4
-+whitecloudn      none              orient=(0.000000/0.000000/0.000000) type=particle timer=0.200000 typeflags=0x3f material=00gsmoke.mat range=0.020000 rate=128.000000 maxthrust=30.000000 elementsize=0.007000 count=128
-+dustcloudn       +whitecloudn       timer=0.120000 material=dusty.mat range=0.015000 rate=256.000000 maxthrust=80.000000 elementsize=0.010000
-+firecloudn       +dustcloudn        material=00explosion.mat range=0.20000 rate=128.000000 maxthrust=60.000000 count=64 elementsize=0.005
++whitecloudn      none              orient=(0/0/0) type=particle timer=0.2 typeflags=0x3f material=00gsmoke.mat range=0.02 rate=256 maxthrust=30.0 elementsize=0.004 count=256
++dustcloudn       +whitecloudn       timer=0.120000 material=dusty.mat range=0.015000 rate=256.000000 maxthrust=80.000000 elementsize=0.005
++firecloudn       +dustcloudn        material=00explosion.mat range=0.20000 rate=128.000000 maxthrust=60.000000 count=128 elementsize=0.0025
 +grenade_exp     _explosionn        thingflags=0x1 light=0.2 timer=0.8 sprite=detx.spr soundclass=exp_det.snd creatething=+firecloudn typeflags=0x17 damage=150.000000 blasttime=1.000000 force=220.000000 maxlight=1.250000 range=0.850000
 +grenade2        _weaponn           timer=3.000000 model3d=det0.3do size=0.014895 movesize=0.014895 soundclass=det.snd surfdrag=3.000000 airdrag=0.800000 mass=1.000000 physflags=0x225 vel=(0.000000/2.000000/1.500000) angvel=(90.000000/45.000000/90.000000) buoyancy=0.250000 explode=+grenade_exp fleshhit=+grenade_exp damageclass=0x4 typeflags=0x40309 cog=class_det2.cog
 +grenade1        +grenade2          timer=10.000000 typeflags=0x4030d cog=class_det.cog
 +egrenade_exp    +grenade_exp       damage=100.000000
 +actor_grenade   +grenade1          surfdrag=0.000000 airdrag=0.000000 vel=(0.000000/2.000000/0.000000) explode=+egrenade_exp fleshhit=+egrenade_exp
 +actor_grenade2  +grenade2          vel=(0.000000/2.000000/0.000000) explode=+egrenade_exp fleshhit=+egrenade_exp
-+spec_grenade    +grenade2          vel=(0.000000/0.000000/0.000000)
++spec_grenade    +grenade2          vel=(0.000000/0.000000/0.200000)
 
 +crossbow_sparks	none		orient=(0/0/0) type=particle move=physics timer=0.3 mass=0.1 physflags=0x400201 vel=(0/0/0.2) typeflags=0x2D material=crossbow_sparks.mat range=0.04 rate=128 maxthrust=7 elementsize=0.003 count=64
 
@@ -198,7 +198,7 @@ _explosionn       none              orient=(0/0/0) type=explosion typeflags=0x1 
 +force_lightning3	+force_lightning	damage=6.0
 +force_lightning4	+force_lightning	damage=6.5
 
-+smoke_tpl		none			orient=(0/0/0) type=particle move=physics timer=0.8 physflags=0x20000 vel=(0/0/0.12) angvel=(0/90/0) typeflags=0x3e material=00gsmoke.mat range=0.03 elementsize=0.005 count=8
++smoke_tpl		none			orient=(0/0/0) type=particle move=physics timer=0.8 physflags=0x20000 vel=(0/0/0.12) angvel=(0/90/0) typeflags=0x3e material=00gsmoke.mat range=0.04 elementsize=0.0025 count=24
 +f_dest_trail		+smoke_tpl		vel=(0/0/0) material=dstructparts.mat
 +f_dest_cloud		+firecloudn		material=dstructparts.mat
 
@@ -214,7 +214,7 @@ _explosionn       none              orient=(0/0/0) type=explosion typeflags=0x1 
 +f_dest8		+f_dest_expl_tpl	light=0.45 timer=1.0 damage=90.00 blasttime=1.0 force=540.0 maxlight=0.80 range=2.2
 +f_dest9		+f_dest_expl_tpl	light=0.50 timer=1.1 damage=100.0 blasttime=1.1 force=600.0 maxlight=0.85 range=2.4
 
-+f_dest_p_tpl		_weaponn		thingflags=0x20000401 light=0.4 sprite=forcedstruct_150.spr cog=00_desttrail.cog vel=(0/7.0/0) explode=+f_dest1 fleshhit=+f_dest1 damage=30.0 typeflags=0xd
++f_dest_p_tpl		_weaponn		thingflags=0x20000401 light=0.4 sprite=forcedstruct_150.spr cog=00_desttrail.cog vel=(0/7.0/0) explode=+f_dest1 fleshhit=+f_dest1 damage=30.0 damageclass=0x8 typeflags=0xd
 +f_dest_p0		+f_dest_p_tpl		explode=+f_dest0 fleshhit=+f_dest0
 +f_dest_p1		+f_dest_p_tpl		explode=+f_dest1 fleshhit=+f_dest1
 +f_dest_p2		+f_dest_p_tpl		explode=+f_dest2 fleshhit=+f_dest2
@@ -226,9 +226,11 @@ _explosionn       none              orient=(0/0/0) type=explosion typeflags=0x1 
 +f_dest_p8		+f_dest_p_tpl		explode=+f_dest8 fleshhit=+f_dest8
 +f_dest_p9		+f_dest_p_tpl		explode=+f_dest9 fleshhit=+f_dest9
 
-+force_heal      none              orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=2.000000 angvel=(90/90/90) typeflags=0x3f material=00teleport.mat range=0.200000 rate=32.000000 maxthrust=0.010000 elementsize=0.001500 count=32
++force_heal			none			orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=2.000000 angvel=(90/90/90) typeflags=0x3f material=00teleport.mat range=0.200000 rate=32.000000 maxthrust=0.010000 elementsize=0.001500 count=32
 
-+forcetwinkle	none		orient=(0/0/0) type=explosion collide=0 move=physics timer=0.35 sprite=twinkle.spr thingflags=0x0 typeflags=0x1
++dsight_abs_sphere		none			orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=2.000000 angvel=(90/90/90) typeflags=0x3f material=deadlysight_pars.mat range=0.15 rate=32.000000 maxthrust=0.010000 elementsize=0.001500 count=32
+
++forcetwinkle			none			orient=(0/0/0) type=explosion collide=0 move=physics timer=0.35 sprite=twinkle.spr thingflags=0x0 typeflags=0x1
 
 ## Crosshair Templates
 _crosshair			none			orient=(0/0/0) type=weapon collide=0 move=physics mass=0 physflags=0x0 maxrotvel=90 typeflags=0x1 size=0.001 movesize=0.001 maxvel=0 vel=(0/0/0) timer=0.01 thingflags=0 damageclass=0 

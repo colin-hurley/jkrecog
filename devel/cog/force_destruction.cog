@@ -71,9 +71,7 @@ activated:
 		AddDynamicTint(player, 0.12, 0.00, 0.06);
       SetPulse(0.5);
       SetInvActivated(player, 33, 1);	// turn on icon
-      PlaySoundThing(chargeSound, player, 1.0, -1, -1, 0x80);
-      #FireProjectile(player, destProj1[rank-1], destSound, 24, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimFOV);
-      #SetBinWait(player, 33, 3.0);
+      channel = PlaySoundThing(chargeSound, player, 1.0, -1, -1, 0x80);
    }
 
    Return;
@@ -82,9 +80,7 @@ pulse:
 	// if we are of high enough rank, and have enough mana for another charge
 	if(pulsecount < maxpulsecount && GetInv(player, 14) >= cost)
 	{
-		print("charging destruction...");
 		pulsecount = pulsecount + 1;
-		printint(pulsecount);
 		if(GetInv(player, 64) != 1)
 			ChangeInv(player, 14, -cost);
 	}
@@ -96,8 +92,6 @@ deactivated:
 	if(IsInvActivated(player, 33))
 	{
 		SetInvActivated(player, 33, 0);		// turn off icon
-		print("Pulsecount:");
-		printint(pulsecount);
 		FireProjectile(player, destProj0[pulsecount-1], destSound, 24, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimFOV);
 		SetBinWait(player, 33, 3.0);
 		SetPulse(0);

@@ -1,0 +1,247 @@
+# Jedi Knight Cog Script
+#
+# FORCE_DEADLYSIGHT.COG
+#
+# FORCEPOWER Script - Deadly Sight
+#  Dark Side Bonus Power
+#  Bin 34
+#
+# Drains the life from your enemies and adds to your health and mana
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+
+symbols
+
+thing       player                           local
+thing       victim                           local
+
+flex        cost=50.0                        local
+flex        mana                             local
+flex        damage                           local
+flex        starthealth                      local
+flex		healthLeft						local
+int         rank                             local
+int         oldlight                         local
+
+sound       deadlySound=ForceDSight01.WAV    local
+sound       deadlySound2=ForceDSight02.WAV   local
+int         channel=-1                       local
+
+int         smoke                            local
+
+template	smoke_tpl=+smoke_tpl			local
+
+template    sphere_tpl=+dsight_abs_sphere    local
+int         sphere=-1                        local
+vector      position                         local
+flex		rotvel=40.0						local
+
+message     startup
+message     activated
+message     pulse
+message     newplayer
+message     killed
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+
+   oldlight = GetThingLight(player);
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+activated:
+   // Cannot use power if blinded
+   if(GetActorFlags(player) & 0x800) Return;
+
+   if(IsInvActivated(player, 34))
+   {
+   	call stop_power;
+   	setBinWait(player, 34, 1);
+   	return;
+   }
+
+   mana = GetInv(player, 14);
+   if(mana >= 3*cost)
+   {
+      SetInvActivated(player, 34, 1);
+      rank = GetInv(player, 34);
+
+      PlayMode(player, 24);
+
+      // Play activation sound
+      PlaySoundThing(deadlySound, player, 1.0, -1, -1, 0x80);
+
+      // Play loop sound at 0.0 volume and fade it in to 1.0 volume in 0.75 secs
+      channel = PlaySoundThing(deadlySound2, player, 0.0, -1, -1, 0x81);
+      ChangeSoundVol(channel, 1.0, 0.75);
+
+      // make him a dynamic light too
+      oldlight = GetThingLight(player);
+      SetThingLight(player, 1.0, 1.0);
+
+      starthealth = GetThingHealth(player);
+
+      SetPulse(0.5);
+      SetBinWait(player, 34, 1);
+   }
+
+   Return;
+
+# ........................................................................................
+
+pulse:
+	// if player was hurt or blinded, or out of force
+   if((GetThingHealth(player) < starthealth) || (GetActorFlags(player) & 0x800) || GetInv(player, 14) < 1)
+   {
+      call stop_power;
+      Return;
+   }
+
+	// if no dark surge, deduct from mana
+	if(GetInv(player, 64) != 1) ChangeInv(player, 14, -cost);
+	
+   victim = FirstThingInView(player, 20 + 15 * rank, 2 + rank, 0x404);
+   while(victim != -1)
+   {
+      if(
+         HasLOS(player, victim) &&
+         (victim != player) &&
+         !(GetThingFlags(victim) & 0x200) &&
+         !(GetActorFlags(victim) & 0x100) &&
+         !((jkGetFlags(victim) & 0x20) && !IsInvActivated(player, 23))
+        )
+      {
+         if(GetThingType(victim) == 10)      // OTHER PLAYER
+         {
+            if(!(GetThingFlags(victim) & 0x200))
+            {
+				SkillTarget(victim, player, 34, rank);
+				damage = rank*rank;						// in kyle.cog, this is the damage dealt
+
+				damage = damage / 4;					// for balance, only absorb half of the damage dealt
+				ChangeInv(player, 14, damage);			// half of that will automatically go to mana
+				healthLeft = 100 - GetHealth(player);	// how much health is left to heal
+				if(damage <= healthLeft)				// if the amount of damage will not completely heal the player
+				{
+					HealThing(player, damage);			// heal the player
+				}
+				else									// else, the damage will completely heal the player
+				{
+					if(healthLeft > 0)
+						HealThing(player, healthLeft);	// Heal the player back to full health
+					damage = damage - healthLeft;		// the rest of the drained energy will go to the mana
+					ChangeInv(player, 14, damage);
+				}
+				if(victim != -1)
+					ChangeSoundVol(channel, 1.0, 0.1);
+				else
+					ChangeSoundVol(channel, 0.0, 0.1);
+
+				if(GetCurrentCamera() == 0)
+					AddDynamicTint(player, 0.15, 0.0, 0.07);
+				
+				position = VectorAdd(GetThingPos(player), '0.0 0.0 0.01');
+				sphere = CreateThingAtPosNR(sphere_tpl, GetThingSector(player), position, '0 0 0');
+				SetThingLook(sphere, randVec());
+				AttachThingToThingEx(sphere, player, 0x8);
+				SetParticleGrowthSpeed(sphere, -1.0);
+				SetThingRotVel(sphere, VectorSet(rotvel, rotvel, rotvel));
+				SetLifeLeft(sphere, 0.6);
+            }
+
+         }
+         else                                // ENEMY
+         {
+            if(!BitTest(GetActorFlags(victim), 0x100))
+            {
+               damage = SkillTarget(victim, player, 34, 0) * (rank / 2);
+               if(damage > 0)
+               {
+                  DamageThing(victim, damage, 0x8, player);
+                  smoke = CreateThingAtPos(smoke_tpl, GetThingSector(victim), GetThingPos(victim), '0 0 0');
+
+					damage = damage / 4;					// for balance, only absorb half of the damage dealt
+					ChangeInv(player, 14, damage);			// half of that will automatically go to mana
+					healthLeft = 100 - GetHealth(player);	// how much health is left to heal
+					if(damage <= healthLeft)				// if the amount of damage will not completely heal the player
+					{
+						HealThing(player, damage);			// heal the player
+					}
+					else									// else, the damage will completely heal the player
+					{
+						if(healthLeft > 0)
+							HealThing(player, healthLeft);	// Heal the player back to full health
+						damage = damage - healthLeft;		// the rest of the drained energy will go to the mana
+						ChangeInv(player, 14, damage);
+					}
+					if(victim != -1)
+						ChangeSoundVol(channel, 1.0, 0.1);
+					else
+						ChangeSoundVol(channel, 0.0, 0.1);
+	
+					if(GetCurrentCamera() == 0)
+						AddDynamicTint(player, 0.15, 0.0, 0.07);
+						
+					position = VectorAdd(GetThingPos(player), '0.0 0.0 0.01');
+					sphere = CreateThingAtPosNR(sphere_tpl, GetThingSector(player), position, '0 0 0');
+					SetThingLook(sphere, randVec());
+					AttachThingToThingEx(sphere, player, 0x8);
+					SetParticleGrowthSpeed(sphere, -1.0);
+					SetThingRotVel(sphere, VectorSet(rotvel, rotvel, rotvel));
+					SetLifeLeft(sphere, 0.6);
+               }
+            }
+         }
+      }
+      victim = NextThingInView();
+   }
+	startHealth = GetThingHealth(player);				// update the reference health
+   Return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 34);
+   Return;
+
+# ........................................................................................
+
+killed:
+   if(GetSenderRef() != player) Return;
+
+newplayer:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   if(channel != -1)
+   {
+      StopSound(channel, 0.1);
+      channel = -1;
+   }
+
+   SetPulse(0);
+   SetThingLight(player, oldlight, 0.0);
+   SetInvActivated(player, 34, 0);
+
+   Return;
+
+end
+
+

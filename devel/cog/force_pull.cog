@@ -226,13 +226,13 @@ deactivated:
 							dir = VectorScale(dir, mana / cost);	//not enough mana -- fraction of the force
 						DetachThing(potential);
 						ApplyForce(potential, dir);
-						jkstringclear();
-						jkstringconcatasciistring("Distance: ");
-						jkstringconcatflex(len);
-						jkstringconcatasciistring(" JKU ; Force: ");
-						jkstringconcatflex(VectorLen(dir));
-						jkstringconcatasciistring(" JKN");
-						jkstringoutput(-3, -1);
+						#jkstringclear();
+						#jkstringconcatasciistring("Distance: ");
+						#jkstringconcatflex(len);
+						#jkstringconcatasciistring(" JKU ; Force: ");
+						#jkstringconcatflex(VectorLen(dir));
+						#jkstringconcatasciistring(" JKN");
+						#jkstringoutput(-3, -1);
 						
 						victim = -1; 
 					}
@@ -244,7 +244,7 @@ deactivated:
 				PlayMode(player, 24);
 				PlaySoundThing(pushSound, player, 1.0, -1, -1, 0x80);
 				if((GetInv(player, 64) != 1) && (GetInv(player, 65) != 1)) ChangeInv(player, 14, -cost);
-				SetBinWait(player, 24, 0.4);
+				SetBinWait(player, 24, 3);
 			}
 		}
 		victim = -1;		//we just did the push power, instead of pull, so don't go into force pull code next
@@ -339,6 +339,7 @@ deactivated:
 
 				ApplyForce(throwThing, dir);
 			}
+			SetBinWait(player, 24, 3);
 		}
 	}
 

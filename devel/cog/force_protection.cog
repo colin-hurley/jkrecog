@@ -1,0 +1,201 @@
+# Jedi Knight Cog Script
+#
+# FORCE_PROTECTION.COG
+#
+# FORCEPOWER Script - Protection
+#  Light Side Power
+#  Bin 29
+#
+# This script controls the activation and maintenance of force armor.
+# Mana is deducted instead of health each time the player is damaged by
+#  energy, fire, magic, or saber attacks.
+# Effectiveness of the protection decreases after mana drops below 100.
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+
+symbols
+
+thing       player                           local
+
+flex        cost=4.0                         local
+flex        damage                           local
+flex		mana							local
+flex		manaleft						local
+flex        type                             local
+
+int         damage_flags=30                  local
+int         rank                             local
+
+int         shield=-1                        local
+template    shield_tpl=+force_shield         local
+
+sound       protectionSound=ForceProtect01.wav  local
+sound       protectionSound2=ForceProtect02.wav local
+int         channel=-1                       local
+
+vector      position                         local
+
+message     startup
+message     damaged
+message     activated
+message     pulse
+message     newplayer
+message     killed
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+damaged:
+	damage = GetParam(0);
+	if(IsInvActivated(player, 29))
+	{
+		// If damage from energy, fire, magic, saber
+		type = GetParam(1);
+		if(BitTest(damage_flags, type))
+		{
+			AddDynamicTint(player, 0, damage/100, damage/100);
+			mana = GetInv(player, 14);
+	
+			// Protection will be fully effective until mana drops below 100
+			manaleft = mana - damage;
+			if(manaleft > 100)
+			{
+				damage = 0;
+			}
+			else
+			{
+				if(mana > 100)
+				{
+					damage = damage - (mana - 100);
+				}
+			}
+	
+			// Scale what damage is left by mana.
+			if(damage > 0)
+				damage = damage * (1 - manaleft / 100);
+	
+			// Inventory system will minimize mana at 0.
+			SetInv(player, 14, manaleft);
+		}
+	}
+	ReturnEx(damage);
+
+	Return;
+
+# ........................................................................................
+
+activated:
+	if(!IsInvActivated(player, 29))
+	{
+		cost = (4 - rank) * 2 + 4;  // ranks 1-4 = 10, 8, 6, 4 mana per pulse, respectively
+		if(GetInv(player, 14) > 4*cost)
+		{
+			SetInvActivated(player, 29, 1);
+			rank = GetInv(player, 29);	// rank will be 4, w/o cheats
+			
+			PlayMode(player, 24);
+			
+			// Play activation sound
+			PlaySoundThing(protectionSound, player, 1.0, -1, -1, 0x80);
+			
+			// Play loop sound at 0.0 volume and fade it in to 0.8 volume in 0.75 secs
+			channel = PlaySoundThing(protectionSound2, player, 0.0, -1, -1, 0x81);
+			ChangeSoundVol(channel, 0.8, 0.75);
+			
+			// Create the shield
+			shield = CreateThingAtPos(shield_tpl, GetThingSector(player), GetThingPos(player) , '0 0 0');
+			
+			AttachThingToThingEx(shield, player, 0x8);
+			
+			// Make the player magsealed
+			SetThingFlags(player, 4);
+			
+			SetPulse(0.5);
+			SetBinWait(player, 29, 1);
+		}
+	}
+	else
+	{
+		call stop_power;
+		SetBinWait(player, 29, 1);
+	}  
+
+   Return;
+
+# ........................................................................................
+
+pulse:
+	if(GetThingHealth(player) < 1)
+	{
+		call stop_power;
+		Return;
+	}
+   
+	// check if out of mana
+	if(GetInv(player, 14) < 1)
+	{
+		call stop_power;
+		return;
+	}
+
+	// if no light surge, deduct mana
+	if(GetInv(player, 65) != 1)
+	{
+		ChangeInv(player, 14, -cost);
+	}
+
+	Return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 29);
+   Return;
+
+# ........................................................................................
+
+killed:
+   if(GetSenderRef() != player) Return;
+
+newplayer:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   SetPulse(0);
+   if(channel != -1)
+   {
+      StopSound(channel, 0.1);
+      channel = -1;
+   }
+   SetInvActivated(player, 29, 0);
+   ClearThingFlags(player, 4);
+   if(shield != -1)
+   {
+      DestroyThing(shield);
+      shield = -1;
+   }
+
+   Return;
+
+end
+
+

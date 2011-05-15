@@ -55,7 +55,7 @@ pulse:
 	crouching = IsThingCrouching(player);
 	if(!GetAttachFlags(player)) 	// can't dodge in the air, but we can roll when we land if crouch is held
 	{
-		print("Airborne; no dodge");
+		#print("Airborne; no dodge");
 		return;
 	}
 	if(crouching)
@@ -67,7 +67,7 @@ pulse:
 				x_thrust = 0;
 				y_thrust = 0;
 				dodged = 1;
-				print("recovering from last dodge");
+				#print("recovering from last dodge");
 				return;
 			}
 			recovering = 1;
@@ -75,20 +75,20 @@ pulse:
 			{
 				if(y_thrust > 0)		//forward
 				{
-					print("Dodge right + forward");
+					#print("Dodge right + forward");
 					thrust = GetThingRVec(player);
 					thrust = VectorNorm(VectorAdd(thrust, GetThingLVec(player)));
 					PlayKey(player, rollrfwd, 2, 0x28);
 				}
 				else if(y_thrust < 0)	//backward
 				{
-					print("Dodge right + back");
+					#print("Dodge right + back");
 					thrust = GetThingRVec(player);
 					thrust = VectorNorm(VectorAdd(thrust, VectorScale(GetThingLVec(player), -1)));
 				}
 				else					//center
 				{
-					print("Dodge right");
+					#print("Dodge right");
 					thrust = GetThingRVec(player);
 					PlayKey(player, rollr, 2, 0x28);
 				}
@@ -97,20 +97,20 @@ pulse:
 			{
 				if(y_thrust > 0)		//forward
 				{
-					print("Dodge left + forward");
+					#print("Dodge left + forward");
 					thrust = VectorScale(GetThingRVec(player), -1);
 					thrust = VectorNorm(VectorAdd(thrust, GetThingLVec(player)));
 					PlayKey(player, rolllfwd, 2, 0x28);
 				}
 				else if(y_thrust < 0)	//backward
 				{
-					print("Dodge left + back");
+					#print("Dodge left + back");
 					thrust = VectorScale(GetThingRVec(player), -1);
 					thrust = VectorNorm(VectorAdd(thrust, VectorScale(GetThingLVec(player), -1)));
 				}
 				else					//center
 				{
-					print("Dodge left");
+					#print("Dodge left");
 					thrust = VectorScale(GetThingRVec(player), -1);
 					PlayKey(player, rolll, 2, 0x28);
 				}
@@ -120,19 +120,19 @@ pulse:
 				if(y_thrust > 0)			//forward
 				{
 					thrust = GetThingLVec(player);
-					print("Dodge forward");
+					#print("Dodge forward");
 					PlayKey(player, rollfwd, 2, 0x28);
 				}
 				else if(y_thrust < 0)		//backward
 				{
 					thrust = VectorScale(GetThingLVec(player), -1);
-					print("Dodge back");
+					#print("Dodge back");
 				}
 				else						//center
 				{
 					thrust = '0 0 0';
 					recovering = 0;			//since we aren't dodging, we don't need to recover
-					print("No dodge");
+					#print("No dodge");
 				}
 			}
 			dodged = 1;
@@ -146,7 +146,7 @@ pulse:
 				ClearPhysicsFlags(player, 0x2);
 				SetTimerEx(0.5, 20, 0, 0);
 				SetTimerEx(0.2, 30, VectorX(thrust), VectorY(thrust));				
-				print("Dodging!");
+				#print("Dodging!");
 			}
 		}
 	}

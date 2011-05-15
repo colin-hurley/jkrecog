@@ -1,0 +1,38 @@
+# Jedi Knight Cog Script
+#
+# 00_SMOKETRAIL.COG
+#
+# Leave a smoke trail behind a moving object
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+flags=0x240
+
+symbols
+
+template    smoke=+smoke_tpl                 local
+
+message     created
+message     pulse
+
+end
+
+# ========================================================================================
+
+code
+
+created:
+   SetThingPulse(GetSenderRef(), 0.025);            // set 25 msec timer for smoke release
+   Return;
+
+# ........................................................................................
+
+pulse:
+   CreateThing(smoke, GetSenderRef());     // create smoke at our current location
+   Return;
+
+end   
+
+

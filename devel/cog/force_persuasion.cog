@@ -49,7 +49,7 @@ startup:
    player = GetLocalPlayerThing();
    call stop_power;
 //cost = 0.2 * 400 / 40;
-	cost = 2;
+	cost = 4;
    Return;
 
 # ........................................................................................

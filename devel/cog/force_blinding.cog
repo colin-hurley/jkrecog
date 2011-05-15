@@ -1,0 +1,358 @@
+# Jedi Knight Cog Script
+#
+# FORCE_BLINDING.COG
+#
+# FORCEPOWER Script - Blinding
+#  Light Side Power
+#  Bin 27
+#
+# A tap of the button attempts to blind everyone in front of you.  Hold the button to
+#  target a single victim.
+# Will not target team members in a team game.
+# Blinding will have no effect if the target is using Force Seeing.
+# More targets will be affected when the button is tapped as more stars are assigned
+#  to Blinding.
+# Cost per target, range, and effectiveness of Blinding also increase as more stars
+#  are assigned.
+#
+# Hold button: target 1 person to blind
+#				quantified cost per person
+# Tap button:  blind all people in range
+#				number of people to blind increases with rank
+# 				n people means n*cost per person
+#				if not enough mana to blind everyone, go until we can
+# 				keep a "stack" of the victims that will be blinded in the pulse
+#					go through that stack when the power is deactivated
+#				will not blind teammates
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+
+symbols
+
+thing       player                           local
+thing       potential                        local
+
+thing		victim							local
+thing		victim0=-1						local
+thing		victim1=-1						local
+thing		victim2=-1						local
+thing		victim3=-1						local
+
+int			victimlimit						local
+
+flex        mana                             local
+flex        cost=100.0                       local
+int         rank                             local
+int         dummy                            local
+
+flex        dot                              local
+flex		dot0							local
+flex		dot1							local
+flex		dot2							local
+flex		dot3							local
+
+sound       blindingSound=ForceBlind01.WAV   local
+template    cone_tpl=+force_blind            local
+
+int         active=0                         local
+
+int			i								local
+int			j								local
+int			multicheck						local
+int			mode							local
+int			success							local
+
+message     startup
+message     activated
+message     deactivated
+message     pulse
+message     timer
+message     newplayer
+message     killed
+message     deselected
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+	player = GetlocalPlayerThing();
+	if(IsMulti() && (GetMultiModeFlags() & 0x1)) multicheck = 1;	// if MP and team mode
+	else multicheck = 0;		// this variable is used to help determine who we can blind when tapping the button
+	Return;
+
+# ........................................................................................
+
+activated:
+   if(active) Return;
+	#call print_values;
+   mana = GetInv(player, 14);
+   rank = GetInv(player, 27);
+	if(rank == 4)
+	{
+		victimlimit = 4;
+	}
+	else if(rank == 3)
+	{
+		victimlimit = 3;
+	}
+	else if(rank == 2)
+	{
+		victimlimit = 2;
+	}
+	else
+	{
+		victimlimit = 1;
+	}
+
+   if(mana >= cost)
+   {
+      active = 1;
+      SetInvActivated(player, 27, 1);
+      SetPulse(0.33);
+      mode = 1;			// assume multiple targets until pulse goes through the first time
+   }
+
+   Return;
+
+# ........................................................................................
+
+pulse:
+   // Check all things for our victim.
+	// we are targetting only 1 victim now...
+   victimlimit = 1;
+   victim0 = -1;
+   dot0 = 0;
+   mode = 2;		// single target
+
+	call scan_for_victims;
+	#call print_values;
+   // If we have a victim...
+   if(victim0 != -1)
+   {
+      jkSetTargetColors(1, 2, 3);
+      jkSetTarget(victim0);
+   }
+   else
+   {
+      jkEndTarget();
+   }
+
+   Return;
+
+# ........................................................................................
+
+deactivated:
+	#print("BLINDING: Deactivated");
+   if(GetThingHealth(player) <= 0)
+   {
+      call stop_power;
+      Return;
+   }
+   if(!active)
+   {
+      call stop_power;
+      Return;
+   }
+	#call print_values;
+   SetPulse(0);
+   jkEndTarget();
+   rank = GetInv(player, 27);
+   success = 0;
+	if(mode == 1)			// target multiple... we do the target selection here
+	{
+		#print("BLINDING: Tapped");
+		call scan_for_victims;
+	}
+	call print_values;
+	#print("BLINDING: doing the stuff...");
+	// now go through the list and decide who we will blind
+	for(j = 0; j < victimlimit; j = j + 1)
+	{
+		victim = victim0[j];
+		mana = GetInv(player, 14);
+		// we must have enough mana, and the victim slot must not equal -1
+		if(mana >= cost && victim != -1)
+		{
+			if(GetInv(player, 65) != 1)
+				ChangeInv(player, 14, -cost);
+				
+			if(GetThingType(victim) == 10)      // OTHER PLAYER
+			{
+				if(
+						// player can see the target player
+					HasLOS(player, victim) &&
+						// player is not targetting himself
+					(victim != player) &&
+						// NOT (button tap + MP and Team + Player and Target on same team)
+					!((mode == 1) && (multicheck) && (GetPlayerTeam(player) == GetPlayerTeam(victim)))
+				)
+				{
+					PlayMode(player, 24);
+					PlaySoundThing(blindingSound, player, 1.0, -1, -1, 0x80);
+					dummy = CreateThingAtPosNR(cone_tpl, GetThingSector(player), VectorAdd(GetThingPos(player), '0 0 0.04'), '0 0 0');
+					SetThingLook(dummy, VectorSub(GetThingPos(victim), GetThingPos(player)));
+					success = 1;
+					// Blind player for 5 seconds per rank
+					if(!(GetThingFlags(victim) & 0x200))
+					{
+						SkillTarget(victim, player, 27, rank);
+					}
+	      		}
+			}
+			else                                // ENEMY
+			{
+				if(HasLOS(player, victim) && (victim != player))
+				{
+					PlayMode(player, 24);
+					PlaySoundThing(blindingSound, player, 1.0, -1, -1, 0x80);
+					dummy = CreateThingAtPosNR(cone_tpl, GetThingSector(player), VectorAdd(GetThingPos(player), '0.0 0.0 0.04'), '0.0 0.0 0.0');
+					SetThingLook(dummy, VectorSub(GetThingPos(victim), GetThingPos(player)));
+					success = 1;
+					// Blind victim for 5 seconds per rank
+					// If bit is already set we kill the existing timer and start a new one
+					if(GetActorFlags(victim) & 0x800) KillTimerEx(victim);
+					SetActorFlags(victim, 0x800);
+					// Pass signature (i.e. unique ID) as a check in param 0
+					SetTimerEx(rank * 5, victim, GetThingSignature(victim), 0.0);
+				}
+			}
+   		}
+   		else						// else, not enough mana to continue blinding people
+   		{
+   			j = victimlimit;		// break
+   		}
+	}
+	#print("BLINDING: Complete");
+   active = 0;
+   SetInvActivated(player, 27, 0);
+   if(success) SetBinWait(player, 27, 1);
+
+   Return;
+
+# ........................................................................................
+
+timer:
+   // This checks that the thing ref is still assigned to the same thing
+   // (remember the guy could have died and its ref reassigned to a generated thing)
+   if(GetThingSignature(GetSenderId()) == GetParam(0))
+   {
+      ClearActorFlags(GetSenderId(), 0x800);
+   }
+
+   Return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 27);
+   Return;
+
+# ........................................................................................
+
+deselected:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+killed:
+   if(GetSenderRef() != player) Return;
+
+newplayer:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   SetPulse(0);
+   SetInvActivated(player, 27, 0);
+   active = 0;
+   jkEndTarget();
+   Return;
+
+scan_for_victims:
+	// first let's clear some variables...   
+	victim0 = -1;
+	victim1 = -1;
+	victim2 = -1;
+	victim3 = -1;
+	dot0 = 0;
+	dot1 = 0;
+	dot2 = 0;
+	dot3 = 0;
+
+	// Search for all players and actors.
+	potential = FirstThingInView(player, 30 + 15 * rank, 8, 0x404);
+	while(potential != -1)
+	{
+		if(
+				// player can see the target
+			HasLOS(player, potential) &&
+				// player is not targetting self
+			(potential != player) &&
+				// target is in range
+			(VectorDist(GetThingPos(player), GetThingPos(potential)) <= (1 + rank)) &&
+				// target not dying
+			!(GetThingFlags(potential) & 0x200) &&
+				// target not immune to targetable powers
+			!(GetActorFlags(potential) & 0x100) &&
+				// not (target invisible + player not using force seeing)
+			!((jkGetFlags(potential) & 0x20) && !IsInvActivated(player, 23))
+		)
+		{
+			// for each thing in the player's view that is valid
+			dot = ThingViewDot(player, potential);
+			for(i = 0; i < victimlimit; i = i + 1)	// for all victims in the list
+			{
+				// the first one to have a dot less than the target is where the shift starts
+				// if dot is greater than i-th dot
+				if(dot > dot0[i])
+				{
+					// shift
+					for(j = victimlimit - 1; j > i; j = j - 1)
+					{
+						victim0[j] = victim0[j-1];
+						dot0[j] = dot0[j-1]; 
+					}
+					victim0[i] = potential;	// store i-th victim
+					dot0[i] = dot;			// store i-th dot
+					i = victimlimit;		// break; the target has been added to the victim list now
+				}
+			}
+		}
+		potential = NextThingInView();
+	}
+	return;
+
+print_values:
+	jkStringClear();
+	jkStringConcatAsciiString("Victim0: ");
+	jkStringConcatInt(victim0);
+	jkStringConcatAsciiString(" ; dot0: ");
+	jkStringConcatFlex(dot0);
+	jkStringConcatAsciiString(" ; Victim1: ");
+	jkStringConcatInt(victim1);
+	jkStringConcatAsciiString(" ; dot1: ");
+	jkStringConcatFlex(dot1);
+	jkStringConcatAsciiString(" ; Victim2: ");
+	jkStringConcatInt(victim2);
+	jkStringConcatAsciiString(" ; dot2: ");
+	jkStringConcatFlex(dot2);
+	jkStringConcatAsciiString(" ; Victim3: ");
+	jkStringConcatInt(victim3);
+	jkStringConcatAsciiString(" ; dot3: ");
+	jkStringConcatFlex(dot3);
+	jkStringOutput(-3, -1);
+	return;
+end
+

@@ -1,0 +1,191 @@
+# Jedi Knight Cog Script
+#
+# FORCE_ABSORB.COG
+#
+# FORCEPOWER Script - Absorb
+#  Light Side Power
+#  Bin 28
+#
+# [YB]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+
+symbols
+
+thing       player                           local
+
+flex        mana                             local
+flex        cost=10.0                        local
+flex        damage                           local
+flex		absorbed						local
+flex        type                             local
+
+int         damage_flags=8                   local
+int         rank                             local
+
+sound       absorbSound2=ForceAbsorb02.WAV   local
+
+template    sphere_tpl=+force_heal           local
+int         sphere=-1                        local
+
+flex        absorption=0.0                   local
+int         allowfx=1                        local
+
+message     startup
+message     damaged
+message     activated
+message     timer
+message     pulse
+message     newplayer
+message     killed
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+damaged:
+   damage = GetParam(0);
+
+   if(IsInvActivated(player, 28))
+   {
+      // If damage from magic
+      type = GetParam(1);
+      if(BitTest(damage_flags, type))
+      {
+         AddDynamicTint( player, 0, 0, damage/100 );
+         PlaySoundThing(absorbSound2, player, 1.0, -1, -1, 0x80);
+
+         if(allowfx)
+         {
+            // Add some visual effects, but not too often
+            allowfx = 0;
+            SetTimerEx(1, 2, 0, 0);
+            sphere = CreateThingAtPosNR(sphere_tpl, GetThingSector(player), GetThingPos(player), '0.0 0.0 0.0');
+            AttachThingToThingEx(sphere, player, 0x8);
+            SetParticleGrowthSpeed(sphere, -0.8);
+            SetLifeLeft(sphere, 0.5);
+         }
+
+         rank = GetInv(player, 28);
+         absorption = rank / 4;
+         
+         	jkStringClear();
+         	jkStringConcatAsciiString("Damage: ");
+			jkStringConcatFlex(damage);
+         // Convert part of the damage to mana.
+         absorbed = 1.5 * damage * absorption;
+         ChangeInv(player, 14, absorbed);
+         	jkStringConcatAsciiString(" ; Absorbed: ");
+         	jkStringConcatFlex(absorbed);
+         damage = damage * (1-absorption);
+         	jkStringConcatAsciiString(" ; Damage taken: ");
+         	jkStringConcatFlex(damage);
+         	jkStringOutput(-3, -1);
+      }
+   }
+   ReturnEx(damage);
+
+   Return;
+
+# ........................................................................................
+
+activated:
+   if(!IsInvActivated(player, 28))
+   {
+      mana = GetInv(player, 14);
+      rank = GetInv(player, 28);
+      #cost = 10 + (5-rank) * 5;		// ranks 1-4 = 30, 25, 20, 15 mana, respectively 
+      if(mana >= 3*cost)
+      {
+         SetInvActivated(player, 28, 1);
+         PlayMode(player, 24);
+         SetPulse(0.5);
+         SetBinWait(player, 28, 1);		// don't let the player deactivate right away
+      }
+   }
+   else
+   {
+      call stop_power;
+      SetBinWait(player, 28, 2);		// don't let the player re-activate right away
+   }
+
+   Return;
+
+# ........................................................................................
+
+timer:
+
+   if(GetSenderId() == 1)
+   {
+      call stop_power;
+   }
+   else
+   if(GetSenderId() == 2)
+   {
+      allowfx = 1;
+   }
+
+
+   Return;
+
+# ........................................................................................
+
+pulse:
+	// check that the player didn't die
+	if(GetThingHealth(player) < 1)
+	{
+   		call stop_power;
+		return;
+	}
+	// check that the player has mana left
+	if(GetInv(player, 14) < 1)
+	{
+		call stop_power;
+		return;
+	}
+	// if no dark surge, deduct mana
+	if(GetInv(player, 65) != 1)
+	{
+		ChangeInv(player, 14, -cost);
+	}
+   Return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 28);
+   Return;
+
+# ........................................................................................
+
+killed:
+   if(GetSenderRef() != player) Return;
+
+newplayer:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   SetPulse(0);
+   KillTimerEx(1);
+   SetInvActivated(player, 28, 0);
+
+   Return;
+
+end
+

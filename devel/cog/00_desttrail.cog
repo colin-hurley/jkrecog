@@ -1,0 +1,38 @@
+# Jedi Knight Cog Script
+#
+# 00_DESTTRAIL.COG
+#
+# Leave a trail of particles behind the force destruction projectile
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+flags=0x240
+
+symbols
+
+template    trail=+f_dest_trail              local
+
+message     created
+message     pulse 
+
+end
+
+# ========================================================================================
+
+code
+
+created:
+   SetThingPulse(GetSenderRef(), 0.025);
+   Return;
+
+# ........................................................................................
+
+pulse:
+   CreateThing(trail, GetSenderRef());
+   Return;
+
+end
+
+
