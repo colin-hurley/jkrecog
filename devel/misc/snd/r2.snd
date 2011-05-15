@@ -1,0 +1,27 @@
+# R2/R5 foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+moving		PtclDroidWalk01.WAV	0x010000     0.3     1.8     0.7
+moving		PtclDroidWalk02.WAV     0x010000     0.3     1.8     0.7
+
+death1		r2fall01.wav	0x010000        1.0     4.0
+death2		r2fall01.wav	0x010000        1.0     4.0
+
+hurtenergy 	r2gethit03.wav	0x010000        1.0     4.0
+hurtimpact 	r2gethit01.wav	0x010000        1.0     4.0
+hurtfire 	r2gethit02.wav	0x010000        1.0     4.0
+hurtspecial 	r2gethit02.wav	0x010000        1.0     4.0
+hurtmagic 	r2gethit02.wav	0x010000        1.0     4.0
+
+curious		r2talk01.wav	0x010000
+curious		r2talk02.wav	0x010000
+fear		r2talk05.wav	0x010000
+
+corpsehit	DroidBody2.WAV	0x0     0.8     4.0
+

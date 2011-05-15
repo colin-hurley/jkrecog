@@ -1,0 +1,19 @@
+# Foley description for Kyle's pal WeeGee
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+enterwater	ploop01.wav 	      0x0     1.0     5.0
+enterwaterslow	ploop01.wav 	      0x0     0.5     3.0
+
+moving		WeeGeeMove01.WAV	0x010000	0.60     3.0
+
+HurtImpact	WeeGeeTalk02.WAV	0x10000		0.60     3.0
+HurtEnergy	WeeGeeTalk02.WAV        0x10000  	0.60     3.0
+HurtFire	WeeGeeTalk02.WAV        0x10000  	0.60     3.0
+HurtMagic	WeeGeeTalk02.WAV        0x10000  	0.60     3.0
+HurtSpecial	WeeGeeTalk02.WAV	0x10000  	0.60     3.0
+
+fear	        WeeGeeTalk01.WAV	0x10000 	0.60     3.0
+curious         WeeGeeTalk01.WAV	0x10000  	0.60     3.0
+

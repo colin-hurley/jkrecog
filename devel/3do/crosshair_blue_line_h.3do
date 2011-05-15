@@ -1,0 +1,64 @@
+# MODEL C:\Playground\LucasArts\JED STUFF\JKReCog\3do\crosshair_green_line_h.3do created by JED 0.951 beta
+
+SECTION: HEADER
+
+3DO 2.1
+
+SECTION: MODELRESOURCE
+
+MATERIALS 1
+0: CROSSHAIR_BLUE_LINE.MAT
+
+SECTION: GEOMETRYDEF
+
+RADIUS .002512
+
+INSERT OFFSET 0 0 0
+
+GEOSETS 1
+
+GEOSET 0
+
+MESHES 1
+
+MESH 0
+NAME LAYER0
+RADIUS .002512
+GEOMETRYMODE	4
+LIGHTINGMODE	3
+TEXTUREMODE	1
+
+VERTICES 4
+
+0: -.0025 0 -.00025 0
+1: .0025 0 -.00025 0
+2: .0025 0 .00025 0
+3: -.0025 0 .00025 0
+
+TEXTURE VERTICES 4
+
+0: 0 -8
+1: 256 -8
+2: 256 0
+3: 0 0
+
+VERTEX NORMALS
+
+0: 0 -1 0
+1: 0 -1 0
+2: 0 -1 0
+3: 0 -1 0
+
+FACES 1
+
+0: 0 0x4 4 3 1 1 4 2, 0 3, 1 0, 2 1, 3
+
+FACE NORMALS
+
+0: 0 -1 0
+
+SECTION: HIERARCHYDEF
+
+HIERARCHY NODES 1
+# num: flags: type: mesh: parent: child:  sibling:  numChildren: x:   y:  z:  pitch: yaw: roll: pivotx: pivoty: pivotz: hnodename:
+ 0:     0x0    0x1     0     -1      -1     -1        0     0.000000 0.000000 0.000000  0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 LAYER0

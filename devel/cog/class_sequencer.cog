@@ -1,0 +1,67 @@
+# Jedi Knight Cog Script
+#
+# CLASS_SEQUENCER.COG
+#
+# Class COG for the Sequencer charges
+#
+# Set the sequencers to proximity devices after a certain time.
+#
+# [YB]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+
+symbols
+
+message     created
+message     timer
+message		removed
+
+thing		seq			local
+thing		player		local
+
+flex		dot			local
+
+end
+
+# ========================================================================================
+
+code
+
+created:
+   SetTimerEx(2.0, GetSenderRef(), GetThingSignature(GetSenderRef()), 0);
+
+   Return;
+
+timer:
+   if(GetParam(0) == GetThingSignature(GetSenderId()))
+   {
+      // WF_PROXIMITY, Weapon will explode when something touches its sphere.
+      SetWeaponFlags(GetSenderId(), 0x1000);
+
+      // gives it a bigger sphere
+      SetThingCollideSize(GetSenderId(), 0.3);
+   }
+
+   Return;
+
+removed:
+	seq = GetSenderRef();
+	for(i=0;i<=GetNumPlayers();i=i+1)
+	{
+		player = GetPlayerThing(i);
+		if(HasLOS(player, seq))
+		{
+			dot = ThingViewDot(player, seq);
+			dot = 200 * (3 - VectorDist(GetThingPos(player), GetThingPos(seq))) / 3 * ((dot + 1) / 2 * 0.6 + 0.4);
+			if(dot > 155)
+				dot = 155;
+			if(dot > 0)
+				AddDynamicAdd(player, dot, dot, dot / 1.05);
+		}
+	}
+	return;
+
+end
+
+

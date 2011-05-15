@@ -1,0 +1,178 @@
+# Jedi Knight Cog Script
+#
+# ITEM_CROSSHAIR.COG
+#
+# Handles on-screen crosshairs for each weapon.
+#
+# [darthslaw]
+#
+# [1/16/07]
+# Moved the line that offsets the pov to this cog, so that the pov offset and crosshair
+# offset would be in sync with one another (e.g. crosshair doesn't use previous values of
+# the pov offset because of running on different threads).
+# Consider moving the entire headbob code to this cog, and have the headbob bin simply
+# catch activated messages and forward them to this cog.
+#
+# (c) 2007 JK ReCog
+
+symbols
+
+message		startup
+message		newplayer
+message		activated
+message		pulse
+message		user0
+message		user1
+
+thing		player			local
+
+int			weapon			local
+
+template	crosshair3_tpl0_0=+crosshair_green_line_v		local
+template	crosshair3_tpl0_1=+crosshair_red_line_v			local
+template	crosshair3_tpl0_2=+crosshair_blue_line_v		local
+
+template	crosshair3_tpl1_0=+crosshair_green_line_h		local
+template	crosshair3_tpl1_1=+crosshair_red_line_h			local
+template	crosshair3_tpl1_2=+crosshair_blue_line_h		local
+
+
+template	crosshair6_tpl0_0=+crosshair_green_line_v	local
+template	crosshair6_tpl0_1=+crosshair_red_line_v		local
+template	crosshair6_tpl0_2=+crosshair_blue_line_v	local
+
+template	crosshair6_tpl1_0=+crosshair_green_line_d1	local
+template	crosshair6_tpl1_1=+crosshair_red_line_d1	local
+template	crosshair6_tpl1_2=+crosshair_blue_line_d1	local
+
+template	crosshair6_tpl2_0=+crosshair_green_line_d2	local
+template	crosshair6_tpl2_1=+crosshair_red_line_d2	local
+template	crosshair6_tpl2_2=+crosshair_blue_line_d2	local
+
+vector		xhair_offset								local
+
+vector		master_offset	local
+
+flex		head_offset		local
+
+flex		err				local
+flex		min_err			local
+flex		offset			local
+flex		vel				local
+
+int			bin=119			local
+int			hbob_bin=122	local
+int			style_bin=124	local
+
+int			style=0			local
+#int			headbob=0		local
+
+end
+
+# ========================================================================================
+
+code
+startup:
+	min_err = 0;
+	#master_offset = '0.0008 0.05 0.0358';		// define where the crosshair's center will be located on the screen
+#	if(style != 0)
+#		call crosshairs_on;
+#	else
+#		call crosshairs_off;
+newplayer:
+	SetInv(player, style_bin, style);
+	player = GetLocalPlayerThing();
+	SetPulse(0.01);
+	return;
+	
+activated:
+	print("DEBUG -- Crosshair cog ACTIVATED");
+	style = style + 1;
+	if(style > 3)
+		style = 0;
+	SetInv(player, style_bin, style);
+	goto which_crosshair;
+	return;
+# ........................................................................................
+pulse:
+	#player = GetPrimaryFocus(0);
+	head_offset = GetInv(player, hbob_bin);
+	SetPOVShake(VectorSet(0, 0, head_offset), '0 0 0', 0, 0);
+	err = GetInv(player, bin);
+	weapon = GetCurWeapon(player);
+	vel = VectorLen(GetThingVel(player));
+	if(err > (0.9*vel + min_err))
+		ChangeInv(player, bin, -0.06);
+	ChangeInv(player, bin, vel*0.07);
+	if(GetCurrentCamera() != 0) return;						// only internal view should have crosshairs
+	if(style == 0) return;									// crosshairs off
+	master_offset = VectorSet(0.0008, 0.05, 0.0358 + head_offset);
+	if(weapon == 2)				// Bryar Pistol
+	{
+		offset = 0.0032 + err * 0.002;
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
+		FireProjectile(player, crosshair3_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, -offset));
+		FireProjectile(player, crosshair3_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(offset, 0, 0));
+		FireProjectile(player, crosshair3_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(-offset, 0, 0));
+		FireProjectile(player, crosshair3_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+	}
+	else if(weapon == 3)		// Stormtrooper Rifle
+	{
+		offset = 0.0032 + err * 0.002;
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
+		FireProjectile(player, crosshair3_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, -offset));
+		FireProjectile(player, crosshair3_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(offset, 0, 0));
+		FireProjectile(player, crosshair3_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(-offset, 0, 0));
+		FireProjectile(player, crosshair3_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+	}
+	else if(weapon == 6)		// Repeater
+	{
+		offset = 0.003 + err * 0.003;
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
+		FireProjectile(player, crosshair6_tpl0_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+
+		xhair_offset = VectorAdd(master_offset, VectorSet(0.866 * offset, 0, -0.5 * offset));
+		FireProjectile(player, crosshair6_tpl1_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+
+		xhair_offset = VectorAdd(master_offset, VectorSet(-0.866 * offset, 0, -0.5 * offset));
+		FireProjectile(player, crosshair6_tpl2_0[style-1], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+	}
+	return;
+	
+user0:
+	min_err = GetParam(0);
+	return;
+	
+user1:
+	print("INV_CROSSHAIR - USER1 MSG TRIGGERED");
+	return;
+
+which_crosshair:
+	if(style == 0)
+		print("Crosshairs: OFF");
+	else if(style == 1)
+		print("Crosshairs: GREEN");
+	else if(style == 2)
+		print("Crosshairs: RED");
+	else if(style == 3)
+		print("Crosshairs: BLUE");
+	else
+		print("Crosshairs: UNKNOWN CROSSHAIR TYPE");
+	return;
+	
+end
+

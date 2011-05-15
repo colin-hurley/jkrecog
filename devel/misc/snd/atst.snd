@@ -1,0 +1,23 @@
+# ATST foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+lwalkhard	atststp1.wav	     0x010000     2.0     10.0
+lwalkmetal	atststp1.wav         0x010000     2.0     10.0
+lwalkearth      atststp1.wav         0x010000     2.0     10.0
+rwalkhard	atststp2.wav         0x010000     2.0     10.0
+rwalkmetal	atststp2.wav         0x010000     2.0     10.0
+rwalkearth	atststp2.wav         0x010000     2.0     10.0
+
+hurtimpact	ProbeGetHit02.wav	0x0     2.0     10.0
+hurtenergy	ProbeGetHit01.wav       0x0     2.0     10.0
+hurtfire	ProbeGetHit02.wav       0x0     2.0     10.0
+hurtmagic	ProbeGetHit01.wav       0x0     2.0     10.0
+hurtspecial	ProbeGetHit01.wav       0x0     2.0     10.0
+
+fire1		wlkrsht2.wav	0x0     2.0     10.0
+
+corpsehit	ProbeExplode01.wav	0x010000     2.0     10.0
+

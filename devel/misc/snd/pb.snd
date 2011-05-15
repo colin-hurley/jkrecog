@@ -1,0 +1,21 @@
+# Probedroid foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+activate	ProbeDroidLoop01.wav	0x801
+alert		ProbeTalk03.wav		0x014000
+alert		ProbeTalk01.wav		0x014000
+hurtimpact	ProbeGetHit02.wav	0x0     1.0     4.0
+hurtenergy	ProbeGetHit01.wav	0x0     1.0     4.0
+hurtenergy	ProbeGetHit02.wav	0x0     1.0     4.0
+hurtfire	ProbeGetHit02.wav	0x0     1.0     4.0
+hurtmagic	ProbeGetHit01.wav	0x0     1.0     4.0
+hurtspecial	ProbeGetHit01.wav	0x0     1.0     4.0
+curious		ProbeTalk01.wav		0x010000
+victory		ProbeTalk03.wav		0x010000
+fire1		ProbeDroidGun01.wav	0x0     1.0     4.0
+

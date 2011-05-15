@@ -168,38 +168,98 @@ _weaponn          none              orient=(0.000000/0.000000/0.000000) type=wea
 _explosionn       none              orient=(0/0/0) type=explosion typeflags=0x1 damageclass=0x4
 +whitecloudn      none              orient=(0.000000/0.000000/0.000000) type=particle timer=0.200000 typeflags=0x3f material=00gsmoke.mat range=0.020000 rate=128.000000 maxthrust=30.000000 elementsize=0.007000 count=128
 +dustcloudn       +whitecloudn       timer=0.120000 material=dusty.mat range=0.015000 rate=256.000000 maxthrust=80.000000 elementsize=0.010000
-+firecloudn       +dustcloudn        material=00explosion.mat range=0.050000 rate=64.000000 maxthrust=40.000000 count=64
-+grenade_exp     _explosionn        thingflags=0x1 light=0.2 timer=0.8 sprite=detx.spr soundclass=exp_det.snd creatething=+firecloudn typeflags=0x17 damage=75.000000 blasttime=0.700000 force=100.000000 maxlight=0.800000 range=0.450000
++firecloudn       +dustcloudn        material=00explosion.mat range=0.20000 rate=128.000000 maxthrust=60.000000 count=64 elementsize=0.005
++grenade_exp     _explosionn        thingflags=0x1 light=0.2 timer=0.8 sprite=detx.spr soundclass=exp_det.snd creatething=+firecloudn typeflags=0x17 damage=150.000000 blasttime=1.000000 force=220.000000 maxlight=1.250000 range=0.850000
 +grenade2        _weaponn           timer=3.000000 model3d=det0.3do size=0.014895 movesize=0.014895 soundclass=det.snd surfdrag=3.000000 airdrag=0.800000 mass=1.000000 physflags=0x225 vel=(0.000000/2.000000/1.500000) angvel=(90.000000/45.000000/90.000000) buoyancy=0.250000 explode=+grenade_exp fleshhit=+grenade_exp damageclass=0x4 typeflags=0x40309 cog=class_det2.cog
 +grenade1        +grenade2          timer=10.000000 typeflags=0x4030d cog=class_det.cog
-+egrenade_exp    +grenade_exp       damage=50.000000
++egrenade_exp    +grenade_exp       damage=100.000000
 +actor_grenade   +grenade1          surfdrag=0.000000 airdrag=0.000000 vel=(0.000000/2.000000/0.000000) explode=+egrenade_exp fleshhit=+egrenade_exp
 +actor_grenade2  +grenade2          vel=(0.000000/2.000000/0.000000) explode=+egrenade_exp fleshhit=+egrenade_exp
 +spec_grenade    +grenade2          vel=(0.000000/0.000000/0.000000)
 
-+grip_ghost	none		orient=(0/0/0) type=weapon collide=1 move=physics size=0.001 movesize=0.001 thingflags=0x0 mass=0.1 physflags=0x200 maxvel=0 vel=(0/0/0) timer=0.01 damageclass=0x0 typeflags=0x1
++crossbow_sparks	none		orient=(0/0/0) type=particle move=physics timer=0.3 mass=0.1 physflags=0x400201 vel=(0/0/0.2) typeflags=0x2D material=crossbow_sparks.mat range=0.04 rate=128 maxthrust=7 elementsize=0.003 count=64
 
-+force_ltpeice		none			orient=(0.000000/0.000000/0.000000) type=weapon move=physics timer=0.15000 model3d=ligt2.3do size=0.005000 movesize=0.005000 physflags=0x200 maxrotvel=720.000000 angvel=(0.000000/0.000000/720.000000)
++lgflash	_explosionn	thingflags=0x1 light=0.3 timer=0.4 typeflags=0x12 blasttime=0.2 maxlight=1.0
++expl_crossbowhit	_explosionn	thingflags=0x1 light=0.2 timer=0.5 sprite=bowx2.spr soundclass=exp_bowhit.snd creatething=+crossbow_sparks typeflags=0x33 blasttime=0.3 maxlight=0.4        
++expl_crossbowhit2	_explosionn	thingflags=0x1 light=0.2 timer=0.5 sprite=bowx.spr creatething=+crossbow_sparks typeflags=0x33 blasttime=0.3 maxlight=0.4
+
++expl_crossbowbolt	_weaponn	thingflags=0x20000001 light=0.5 model3d=bow0.3do size=0.005 movesize=0.005 soundclass=bow.snd creatething=+lgflash vel=(0/5/0) angvel=(0/0/120) explode=+expl_crossbowhit fleshhit=+expl_crossbowhit damage=60 mindamage=20 damageclass=0x4 typeflags=0x20440d rate=10
++expl_crossbowbolt2	+expl_crossbowbolt	model3d=bow1.3do soundclass=none creatething=none explode=+expl_crossbowhit2 fleshhit=+expl_crossbowhit2 damage=40 typeflags=0x440d
+
+## force Power Stuff ##
+
++grip_ghost	none		orient=(0/0/0) type=weapon collide=1 move=physics size=0.001 movesize=0.001 thingflags=0x0 mass=0.1 physflags=0x200 maxvel=0 vel=(0/0/0) timer=0.01 damageclass=0x0 typeflags=0x1
++timed_ghost	none		orient=(0/0/0) type=weapon collide=1 move=physics size=0.001 movesize=0.001 thingflags=0x0 mass=0.1 physflags=0x200 maxvel=0 vel=(0/0/0) timer=0.01 damageclass=0x0 typeflags=0x1
+
++force_ltpeice		none			orient=(0.000000/0.000000/0.000000) type=weapon move=physics timer=0.15 model3d=ligt2.3do size=0.005000 movesize=0.005000 physflags=0x200 maxrotvel=720.000000 angvel=(0.000000/0.000000/720.000000)
 +lightninghit		none			orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=0.1500000 typeflags=0x2b material=00ramp4.mat range=0.020000 rate=16.000000 maxthrust=8.000000 elementsize=0.003000 count=16
-+force_lightning	_weaponn		thingflags=0x1 light=0.100000 timer=0.150000 size=0.005000 movesize=0.005000 vel=(0.000000/1.000000/0.000000) angvel=(0.000000/0.000000/720.000000) explode=+lightninghit fleshhit=+lightninghit trailthing=+force_ltpeice elementsize=0.075000 trailrandangle=60.000000 damage=5.000000 damageclass=0x8 typeflags=0x1840d range=1.000000
-+force_lightning2	+force_lightning	damage=5.000000                 
-+force_lightning3	+force_lightning	damage=5.000000                 
-+force_lightning4	+force_lightning	damage=5.000000                 
++force_lightning	_weaponn		thingflags=0x1 light=0.100000 timer=0.15 size=0.005000 movesize=0.005000 vel=(0.000000/1.000000/0.000000) angvel=(0.000000/0.000000/720.000000) explode=+lightninghit fleshhit=+lightninghit trailthing=+force_ltpeice elementsize=0.075000 trailrandangle=60.000000 damage=5.000000 damageclass=0x8 typeflags=0x1840d range=1.000000
++force_lightning2	+force_lightning	damage=5.5
++force_lightning3	+force_lightning	damage=6.0
++force_lightning4	+force_lightning	damage=6.5
+
++smoke_tpl		none			orient=(0/0/0) type=particle move=physics timer=0.8 physflags=0x20000 vel=(0/0/0.12) angvel=(0/90/0) typeflags=0x3e material=00gsmoke.mat range=0.03 elementsize=0.005 count=8
++f_dest_trail		+smoke_tpl		vel=(0/0/0) material=dstructparts.mat
++f_dest_cloud		+firecloudn		material=dstructparts.mat
+
++f_dest_expl_tpl	_explosionn		thingflags=0x1 light=0.1 timer=0.4 sprite=destruct8.spr soundclass=exp_dest.snd creatething=+f_dest_cloud typeflags=0x53 damage=15.0 damageclass=0x8 blasttime=0.3 force=100.0 maxlight=0.5 range=0.5
++f_dest0		+f_dest_expl_tpl	light=0.05 timer=0.2 damage=10.00 blasttime=0.2 force=60.00 maxlight=0.40 range=0.6
++f_dest1		+f_dest_expl_tpl	light=0.10 timer=0.3 damage=20.00 blasttime=0.3 force=120.0 maxlight=0.45 range=0.8
++f_dest2		+f_dest_expl_tpl	light=0.15 timer=0.4 damage=30.00 blasttime=0.4 force=180.0 maxlight=0.50 range=1.0
++f_dest3		+f_dest_expl_tpl	light=0.20 timer=0.5 damage=40.00 blasttime=0.5 force=240.0 maxlight=0.55 range=1.2
++f_dest4		+f_dest_expl_tpl	light=0.25 timer=0.6 damage=50.00 blasttime=0.6 force=300.0 maxlight=0.60 range=1.4
++f_dest5		+f_dest_expl_tpl	light=0.30 timer=0.7 damage=60.00 blasttime=0.7 force=360.0 maxlight=0.65 range=1.6
++f_dest6		+f_dest_expl_tpl	light=0.35 timer=0.8 damage=70.00 blasttime=0.8 force=420.0 maxlight=0.70 range=1.8
++f_dest7		+f_dest_expl_tpl	light=0.40 timer=0.9 damage=80.00 blasttime=0.9 force=480.0 maxlight=0.75 range=2.0
++f_dest8		+f_dest_expl_tpl	light=0.45 timer=1.0 damage=90.00 blasttime=1.0 force=540.0 maxlight=0.80 range=2.2
++f_dest9		+f_dest_expl_tpl	light=0.50 timer=1.1 damage=100.0 blasttime=1.1 force=600.0 maxlight=0.85 range=2.4
+
++f_dest_p_tpl		_weaponn		thingflags=0x20000401 light=0.4 sprite=forcedstruct_150.spr cog=00_desttrail.cog vel=(0/7.0/0) explode=+f_dest1 fleshhit=+f_dest1 damage=30.0 typeflags=0xd
++f_dest_p0		+f_dest_p_tpl		explode=+f_dest0 fleshhit=+f_dest0
++f_dest_p1		+f_dest_p_tpl		explode=+f_dest1 fleshhit=+f_dest1
++f_dest_p2		+f_dest_p_tpl		explode=+f_dest2 fleshhit=+f_dest2
++f_dest_p3		+f_dest_p_tpl		explode=+f_dest3 fleshhit=+f_dest3
++f_dest_p4		+f_dest_p_tpl		explode=+f_dest4 fleshhit=+f_dest4
++f_dest_p5		+f_dest_p_tpl		explode=+f_dest5 fleshhit=+f_dest5
++f_dest_p6		+f_dest_p_tpl		explode=+f_dest6 fleshhit=+f_dest6
++f_dest_p7		+f_dest_p_tpl		explode=+f_dest7 fleshhit=+f_dest7
++f_dest_p8		+f_dest_p_tpl		explode=+f_dest8 fleshhit=+f_dest8
++f_dest_p9		+f_dest_p_tpl		explode=+f_dest9 fleshhit=+f_dest9
 
 +force_heal      none              orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=2.000000 angvel=(90/90/90) typeflags=0x3f material=00teleport.mat range=0.200000 rate=32.000000 maxthrust=0.010000 elementsize=0.001500 count=32
 
++forcetwinkle	none		orient=(0/0/0) type=explosion collide=0 move=physics timer=0.35 sprite=twinkle.spr thingflags=0x0 typeflags=0x1
+
 ## Crosshair Templates
 _crosshair			none			orient=(0/0/0) type=weapon collide=0 move=physics mass=0 physflags=0x0 maxrotvel=90 typeflags=0x1 size=0.001 movesize=0.001 maxvel=0 vel=(0/0/0) timer=0.01 thingflags=0 damageclass=0 
+
++crosshair_red_scope		_crosshair		model3d=crosshair_red_scope.3do
+
 +crosshair_green_line_h		_crosshair		model3d=crosshair_green_line_h.3do
++crosshair_red_line_h		_crosshair		model3d=crosshair_red_line_h.3do
++crosshair_blue_line_h		_crosshair		model3d=crosshair_blue_line_h.3do
+
 +crosshair_green_line_v		_crosshair		model3d=crosshair_green_line_v.3do
++crosshair_red_line_v		_crosshair		model3d=crosshair_red_line_v.3do
++crosshair_blue_line_v		_crosshair		model3d=crosshair_blue_line_v.3do
+
 +crosshair_green_line_d1	_crosshair		model3d=crosshair_green_line_d1.3do
++crosshair_red_line_d1		_crosshair		model3d=crosshair_red_line_d1.3do
++crosshair_blue_line_d1		_crosshair		model3d=crosshair_blue_line_d1.3do
+
 +crosshair_green_line_d2	_crosshair		model3d=crosshair_green_line_d2.3do
++crosshair_red_line_d2		_crosshair		model3d=crosshair_red_line_d2.3do
++crosshair_blue_line_d2		_crosshair		model3d=crosshair_blue_line_d2.3do
 
 ## Weapon Effects (Nightfire mod for resources)
 _muzzleflash		_crosshair		timer=0.05
 +muzzleflash0		_muzzleflash		model3d=flash0-0.3do cog=class_flash0.cog
 
-+bullethole		none			orient=(0/0/0) type=weapon collide=1 move=physics thingflags=0x10 mass=0 model3d=bullethole.3do vel=(0/1/0) size=0.0001 movesize=0.0001 height=0.0001 typeflags=0x180 physflags=0x4000D0 timer=7.5
++blastmark	none			orient=(0/0/0) type=weapon collide=1 move=physics thingflags=0x10 mass=1 model3d=blastmark_grenade.3do vel=(0/0/-1) surfdrag=50 size=0.001 movesize=0.001 height=0.001 typeflags=0x80 physflags=0x4000D0
+
+# +rpt_sparks      none              orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=0.700000 mass=0.100000 physflags=0x400201 vel=(0.000000/0.000000/0.200000) typeflags=0x27 material=sparky.mat range=0.040000 rate=24.000000 maxthrust=7.000000 elementsize=0.005000 count=24
+# +rptfleshhit     _explosion        thingflags=0x1 light=0.100000 timer=0.800000 soundclass=exp_fleshy.snd creatething=+rpt_sparks typeflags=0x12 blasttime=0.700000 maxlight=0.300000
+
 
 
 end

@@ -1,0 +1,46 @@
+# Jedi Knight Cog Script
+#
+# ITEM_FUNCTION.COG
+#
+# Handles extra function for each weapon.
+#
+# Fists       - Kick
+# Bryar       - Smack
+# Strifle     - Scope Zoom Control
+# T. Dets     - Dead Man Switch
+# Bowcaster   - Scope Zoom Control
+# Repeater    - Charge up blast
+# Rail Det.   - Smack
+# Seq. Charge - Lay proximity mode mine
+# Conc. Rifle - Smack
+# Lightsaber  - Kick
+#
+# [darthslaw]
+#
+# (c) 2006 JK ReCog
+
+symbols
+
+message		activated
+message		deactivated
+
+thing		player		local
+
+end
+
+# ========================================================================================
+
+code
+
+activated:
+	player = GetLocalPlayerThing();
+	SendMessage(GetInvCog(player, GetCurWeapon(player)), user2);
+	#print("Weapon Function Cog: ACTIVATED"); 
+	return;
+# ........................................................................................
+deactivated:
+	SendMessage(GetInvCog(player, GetCurWeapon(player)), user3);
+	#print("Weapon Function Cog: DEACTIVATED");
+	return;
+end
+

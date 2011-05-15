@@ -1,0 +1,54 @@
+# Jedi Knight Cog Script
+#
+# CLIENT_JKRECOG.COG
+#
+# The main client cog. Handles weapon firing and such
+#
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+symbols
+
+message		trigger
+
+# Bryar Templates
+template	tpl2_0=+bryarbolt		local
+
+# Stormtrooper Rifle Templates
+template	tpl3_0=+stlaser			local
+
+# General Variables
+thing		player					local
+vector		fire_offset				local
+
+end
+
+# ========================================================================================
+
+code
+
+trigger:
+	if(GetSourceRef() == 2000)		// bryar modes 0 and 1
+	{
+		# Param 0 = X error
+		# Param 1 = Y error
+		# Param 2 = Damage scale
+		player = GetSenderRef();
+		fire_offset = '0.0135 0.1624 0.0';
+		FireProjectile(player, tpl2_0, -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1), 0), GetParam(2), 0x62, 30, 60);
+		return;
+	}
+	if(GetSourceRef() == 3000)		// stormtrooper rifle modes 0 and 1
+	{
+		# Param 0 = X error
+		# Param 1 = Y error
+		player = GetSenderRef();
+		fire_offset = '0.0168 0.1896 0.00';
+		FireProjectile(player, tpl3_0, -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1), 0), 1.0, 0x60, 25, 50);
+		return; 
+	}
+	return;
+
+end
+

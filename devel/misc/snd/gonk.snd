@@ -1,0 +1,46 @@
+# Gonk, the power droid foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+# moving		PtclDroidWalk01.WAV
+# moving		PtclDroidWalk02.WAV
+
+lwalkmetal	PtclDroidWalk01.WAV	0x0	0.3     1.8     0.7
+rwalkmetal	PtclDroidWalk02.WAV     0x0     0.3     1.8     0.7
+
+lwalkhard	PtclDroidWalk01.WAV     0x0     0.3     1.8     0.7
+rwalkhard	PtclDroidWalk02.WAV     0x0     0.3     1.8     0.7
+
+lwalkpuddle	PtclDroidWalk01.WAV     0x0     0.3     1.8     0.7
+rwalkpuddle	PtclDroidWalk02.WAV     0x0     0.3     1.8     0.7
+
+lwalkwater	PtclDroidWalk01.WAV     0x0     0.3     1.8     0.7
+rwalkwater	PtclDroidWalk02.WAV     0x0     0.3     1.8     0.7
+
+lwalkearth	PtclDroidWalk01.WAV     0x0     0.3     1.8     0.7
+rwalkearth	PtclDroidWalk02.WAV     0x0     0.3     1.8     0.7
+
+death1		GonkDie2.wav	0x010000     1.0     4.0
+death1		GonkDie1.wav	0x010000     1.0     4.0
+death2		GonkDie2.wav	0x010000     1.0     4.0
+death2		GonkDie1.wav	0x010000     1.0     4.0
+
+hurtenergy 	GonkTalk2.wav	0x010000     1.0     4.0
+hurtimpact 	GonkTalk2.wav	0x010000     1.0     4.0
+hurtfire 	GonkTalk2.wav	0x010000     1.0     4.0
+hurtmagic 	GonkTalk2.wav	0x010000     1.0     4.0
+hurtspecial 	GonkTalk2.wav	0x010000     1.0     4.0
+
+curious		GonkTalk1.wav	0x010000	
+curious		GonkTalk2.wav	0x010000
+
+idle            GonkTalk1.wav   0x010000        1.0     4.0
+idle            GonkTalk2.wav	0x010000        1.0     4.0
+
+corpsehit	DroidBody1.WAV	0x0     0.8     4.0
+

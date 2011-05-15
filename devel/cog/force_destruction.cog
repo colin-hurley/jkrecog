@@ -1,0 +1,128 @@
+# Jedi Knight Cog Script
+#
+# FORCE_DESTRUCTION.COG
+#
+# FORCEPOWER Script - Destruction
+#  Dark Side Bonus Power
+#  Bin 33
+#
+# [YB]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+
+symbols
+
+thing       player                           local
+
+template    destProj0=+f_dest_p0         local
+template    destProj1=+f_dest_p1         local
+template    destProj2=+f_dest_p2         local
+template    destProj3=+f_dest_p3         local
+template    destProj4=+f_dest_p4         local
+template    destProj5=+f_dest_p5         local
+template    destProj6=+f_dest_p6         local
+template    destProj7=+f_dest_p7         local
+template    destProj8=+f_dest_p8         local
+template    destProj9=+f_dest_p9         local
+
+sound       destSound=ForceDestruct01.wav    local
+
+sound		chargeSound=forcedestcharge.wav		local
+
+flex        cost=30.0                        local
+flex        mana                             local
+int         rank                             local
+
+flex        autoAimFOV=10                    local
+
+int			pulsecount						local
+int			maxpulsecount					local
+int			channel=-1						local
+
+message     startup
+message     activated
+message		deactivated
+message		killed
+message     selected
+message		pulse
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+   channel = -1;
+   Return;
+
+# ........................................................................................
+
+activated:
+   mana = GetInv( player, 14 );
+   if(mana > 4*cost)
+   {
+		rank = GetInv(player, 33);
+      if(GetInv(player, 64) != 1) ChangeInv(player, 14, -(3*cost));
+      pulsecount = 1;
+      maxpulsecount = 2 + 2 * rank; // ranks 1-4 = 4, 6, 8, 10 counts, respectively
+		AddDynamicTint(player, 0.12, 0.00, 0.06);
+      SetPulse(0.5);
+      SetInvActivated(player, 33, 1);	// turn on icon
+      PlaySoundThing(chargeSound, player, 1.0, -1, -1, 0x80);
+      #FireProjectile(player, destProj1[rank-1], destSound, 24, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimFOV);
+      #SetBinWait(player, 33, 3.0);
+   }
+
+   Return;
+
+pulse:
+	// if we are of high enough rank, and have enough mana for another charge
+	if(pulsecount < maxpulsecount && GetInv(player, 14) >= cost)
+	{
+		print("charging destruction...");
+		pulsecount = pulsecount + 1;
+		printint(pulsecount);
+		if(GetInv(player, 64) != 1)
+			ChangeInv(player, 14, -cost);
+	}
+	// pulse the screen as we charge
+	AddDynamicTint(player, 0.12, 0.00, 0.06);
+	return;
+
+deactivated:
+	if(IsInvActivated(player, 33))
+	{
+		SetInvActivated(player, 33, 0);		// turn off icon
+		print("Pulsecount:");
+		printint(pulsecount);
+		FireProjectile(player, destProj0[pulsecount-1], destSound, 24, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimFOV);
+		SetBinWait(player, 33, 3.0);
+		SetPulse(0);
+		if(channel != -1) StopSound(channel, 0.1);
+		channel = -1;
+	}
+	return;
+
+killed:
+	if(GetSenderRef() == player)
+	{
+		SetPulse(0);
+		SetInvActivated(player, 33, 0);
+		if(channel != -1) StopSound(channel, 0.1);
+		channel = -1;
+	}
+	return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 33);
+
+   Return;
+
+end
+
+

@@ -1,0 +1,154 @@
+# Jedi Knight Cog Script
+#
+# FORCE_PERSUASION.COG
+#
+# FORCEPOWER Script - Persuasion
+#  Light Side Power
+#  Bin 26
+#
+# [darthslaw]
+#
+# [12/05/06]
+# Now you twinkle more when you are moving, and less when you are standing still.
+# No longer attempts to utilize JK's built in twinkle system... instead, it creates a bunch of twinkle ojects
+# [12/26/06]
+# Moved all twinkle effects code to a separate client cog, toggled by triggers
+# This would have been done at some point anyway for MP compatibility, and makes the code easier to manage
+#
+# (C) 2007 JK ReCog
+
+
+symbols
+
+thing       player                           local
+
+flex        mana                             local
+flex        cost=250.0                       local
+int         rank                             local
+flex		vel								local
+
+sound       persuasionSound=ForcePersuas01.WAV  local
+#sound       persuasionSound2=ForcePersuas02.WAV local
+#int         channel=-1                       local
+
+message     startup
+message     activated
+message     timer
+message     pulse
+message     newplayer
+message     killed
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+   call stop_power;
+//cost = 0.2 * 400 / 40;
+	cost = 2;
+   Return;
+
+# ........................................................................................
+
+activated:
+   if(IsInvActivated(player, 26))
+   {
+   		call stop_power;
+   }
+   else
+   {
+      mana = GetInv(player, 14);
+      if(mana >= cost)
+      {
+         SetInvActivated(player, 26, 1);
+
+         PlayMode(player, 24);
+
+         // Play activation sound
+         PlaySoundThing(persuasionSound, player, 1.0, -1, -1, 0x80);
+
+         // Play loop sound at 0.0 volume and fade it in to 1.0 volume in 0.75 secs
+         #channel = PlaySoundThing(persuasionSound2, player, 0.0, -1, -1, 0x81);
+         #ChangeSoundVol(channel, 1.0, 0.75);
+
+         rank = GetInv(player, 26);
+
+         // Set player invisible to AI
+         SetActorFlags(player, 0x80);
+
+         // Set player "invisible" to real players
+         SetThingCurGeoMode(player, 0);
+         SendTrigger(-1, 1200, GetPlayerNum(player), rank, 0, 0);
+         
+         SetPulse(0.2);
+      }
+   }
+
+   Return;
+
+# ........................................................................................
+
+timer:
+   call stop_power;
+   Return;
+
+# ........................................................................................
+
+pulse:
+	if(GetInv(player, 14) < cost || GetThingHealth(player) < 1)
+	{
+   		call stop_power;
+   		return;
+   	}
+   	vel = VectorLen(GetThingVel(player));
+   	if(vel > 1.5 || (vel > 0.75 && rand() < 0.5))
+   		ClearActorFlags(player, 0x80);
+   	else
+   		SetActorFlags(player, 0x80);
+   	
+   	if(GetInv(player, 65) != 1) ChangeInv(player, 14, -cost);
+	Return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 26);
+   Return;
+
+# ........................................................................................
+
+killed:
+	player = GetLocalPlayerThing();
+   if(GetSenderRef() != player) Return;
+
+newplayer:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   SetPulse(0);
+   KillTimerEx(1);
+#   if(channel != -1)
+#   {
+#      StopSound(channel, 0.1);
+#      channel = -1;
+#   }
+   SetInvActivated(player, 26, 0);
+   ClearActorFlags(player, 0x80);
+   SetThingCurGeoMode(player, GetThingGeoMode(player));
+   jkClearFlags(player, 0x20);
+   
+   SendTrigger(-1, 1201, GetPlayerNum(player), 0, 0, 0);
+
+   Return;
+
+end
+
+

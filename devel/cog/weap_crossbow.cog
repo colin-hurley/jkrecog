@@ -29,8 +29,12 @@ sound       chargeSound=BCChargeUp.wav          local
 sound       fireSound2=BCFire02.wav             local
 sound       outSound=trprout.wav                local
 
-template    projectile=+crossbowbolt            local
-template    projectile2=+crossbowbolt2          local
+template    projectilea0=+crossbowbolt            local
+template    projectilea1=+expl_crossbowbolt            local
+
+template    projectileb0=+crossbowbolt2          local
+template    projectileb1=+expl_crossbowbolt2          local
+
 template    projectile3=+crossbowbolt3          local
 
 flex        fireWait=0.6                        local
@@ -89,8 +93,7 @@ activated:
       Return;
    }
 
-   if(mode == 0)
-   {
+
       ActivateWeapon(player, 0, mode);
 
       if(channel == -1)
@@ -111,12 +114,6 @@ activated:
             }
          }
       }
-   }
-   else
-   {
-      powerBoost = GetInv(player, 63);
-      ActivateWeapon( player, fireWait/powerBoost, mode);
-   }
 
    Return;
 
@@ -151,8 +148,6 @@ deactivated:
 
    jkSetWaggle(player, '10.0 7.0 0.0', 350);
 
-   if(mode == 0)
-   {
       delayTime = DeactivateWeapon(player, mode);
 
       if(channel != -1)
@@ -174,7 +169,7 @@ deactivated:
       SetPOVShake('0.0 -.01 0.0', '2.0 0.0 0.0', .05, 80.0);
       if(delayTime > 0.9) vec = VectorSet(1.2 * (rand() - 0.5), 1.2 * (rand() - 0.5), 0);
       else vec = '0 0 0';
-      FireProjectile(player, projectile, fireSound2, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimFOV*2);
+      FireProjectile(player, projectilea0[mode], fireSound2, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimFOV*2);
 
       ChangeInv(player, 12, -2.0);
 
@@ -183,9 +178,9 @@ deactivated:
          if(GetInv(player, 12) > 1.0)
          {
          	vec = VectorSet(1.5 * (rand() - 0.5), 6.0 + 2.0 * (rand() - 0.5), 0);
-            FireProjectile(player, projectile2, -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
+            FireProjectile(player, projectileb0[mode], -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
             vec = VectorSet(1.5 * (rand() - 0.5), -6.0 + 2.0 * (rand() - 0.5), 0);
-            FireProjectile(player, projectile2, -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
+            FireProjectile(player, projectileb0[mode], -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
             ChangeInv(player, 12, -2.0);
          }
       }
@@ -195,9 +190,9 @@ deactivated:
          if(GetInv(player, 12) > 1.0)
          {
          	vec = VectorSet(1.2 * (rand() - 0.5), 12.0 + 2.0 * (rand() - 0.5), 0);
-            FireProjectile(player, projectile2, -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
+            FireProjectile(player, projectileb0[mode], -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
             vec = VectorSet(1.2 * (rand() - 0.5), -12.0 + 2.0 * (rand() - 0.5), 0);
-            FireProjectile(player, projectile2, -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
+            FireProjectile(player, projectileb0[mode], -1, 18, '0.0207 0.0888 0.00', vec, 0, 0, autoAimFOV, autoAimMaxDist);
             ChangeInv(player, 12, -2.0);
          }
       }
@@ -205,11 +200,6 @@ deactivated:
       // Play animation and set delay.
       jkPlayPOVKey(player, povfireAnim, 1, 0x38);
       powerBoost = GetInv(player, 63);
-   }
-   else
-   {
-      DeactivateWeapon(player, mode);
-   }
 
    Return;
 

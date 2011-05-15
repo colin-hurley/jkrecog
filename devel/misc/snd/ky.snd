@@ -1,0 +1,93 @@
+# Kyle foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+lwalkmetal	walkmetaldry01.wav	0x4000	0.3	1.0
+rwalkmetal	walkmetaldry02.wav	0x4000  0.3     1.0
+lrunmetal	runmetaldry01.wav	0x4000  0.5     2.0
+rrunmetal	runmetaldry02.wav	0x4000  0.5     2.0
+
+lwalkhard	kwalk01.wav		0x4000  0.3     1.0
+rwalkhard	kwalk02.wav		0x4000  0.3     1.0
+lrunhard	kylerun01.wav		0x4000  0.5     2.0
+rrunhard	kylerun02.wav		0x4000  0.5     2.0
+
+lwalkpuddle	fswtr2l.wav	0x0  0.3     1.0
+rwalkpuddle	fswtr2r.wav	0x0  0.3     1.0
+lrunpuddle	fswtr2l.wav	0x0  0.5     2.0
+rrunpuddle	fswtr2r.wav	0x0  0.5     2.0
+
+lwalkwater	fswtr2l.wav		0x0  0.3     1.0
+rwalkwater	fswtr2r.wav		0x0  0.3     1.0
+lrunwater	fswtr2l.wav		0x0  0.5     2.0
+rrunwater	fswtr2r.wav		0x0  0.5     2.0
+
+lwalkearth	walkdirt01.wav		0x0  0.3     1.0
+rwalkearth	walkdirt02.wav 	 	0x0  0.3     1.0
+lrunearth	rundirt01.wav		0x0  0.5     2.0
+rrunearth	rundirt02.wav		0x0  0.5     2.0
+
+enterwater	splash1.wav		0x0     1.0     3.0	0.7
+enterwaterslow	fsout1.wav		0x0	0.5	1.5	0.4
+
+exitwater	fsout1.wav		0x0
+exitwaterslow	fsout1.wav		0x0
+
+lswimsurface	stroke1.wav		0x0
+rswimsurface	stroke2.wav		0x0
+treadsurface	stroke1.wav		0x0
+
+jump		jumpbasic01.wav		0x4000         1.5     2.5
+jumpmetal	jumpMetalDry01.wav	0x0            1.5     2.5
+jumpwater	fswtr2r.wav		0x0            1.5     2.5
+jumpearth	jumpDirt01.wav		0x0            1.5     2.5
+landhard	landbasic01.wav		0x4000         1.5     2.5
+landmetal	landmetaldry01.wav	0x4000         1.5     2.5
+landearth	landDirt01.wav		0x4000         1.5     2.5
+landpuddle	fswtr1l.wav		0x0            1.5     2.5
+landwater	fswtr2l.wav		0x0            1.5     2.5
+falling		kylyld.wav		0x010000       1.5     2.5
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+hurtimpact	  kyljpd.wav		0x014000         0.3     1.0
+hurtimpact	 kylgtsb.wav		0x014000         0.5     2.0
+hurtimpact	 kylgtsc.wav		0x014000         1.0     4.0
+hurtimpact	 kylgtlc.wav		0x014000         1.0     4.0
+
+hurtenergy	  kyljpa.wav		0x014000         0.3     1.0
+hurtenergy	 kylgtsa.wav		0x014000         0.5     2.0
+hurtenergy	 kylgtsc.wav		0x014000         1.0     4.0
+hurtenergy	 kylgtlb.wav		0x014000         1.0     4.0
+
+hurtfire	  kyljpd.wav		0x014000         0.3     1.0
+hurtfire	 kylgtsa.wav		0x014000         0.5     2.0
+hurtfire	 kylgtsb.wav		0x014000         1.0     4.0
+hurtfire	 kylgtla.wav		0x014000         1.0     4.0
+
+hurtmagic	  kyljpa.wav		0x014000         0.3     1.0
+hurtmagic	 kylgtsb.wav		0x014000         0.5     2.0
+hurtmagic	 kylgtsc.wav		0x014000         1.0     4.0
+hurtmagic	 kylgtlc.wav		0x014000         1.0     4.0
+
+hurtspecial	  kyljpd.wav		0x010000         0.3     1.0
+hurtspecial	 kylgtsa.wav		0x010000         0.5     2.0
+hurtspecial	 kylgtsc.wav		0x010000         1.0     4.0
+hurtspecial	 kylgtla.wav		0x010000         1.0     4.0
+
+death1		i00ky86z.wav		0x010100         1.0     4.0
+death2		i00ky86z.wav		0x010100         1.0     4.0
+
+drowning	i00ky71t.wav		0x010100         0.3     1.0
+#drowning	i00ky71z.wav		0x010100         0.3     1.0
+drowned		KWaterDeath1.wav	0x010100         0.3     1.0
+deathUnder	  kylgnb.wav		0x010200         0.3     1.0
+breath		i00ky106.wav		0x010000         0.3     1.0
+gasp		i00ky106.wav		0x010000	 0.5     2.0
+
+corpsehit	bodyfall03.wav		0x0     0.8     4.0
+deflected	LtSaberHit12.wav
+deflected	LtSaberHit15.wav
+

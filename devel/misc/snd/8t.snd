@@ -1,0 +1,28 @@
+# 8t foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+lwalkmetal	walkmetaldry01.wav	0x0	0.5	4.0
+rwalkmetal	walkmetaldry02.wav	0x0     0.5     4.0
+
+lwalkhard	walkmetaldry01.wav      0x0     0.5     4.0
+rwalkhard	walkmetaldry02.wav      0x0     0.5     4.0
+lrunhard	walkmetaldry01.wav      0x0     0.5     4.0
+rrunhard	walkmetaldry02.wav      0x0     0.5     4.0
+
+lwalkpuddle	walkmetaldry01.wav      0x0     0.5     4.0
+rwalkpuddle	walkmetaldry02.wav      0x0     0.5     4.0
+
+lwalkwater	walkmetaldry01.wav      0x0     0.5     4.0
+rwalkwater	walkmetaldry02.wav      0x0     0.5     4.0
+
+lwalkearth	walkmetaldry01.wav      0x0     0.5     4.0
+rwalkearth	walkmetaldry02.wav      0x0     0.5     4.0
+
+enterwater	splash1.wav	      0x0     1.0     4.0
+enterwaterslow	splash1.wav	      0x0     0.5     2.5
+

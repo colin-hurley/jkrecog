@@ -18,7 +18,7 @@
 #
 # [darthslaw]
 #
-# (C) 2006 JK ReCog
+# (C) 2007 JK ReCog
 
 
 symbols
@@ -35,8 +35,8 @@ thing       debris6=-1                       local
 int			maxdebris						local
 
 flex        mana                             local
-flex        maxDot                           local
-flex        dot                              local
+#flex        maxDot                           local
+#flex        dot                              local
 flex        cost=30                          local
 int         rank                             local
 
@@ -59,6 +59,8 @@ vector		vec								local
 vector		rvec							local
 vector		uvec							local
 
+int			inlist							local
+
 message     startup
 message     activated
 message     deactivated
@@ -76,6 +78,13 @@ code
 
 startup:
    player = GetLocalPlayerThing();
+   debris0 = -1;
+   debris1 = -1;
+   debris2 = -1;
+   debris3 = -1;
+   debris4 = -1;
+   debris5 = -1;
+   debris6 = -1;
 	call stop_power;
    Return;
 
@@ -102,7 +111,13 @@ activated:
 # ........................................................................................
 
 pulse:
-	if(debriscount < maxdebris) call find_debris;	//can carry more debris
+	if(GetActorFlags(player) & 0x800)				// if blinded, drop (not throw) the debris, and stop power
+	{
+		call stop_power;
+		return;
+	}
+	if(debriscount < maxdebris) call find_debris;	// can carry more debris
+	if(debris0 == -1) return;						// if no debris, nothing can be done at this point; return
 	dummy = FireProjectile(player, ghost_tpl, -1, -1, '0 0.5 0', '0 0 0', 0, 0, 0, 0x0);
 	vec = GetThingPos(dummy);
 	uvec = GetThingUVec(dummy);
@@ -111,30 +126,38 @@ pulse:
 	dir0 = vec;
 	dir0 = VectorSub(dir0, GetThingPos(debris0));
 	
+	if(debris0 == -1) goto pulse_pt2;		// no more debris... advance to next part
 	dir1 = VectorAdd(vec, VectorScale(rvec, 0.15));
 	dir1 = VectorAdd(dir1, VectorScale(uvec, -0.06));
 	dir1 = VectorSub(dir1, GetThingPos(debris1));
 	
+	if(debris0 == -1) goto pulse_pt2;		// no more debris... advance to next part
 	dir2 = VectorAdd(vec, VectorScale(rvec, -0.14));
 	dir2 = VectorAdd(dir2, VectorScale(uvec, -0.04));
 	dir2 = VectorSub(dir2, GetThingPos(debris2));
 	
+	if(debris0 == -1) goto pulse_pt2;		// no more debris... advance to next part
 	dir3 = VectorAdd(vec, VectorScale(rvec, -0.2));
 	dir3 = VectorAdd(dir3, VectorScale(uvec, 0.1));
 	dir3 = VectorSub(dir3, GetThingPos(debris3));
 	
+	if(debris0 == -1) goto pulse_pt2;		// no more debris... advance to next part
 	dir4 = VectorAdd(vec, VectorScale(rvec, 0.2));
 	dir4 = VectorAdd(dir4, VectorScale(uvec, 0.05));
 	dir4 = VectorSub(dir4, GetThingPos(debris4));
 	
+	if(debris0 == -1) goto pulse_pt2;		// no more debris... advance to next part
 	dir5 = VectorAdd(vec, VectorScale(rvec, 0.02));
 	dir5 = VectorAdd(dir5, VectorScale(uvec, 0.15));
 	dir5 = VectorSub(dir5, GetThingPos(debris5));
 	
+	if(debris0 == -1) goto pulse_pt2;		// no more debris... advance to next part
 	dir6 = VectorAdd(vec, VectorScale(rvec, 0.15));
 	dir6 = VectorAdd(dir6, VectorScale(uvec, 0.2));
 	dir6 = VectorSub(dir6, GetThingPos(debris6));
 	
+pulse_pt2:
+
 	for(i = 0; i < maxdebris; i = i + 1)
 	{
 		if(debris0[i] != -1)
@@ -164,25 +187,22 @@ deactivated:
       call stop_power;
       Return;
    }
+	PlayMode(player, 24);
 
-
-
-         PlayMode(player, 24);
-
-         PlaySoundThing(throwSound, player, 1.0, -1, -1, 0x80);
-         //if(GetInv(player, 64) != 1) ChangeInv(player, 14, -cost);
-         SetBinWait(player, 30, 0.2);
+	PlaySoundThing(throwSound, player, 1.0, -1, -1, 0x80);
+	//if(GetInv(player, 64) != 1) ChangeInv(player, 14, -cost);
+	SetBinWait(player, 30, 0.2);
          
-         dummy = FireProjectile(player, ghost_tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0x0);
-         vec = GetThingLVec(dummy);
-for(i = 0; i < maxdebris; i = i + 1)
-{
-	if(debris0[i] != -1)
+	dummy = FireProjectile(player, ghost_tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0x0);
+	vec = GetThingLVec(dummy);
+	for(i = 0; i < maxdebris; i = i + 1)
 	{
-		detachthing(debris0[i]);
-		ApplyForce(debris0[i], VectorScale(vec, 300));
+		if(debris0[i] != -1)
+		{
+			DetachThing(debris0[i]);
+			ApplyForce(debris0[i], VectorScale(vec, 300));
+		}
 	}
-}
    call stop_power;
    Return;
 
@@ -243,7 +263,11 @@ find_debris:
 				inlist = 1;		//debris is already in use; don't add again
 			}
 		}
-		if(!inlist && HasLOS(player, debris))	//player can see the debris and it is not in the list already
+		if(
+			!inlist &&
+			HasLOS(player, debris) &&
+			VectorDist(GetThingPos(player), GetThingPos(debris)) < (rank * 0.5 + 1)
+		)	//player can see the debris and it is not in the list already
 		{
 			debris0[debriscount] = debris;
 			debriscount = debriscount + 1;

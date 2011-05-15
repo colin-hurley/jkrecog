@@ -12,13 +12,14 @@
 # This weapon now features the following fire modes:
 #  Fire 1 = Slower fire rate, better precision, 1 energy unit per shot
 #  Fire 2 = Faster fire rate, lessened precision, 2 energy units per shot
+#  Fire 3 = Scope zoom
 #
 # [10/18/2006]
 #   Added code that makes shots increase in error with each shot.
 #
 # [darthslaw]
 #
-# (C) 2006, JK ReCog
+# (C) 2007, JK ReCog
 
 symbols
 
@@ -35,44 +36,94 @@ sound       dismountSound=PutWeaponAway01.wav   local
 sound       fireSound=trprsht2.wav              local
 sound       outSound=trprout.wav                local
 
-template    projectile=+stlaser                 local
+#template    projectile=+stlaser                 local
 
 thing       player                              local
 
 vector      rVec                                local
 
-flex        fireWait=0.4                        local
-flex        fireWait2=0.15                      local
+flex        fireWait0=0.4                       local
+flex        fireWait1=0.15                      local
 flex        holsterWait                         local
 flex        powerBoost                          local
-flex        autoAimFOV=25                       local
+#flex        autoAimFOV=25                       local
 
 int         trackID=-1                          local
 int         holsterTrack                        local
 int         mode                                local
 
+int			xhair_bin=119						local
+int			hbob_bin=122						local
+int			style_bin=124						local
+
 flex		err									local
 
-template	crosshair_tpl0=+crosshair_green_line_v	local
-template	crosshair_tpl1=+crosshair_green_line_h	local
-vector		xhair_offset							local
-flex		offset									local
-int			firing=0								local
+int			waggle=0				local
+vector		waggle_vec				local
+flex		waggle_spd				local
 
+template	cam_tpl=+timed_ghost	local
+thing		cam						local
+flex		zoom=0.0				local
+int			zooming=0				local
+int			zoomdir=0				local
+int			zoomed=0				local
+int			pulsecount				local
+int			zoom_color_handle=-1	local
+
+flex		head_offset				local
+vector		master_offset			local
+
+
+template	crosshair3_tpl0_0=+crosshair_green_line_v		local
+template	crosshair3_tpl0_1=+crosshair_red_line_v			local
+template	crosshair3_tpl0_2=+crosshair_blue_line_v		local
+
+template	crosshair3_tpl1_0=+crosshair_green_line_h		local
+template	crosshair3_tpl1_1=+crosshair_red_line_h			local
+template	crosshair3_tpl1_2=+crosshair_blue_line_h		local
+
+template	crosshair_scope=+crosshair_red_scope			local
+
+int			crosshair_style			local
+flex		offset					local
+vector		xhair_offset			local
+
+message		startup
+message		newplayer
+message		killed
+message     fire
 message     activated
 message     deactivated
 message     selected
 message     deselected
 message     autoselect
-message     fire
 message     timer
 message		pulse
+message		user4					# waggle control
+message		user2					# start zoom
+message		user3					# hold zoom
 
 end
 
 # ========================================================================================
 
 code
+
+startup:
+newplayer:
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
+	zoom_color_handle = -1;
+	call zoomreset;
+	return;
+
+killed:
+	if(GetSenderRef() == GetLocalPlayerThing())	// player is the sender
+	{
+		call zoomreset;
+	}
+	return;
 
 fire:
    player = GetSourceRef();
@@ -96,32 +147,27 @@ fire:
    }
 
    // Get random aiming error
+   err = GetInv(player, xhair_bin);
+   rVec = VectorSet((Rand()-0.5)*3 * err, (Rand()-0.5)*3 * err, 0.0);
 	if(mode == 0)
 	{	
-		rVec = VectorSet((Rand()-0.5)*2 * err / 0.3, (Rand()-0.5)*2 * err / 0.3, 0.0);
-		ChangeInv( player, 11, -1.0 );
-		if(err < 0.3)
-			err = err + 0.06;	//increase error with each shot
-		if(err > 0.3)
-			err = 0.3;			//error scale factor cannot be greater than 1
+		ChangeInv( player, 11, -1.0 );					//cost 1 ammo for slow shots
+		ChangeInv( player, xhair_bin, 0.06 );			//increase error with each shot
 	}
 	else
 	{
-		rVec = VectorSet((Rand()-0.5)*7 * err, (Rand()-0.5)*7 * err, 0.0);
-		ChangeInv( player, 11, -2.0 );
-		if(err < 1)
-			err = err + 0.1 + rand() * 0.3;	//increase error with each shot
-		if(err > 1)
-			err = 1;			//error scale factor cannot be greater than 1
+		ChangeInv( player, 11, -2.0 );					//cost 2 ammo for fast shots
+		ChangeInv( player, xhair_bin, 0.2 );			//increase error with each shot
 	}
-
-   SetPOVShake('0.0 -.003 0.0', VectorScale('1.5 0 0', err + 0.1), .05, 80.0);
-   FireProjectile(player, projectile, fireSound, 8, '0.0168 0.1896 0.00', rVec, 1.0, 0x30, autoAimFOV, autoAimFOV*2);
-
+   SetPOVShake('0.0 -.003 0.0', VectorScale(rVec, err + 0.1), .05, 80.0);
+   #FireProjectile(player, projectile, fireSound, 8, '0.0168 0.1896 0.00', rVec, 1.0, 0x30, autoAimFOV, autoAimFOV*2);
+	SendTrigger(-1, 3000, VectorX(rVec), VectorY(rVec), 1.0, 0.0);
+	PlaySoundThing(fireSound, player, 1.0, -1.0, -1.0, 0x0);
+	PlayMode(player, 8);
    jkPlayPOVKey( player, povfireAnim, 1, 0x38 );
 
    powerBoost = GetInv(player, 63);
-   ChangeFireRate(player, fireWait[mode]/powerBoost);
+   ChangeFireRate(player, fireWait0[mode]/powerBoost);
 
    Return;
 
@@ -130,40 +176,40 @@ fire:
 activated:
    player = GetSourceRef();
    mode = GetSenderRef();
-   err = 0.1;		//even the first shot isn't completely accurate with this gun
-
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
    powerBoost = GetInv(player, 63);
-   ActivateWeapon(player, fireWait[mode]/powerBoost, mode);
-   firing = 1;
+   ActivateWeapon(player, fireWait0[mode]/powerBoost, mode);
+   if(mode == 0) SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.3, 0, 0, 0);
+   else SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.7, 0, 0, 0);
    Return;
 
 # ........................................................................................
 
 deactivated:
    player = GetSourceRef();
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
    DeactivateWeapon(player, mode);
-   firing = 0;
+   SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
    Return;
 
 # ........................................................................................
 
 selected:
    player = GetSourceRef();
-
-	firing = 0;
-	SetPulse(0.01);
    PlayMode(player, 41);
    PlaySoundThing(mountSound, player, 1.0, -1, -1, 0x80);
    jkSetPOVModel(player, povModel);
    SetArmedMode(player, 1);
    jkSetWeaponMesh(player, weaponMesh);
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
    trackID = jkPlayPOVKey(player, mountAnim, 0, 20);
    SetMountWait(player, GetKeyLen(mountAnim));
    jkClearFlags(player, 0x5);
    SetCurWeapon(player, 3);
+   SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
 
    Return;
 
@@ -183,7 +229,8 @@ deselected:
       jkStopPOVKey(player, trackID, 0);
       trackID = -1;
    }
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
 
    Return;
 
@@ -216,35 +263,92 @@ autoselect:
 
 timer:
    StopKey(player, holsterTrack, 0.0);
-   SetPulse(0);
    Return;
-
-# ........................................................................................
+   
+user4:
+	waggle_vec = VectorSet(GetParam(0), GetParam(1), GetParam(2));
+	waggle_spd = GetParam(3);
+	if(waggle) jkSetWaggle(player, waggle_vec, waggle_spd);
+	Return;
 
 pulse:
-	if(!firing && err > 0)
-		err = err - 0.05;
-	
-	if(err < 0)
-		err = 0;
-	
-	if(GetCurrentCamera() == 0)
+	pulsecount = pulsecount + 1;
+	if(GetCurrentCamera() == 1) CycleCamera();	// force internal view
+	if(zooming)
 	{
-		offset = 0.0035 + err * 0.004;
-		
-		xhair_offset = VectorSet(0, 0.05, offset + 0.037);
-		FireProjectile(player, crosshair_tpl0, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
-		
-		xhair_offset = VectorSet(0, 0.05, -offset + 0.037);
-		FireProjectile(player, crosshair_tpl0, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
-		
-		xhair_offset = VectorSet(offset, 0.05, 0.037);
-		FireProjectile(player, crosshair_tpl1, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
-		
-		xhair_offset = VectorSet(-offset, 0.05, 0.037);
-		FireProjectile(player, crosshair_tpl1, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		if(zoomdir == 0)
+		{
+			zoom = zoom - 0.005 * pulsecount;
+		}
+		else
+		{
+			if(zoom < 4.0)
+			{
+				zoom = zoom + 0.005 * pulsecount;
+			}
+		}
 	}
+	if(zoom < 0.25)
+	{
+		call zoomreset;
+		return;
+	}
+	// cap off the zoom
+	if(zoom > 4.0)
+		zoom = 4.0;
 
+	head_offset = GetInv(player, hbob_bin);
+	// fire cam from the barrel of the gun so we are accurate 
+	cam = FireProjectile(player, cam_tpl, -1, -1, VectorSet(0.0168, zoom, 0.005 + head_offset), '0 0 0', 0, 0, 0, 0);
+	SetThingPos(cam, VectorAdd(GetThingPos(cam), VectorScale(GetThingLVec(cam), -0.1)));
+	SetCameraFocus(0, cam);
+	FireProjectile(cam, crosshair_scope, -1, -1, '0 0.05 0', '0 0 0', 0, 0, 0, 0);
+	if(IsInvActivated(player, 23))
+		EnableIRMode(1.0, 1.0);		// force seeing will give us a fully lit view
+	else
+		EnableIRMode(0.3, 1.0);		// else, dimmed level, fully lit things
+	return;
+
+user2:
+	if(!zoomed) call startzoom;
+	pulsecount = 0;
+	zooming = 1;
+	zoomdir = 1 - zoomdir;
+	return;
+
+user3:
+	zooming = 0;
+	if(pulsecount < 4)
+	{
+		print("Tapped button... zooming out");
+		call zoomreset;
+	}
+	return;
+
+startzoom:
+	zoom = 0.25;
+	zoomed = 1;
+	SetPulse(0.01);
+	if(zoom_color_handle != -1) FreeColorEffect(zoom_color_handle);
+	zoom_color_handle = newColorEffect(1, 0, 0, 0, 0, 0, 0, 0, 0, 1.0);
+	if(IsInvActivated(player, 23))
+		EnableIRMode(1.0, 1.0);		// force seeing will give us a fully lit view
+	else
+		EnableIRMode(0.3, 1.0);		// else, dimmed level, fully lit things
+	return;
+
+zoomreset:
+	zoomed = 0;
+	zoom = 0.0;
+	zooming = 0;
+	zoomdir = 0;
+	SetCameraFocus(0, GetLocalPlayerThing());
+	SetPulse(0);
+	if(zoom_color_handle != -1) FreeColorEffect(zoom_color_handle);
+	zoom_color_handle = -1;
+	// Don't disable IR mode if IR Goggles or Force Seeing are on...
+	if(!IsInvActivated(player, 41) && !IsInvActivated(player, 23))
+		DisableIRMode();
 	return;
 	
 end

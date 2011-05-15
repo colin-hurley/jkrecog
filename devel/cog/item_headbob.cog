@@ -1,0 +1,29 @@
+# Jedi Knight Cog Script
+#
+# ITEM_HEADBOB.COG
+#
+# This is a buffer script. It collects the activated messages from the inventory list,
+# and forwards the messages to the headbob bin.
+#
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+symbols
+
+message	activated
+
+int		hbob_bin=122		local
+
+end
+
+# ========================================================================================
+
+code
+
+activated:
+	SendMessage(GetInvCog(GetLocalPlayerThing(), hbob_bin), activated);
+	return;
+
+end
+

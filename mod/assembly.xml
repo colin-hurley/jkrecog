@@ -15,6 +15,7 @@
 				<include>mat\**\*</include>
 				<include>misc\**\*</include>
 				<include>sound\**\*</include>
+				<include>ui\**\*</include>
 			</includes>
 		</fileSet>
 	</fileSets>

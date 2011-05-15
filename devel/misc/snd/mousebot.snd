@@ -1,0 +1,25 @@
+# mousebot foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	ploop01.wav 	      0x0
+enterwaterslow	ploop01.wav 	      0x0
+
+moving		MouseBot2.WAV	0x010000     0.4     2.0
+moving		MouseBot3.WAV	0x010000     0.4     2.0
+
+death1		MouseBot1.wav	0x010000     0.8     3.2
+death2		MouseBot1.wav	0x010000     0.8     3.2
+					
+hurtenergy 	MouseBot2.wav	0x010000     0.8     3.2 	
+hurtimpact 	MouseBot2.wav	0x010000     0.8     3.2 	
+hurtfire 	MouseBot2.wav	0x010000     0.8     3.2 	
+hurtmagic 	MouseBot2.wav	0x010000     0.8     3.2 	
+hurtspecial	MouseBot2.wav	0x010000     0.8     3.2 	
+
+fear		MouseBot3.wav	0x010000     0.4     2.0
+curious		MouseBot3.wav	0x010000     0.4     2.0	
+
+

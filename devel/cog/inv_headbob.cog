@@ -1,0 +1,124 @@
+# Jedi Knight Cog Script
+#
+# ITEM_HEADBOB.COG
+#
+# INVENTORY Script - Headbob
+#
+# Controls the head bobbing
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+symbols
+
+thing		player			local
+int			active=0		local
+int			crouching		local
+int			bin=122			local
+flex		vel				local
+flex		offset			local
+flex		tmp				local
+flex		pi				local
+flex		theta			local
+
+message		startup
+message		newplayer
+message     activated
+message		pulse
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+	pi = 3.14159;
+newplayer:
+	player = GetLocalPlayerThing();
+	if(active) goto head_bob_on;
+	Return;
+	
+activated:
+	#player = GetSourceRef();
+	if(active) goto head_bob_off;
+	else goto head_bob_on;
+	Return;
+
+pulse:
+	if(GetCurrentCamera() != 0) return;		// don't calculate anything if not in 1st person
+	vel = VectorLen(GetThingVel(player));
+	if(GetAttachFlags(player))
+	{
+		crouching = IsThingCrouching(player);
+		if(crouching)
+			theta = theta + vel * 0.7;
+		else
+			theta = theta + vel * 0.32;
+		while(theta > 2*pi) theta = theta - 2*pi;
+		while(theta < 0) theta = theta + 2*pi;
+		if(vel > 0.02)
+		{
+			# COSINE CODE
+			if(theta > 3*pi/2)		// 3/2 pi < theta < 2 pi
+			{
+				tmp = 2*pi - theta;
+				tmp = tmp*tmp;
+				tmp = (1 - tmp / 2 + tmp * tmp / 24);
+			}
+			else if(theta > pi)		// pi < theta < 3/2 pi
+			{
+				tmp = theta - pi;
+				tmp = tmp*tmp;
+				tmp = -(1 - tmp / 2 + tmp * tmp / 24);
+			}
+			else if(theta > pi / 2)	// 1/2 pi < theta < pi
+			{
+				tmp = pi - theta;
+				tmp = tmp*tmp;
+				tmp = -(1 - tmp / 2 + tmp * tmp / 24);
+			}
+			else					// 0 < theta < 1/2 pi
+			{
+				tmp = theta*theta;
+				tmp = (1 - tmp / 2 + tmp * tmp / 24);		
+			}
+			if(crouching)
+				offset = vel * 0.012 * tmp;
+			else
+				offset = vel * 0.0075 * tmp;
+		}
+		else	// if(vel < 0.02)
+		{
+			offset = 0;
+		}
+	}
+	else	// if(!getAttachFlags(player))
+	{
+		theta = pi;
+		offset = 0;
+	}
+
+#####
+	SetInv(player, bin, offset);
+#	SetPOVShake(VectorSet(0, 0, offset), '0 0 0', 0, 0);
+	return;
+	
+head_bob_on:
+	active = 1;
+	theta = 0;
+	print("Head bob on");
+	SetPulse(0.01);
+	return;
+
+head_bob_off:
+	active = 0;
+	print("Head bob off");
+	SetPulse(0);
+	// reset the view
+	SetPOVShake('0 0 0', '0 0 0', 0, 0);
+	return;
+
+end
+

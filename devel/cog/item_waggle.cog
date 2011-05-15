@@ -1,0 +1,167 @@
+# Jedi Knight Cog Script
+#
+# ITEM_WAGGLE.COG
+#
+# INVENTORY Script - Waggle
+#
+# Controls the waggle mode
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+
+symbols
+
+thing       player			local
+
+int			weap			local
+
+# Individual settings for each weapon
+int			wag1=0			local
+int			wag2=0			local
+int			wag3=0			local
+int			wag4=0			local
+int			wag5=0			local
+int			wag6=0			local
+int			wag7=0			local
+int			wag8=0			local
+int			wag9=0			local
+int			wag10=0			local
+
+# Waggle Vectors
+vector		waggle_vec0		local
+vector		waggle_vec1		local
+vector		waggle_vec2		local
+vector		waggle_vec3		local
+vector		waggle_vec4		local
+vector		waggle_vec5		local
+vector		waggle_vec6		local
+vector		waggle_vec7		local
+vector		waggle_vec8		local
+vector		waggle_vec9		local
+vector		waggle_vec10	local
+
+# Waggle Speeds
+flex		waggle_spd0		local
+flex		waggle_spd1		local
+flex		waggle_spd2		local
+flex		waggle_spd3		local
+flex		waggle_spd4		local
+flex		waggle_spd5		local
+flex		waggle_spd6		local
+flex		waggle_spd7		local
+flex		waggle_spd8		local
+flex		waggle_spd9		local
+flex		waggle_spd10	local
+
+message		startup
+message     activated
+
+end
+
+# ========================================================================================
+
+code
+startup:
+	waggle_vec0 = '10 7 0';		// Regular JK
+	waggle_vec1 = '2 5 0';		// Wide JK
+	waggle_vec2 = '7 4 0';		// Narrow JK
+	waggle_vec3 = '5 1 0';		// Ultra Narrow JK
+	waggle_vec4 = '1 1 1';		// Small Waggle
+	waggle_vec5 = '-10 7 0';	// Inverted
+	waggle_vec6 = '-2 5 0';		// Wide Inverted
+	waggle_vec7 = '-7 4 0';		// Narrow Inverted
+	waggle_vec8 = '-5 1 0';		// Ultra Narrow Inverted
+	waggle_vec9 = '-1 1 1';		// Small Inverted Waggle
+	waggle_vec10 = '0 0 0';		// Off
+	
+	waggle_spd0 = 350;
+	waggle_spd1 = 350;
+	waggle_spd2 = 450;
+	waggle_spd3 = 350;
+	waggle_spd4 = 350;
+	waggle_spd5 = 350;
+	waggle_spd6 = 350;
+	waggle_spd7 = 450;
+	waggle_spd8 = 350;
+	waggle_spd9 = 350;
+	waggle_spd10 = 0;
+	
+	# x, y, z, s -- all the components of the jk waggle
+	# Send initial values to all weapon cogs
+	goto SendAllValues;		# NO CODE AFTER THIS LINE; 'GOTO' DOES NOT RETURN!
+	Return;
+
+activated:
+	player = GetSourceRef();
+	weap = GetCurWeapon(player) - 1;
+	if(weap < 0) return;
+	if(isThingCrouching(player))
+	{
+		print("Assigning current waggle to all weapons...");
+		# send the same waggle info to all weapon cogs
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 1), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 2), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 3), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 4), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 5), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 6), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 7), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 8), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 9), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		SendMessageEx(GetInvCog(GetLocalPlayerThing(), 10), user4, VectorX(waggle_vec0[wag1[weap]]),
+			VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+		return;
+	}
+	wag1[weap] = wag1[weap] + 1;
+	if(wag1[weap] > 10) wag1[weap] = 0;
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), weap+1), user4, VectorX(waggle_vec0[wag1[weap]]),
+		VectorY(waggle_vec0[wag1[weap]]), VectorZ(waggle_vec0[wag1[weap]]), waggle_spd0[wag1[weap]]);
+	if(wag1[weap] == 0) print("Waggle: JK Upright");
+	else if(wag1[weap] == 1) print("Waggle: Wide Upright");
+	else if(wag1[weap] == 2) print("Waggle: Narrow Upright");
+	else if(wag1[weap] == 3) print("Waggle: Very Narrow Upright");
+	else if(wag1[weap] == 4) print("Waggle: Small Radius Upright");
+	else if(wag1[weap] == 5) print("Waggle: JK Inverted");
+	else if(wag1[weap] == 6) print("Waggle: Wide Inverted");
+	else if(wag1[weap] == 7) print("Waggle: Narrow Inverted");
+	else if(wag1[weap] == 8) print("Waggle: Very Narrow Inverted");
+	else if(wag1[weap] == 9) print("Waggle: Small Radius Inverted");
+	else print("Waggle: Off");
+	Return;
+
+SendAllValues:
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 1), user4,
+		VectorX(waggle_vec0[wag1]), VectorY(waggle_vec0[wag1]), VectorZ(waggle_vec0[wag1]), waggle_spd0[wag1]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 2), user4,
+		VectorX(waggle_vec0[wag2]), VectorY(waggle_vec0[wag2]), VectorZ(waggle_vec0[wag2]), waggle_spd0[wag2]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 3), user4,
+		VectorX(waggle_vec0[wag3]), VectorY(waggle_vec0[wag3]), VectorZ(waggle_vec0[wag3]), waggle_spd0[wag3]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 4), user4,
+		VectorX(waggle_vec0[wag4]), VectorY(waggle_vec0[wag4]), VectorZ(waggle_vec0[wag4]), waggle_spd0[wag4]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 5), user4,
+		VectorX(waggle_vec0[wag5]), VectorY(waggle_vec0[wag5]), VectorZ(waggle_vec0[wag5]), waggle_spd0[wag5]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 6), user4,
+		VectorX(waggle_vec0[wag6]), VectorY(waggle_vec0[wag6]), VectorZ(waggle_vec0[wag6]), waggle_spd0[wag6]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 7), user4,
+		VectorX(waggle_vec0[wag7]), VectorY(waggle_vec0[wag7]), VectorZ(waggle_vec0[wag7]), waggle_spd0[wag7]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 8), user4,
+		VectorX(waggle_vec0[wag8]), VectorY(waggle_vec0[wag8]), VectorZ(waggle_vec0[wag8]), waggle_spd0[wag8]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 9), user4,
+		VectorX(waggle_vec0[wag9]), VectorY(waggle_vec0[wag9]), VectorZ(waggle_vec0[wag9]), waggle_spd0[wag9]);
+	SendMessageEx(GetInvCog(GetLocalPlayerThing(), 10), user4,
+		VectorX(waggle_vec0[wag10]), VectorY(waggle_vec0[wag10]), VectorZ(waggle_vec0[wag10]), waggle_spd0[wag10]);
+	return;
+
+end
+

@@ -19,8 +19,6 @@
 # Hold the button to target some pullable object, or a player or actor to
 #  pull their weapon from. Same functionality as normal JK.
 #
-# Mana cost is 40 for pull, and 60 for push
-#
 # [darthslaw]
 #
 # (C) 2006 JK ReCog
@@ -51,6 +49,14 @@ int         IsAFlag=0                        local
 
 int			mode							local
 flex		len								local
+
+template	crosshair_tpl0=+crosshair_green_line_h	local
+template	crosshair_tpl1=+crosshair_green_line_v	local
+template	crosshair_tpl2=+crosshair_green_line_d1	local
+template	crosshair_tpl3=+crosshair_green_line_d2	local
+template	p_tpl							local
+
+int			i								local
 
 message     startup
 message     activated
@@ -199,6 +205,11 @@ deactivated:
 							IsAFlag = 1;
 						}
 					}
+					
+					p_tpl = GetThingTemplate(potential);
+					for(i = 0; i < 4; i = i + 1)
+						if(p_tpl == crosshair_tpl0[i])
+							IsAFlag = 1;				//not really a flag, but this will prevent the crosshairs from being pushed
 
 					if(!IsAFlag)
 					{

@@ -1,0 +1,181 @@
+# Jedi Knight Cog Script
+#
+# INV_DODGE.COG
+#
+# Dodge/Roll inventory cog
+#
+# When the player is moving or strafing, and hits the crouch button, they will perform
+#  a dodge.
+# Also keeps track of double-taps, which also trigger dodging.
+#
+# [darthslaw]
+#
+# (c) 2006 JK ReCog
+
+symbols
+
+message		startup
+message		pulse
+message		timer
+
+thing		player			local
+vector		thrust			local
+flex		x_thrust		local
+flex		y_thrust		local
+int			crouching		local
+int			dodged			local
+int			recovering		local
+
+keyframe	rollr=kyrollr.key		local
+keyframe	rollfwd=kyrollf.key		local
+keyframe	rollrfwd=kyrollrf.key	local
+keyframe	rolllfwd=kyrolllf.key	local
+keyframe	rolll=kyrolll.key		local
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+	Sleep(0.2);
+	SetPulse(0.01);
+	dodged = 0;
+	recovering = 0;
+	return;
+
+# ........................................................................................
+
+pulse:
+	player = GetLocalPlayerThing();
+	thrust = GetThingThrust(player);
+	x_thrust = VectorX(thrust);
+	y_thrust = VectorY(thrust);
+	crouching = IsThingCrouching(player);
+	if(!GetAttachFlags(player)) 	// can't dodge in the air, but we can roll when we land if crouch is held
+	{
+		print("Airborne; no dodge");
+		return;
+	}
+	if(crouching)
+	{
+		if(!dodged)
+		{
+			if(recovering)			//too soon to make another dodge... make it so that no dodge is made
+			{
+				x_thrust = 0;
+				y_thrust = 0;
+				dodged = 1;
+				print("recovering from last dodge");
+				return;
+			}
+			recovering = 1;
+			if(x_thrust > 0)		//right
+			{
+				if(y_thrust > 0)		//forward
+				{
+					print("Dodge right + forward");
+					thrust = GetThingRVec(player);
+					thrust = VectorNorm(VectorAdd(thrust, GetThingLVec(player)));
+					PlayKey(player, rollrfwd, 2, 0x28);
+				}
+				else if(y_thrust < 0)	//backward
+				{
+					print("Dodge right + back");
+					thrust = GetThingRVec(player);
+					thrust = VectorNorm(VectorAdd(thrust, VectorScale(GetThingLVec(player), -1)));
+				}
+				else					//center
+				{
+					print("Dodge right");
+					thrust = GetThingRVec(player);
+					PlayKey(player, rollr, 2, 0x28);
+				}
+			}
+			else if(x_thrust < 0)	//left
+			{
+				if(y_thrust > 0)		//forward
+				{
+					print("Dodge left + forward");
+					thrust = VectorScale(GetThingRVec(player), -1);
+					thrust = VectorNorm(VectorAdd(thrust, GetThingLVec(player)));
+					PlayKey(player, rolllfwd, 2, 0x28);
+				}
+				else if(y_thrust < 0)	//backward
+				{
+					print("Dodge left + back");
+					thrust = VectorScale(GetThingRVec(player), -1);
+					thrust = VectorNorm(VectorAdd(thrust, VectorScale(GetThingLVec(player), -1)));
+				}
+				else					//center
+				{
+					print("Dodge left");
+					thrust = VectorScale(GetThingRVec(player), -1);
+					PlayKey(player, rolll, 2, 0x28);
+				}
+			}
+			else					//center
+			{
+				if(y_thrust > 0)			//forward
+				{
+					thrust = GetThingLVec(player);
+					print("Dodge forward");
+					PlayKey(player, rollfwd, 2, 0x28);
+				}
+				else if(y_thrust < 0)		//backward
+				{
+					thrust = VectorScale(GetThingLVec(player), -1);
+					print("Dodge back");
+				}
+				else						//center
+				{
+					thrust = '0 0 0';
+					recovering = 0;			//since we aren't dodging, we don't need to recover
+					print("No dodge");
+				}
+			}
+			dodged = 1;
+			if(recovering)					//if we need to recover (e.g. we are making a dodge)
+			{
+				//Set delay for recovery time
+				SetTimerEx(0.8, 10, 0, 0);
+				//Give the player a boost of speed in the direction he is going
+				ApplyForce(player, VectorScale(thrust, 200));
+				//Disable thrust (re-enabled after a timer
+				ClearPhysicsFlags(player, 0x2);
+				SetTimerEx(0.5, 20, 0, 0);
+				SetTimerEx(0.2, 30, VectorX(thrust), VectorY(thrust));				
+				print("Dodging!");
+			}
+		}
+	}
+	else
+	{
+		dodged = 0;
+	}
+	return;
+
+# ........................................................................................
+
+timer:
+	if(GetSenderID() == 10)			// recovery time elapsed
+	{
+		recovering = 0;		//recover delay has elapsed; allow dodges again
+		return;
+	}
+	if(GetSenderID() == 20)			// re-enabke player thrust
+	{
+		SetPhysicsFlags(player, 0x2);
+		return;
+	}
+	if(GetSenderID() == 30)			// extra thrust
+	{
+		if(GetAttachFlags(player))		// only if still on the ground
+			ApplyForce(player, VectorScale(VectorSet(GetParam(0), GetParam(1), 0), 80));
+		return;
+	}
+	
+	return;
+end
+

@@ -4,6 +4,15 @@
 	<formats>
 		<format>zip</format>
 	</formats>
+	<fileSets>
+		<fileSet>
+			<outputDirectory>\</outputDirectory>
+			<directory>${project.basedir}</directory>
+			<includes>
+				<include>*.doc</include>
+			</includes>
+		</fileSet>
+	</fileSets>
 	<files>
 		<file>
 			<outputDirectory>\</outputDirectory>

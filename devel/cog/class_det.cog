@@ -8,19 +8,29 @@
 #
 # [darthslaw]
 #
-# (c) 2006 JK Recog
+# (c) 2007 JK Recog
 
 symbols
 
 message		created
+message		removed
+message		timer
 
 sound		loopSound=ThermLoop02.wav		local
 
 thing		dummy							local
+thing		player							local
+thing		TD								local
 
 template	tpl								local
 template	tpl1=+grenade1					local
 template	tpl2=+actor_grenade				local
+
+int			i								local
+flex		dot								local
+
+#template	mark_tpl=+blastmark				local
+#thing		mark							local
 
 end
 
@@ -30,7 +40,54 @@ created:
 	dummy = GetSenderRef();
 	tpl = GetThingTemplate(dummy);
 	if(tpl != tpl1 && tpl != tpl2) return;		//don't do anything if the template is not the right one
-	PlaySoundThing(loopSound, GetSenderRef(), 1.0, -1, -1, 0x81);
+	PlaySoundThing(loopSound, dummy, 1.0, -1, -1, 0x81);
 	Return;
-
+	
+removed:
+	#mark = createThing(mark_tpl, GetSenderRef());
+	#SetThingVel(mark, '0 0 -0.5');				//toward ground
+	#SetTimerEx(0.05, 10, mark, GetThingSignature(mark));	//for clearing thingflag 0x10
+	#SetTimerEx(10.0, 20, mark, GetThingSignature(mark));	//for removing the mark
+	TD = GetSenderRef();
+	tpl = GetThingTemplate(TD);
+	if(tpl != tpl1 && tpl != tpl2) return;		//don't do anything if the template is not the right one
+	for(i=0;i<=GetNumPlayers();i=i+1)
+	{
+		player = GetPlayerThing(i);
+		if(HasLOS(player, TD))
+		{
+			dot = ThingViewDot(player, TD);
+			dot = 200 * (3 - VectorDist(GetThingPos(player), GetThingPos(TD))) / 3 * ((dot + 1) / 2 * 0.6 + 0.4);
+			if(dot > 155)
+				dot = 155;
+			if(dot > 0)
+				AddDynamicAdd(player, dot, dot, dot / 1.05);
+		}
+	}
+	return;
+	
+timer:
+	if(GetSenderID() == 10)						//check if blast mark is attached to a surface
+	{
+		if(GetThingSignature(GetParam(0)) != GetParam(1)) return;	//not the same thing...
+		if(!(GetThingAttachFlags(GetParam(0)) & 0x1))				//if not attached to a level surface
+		{
+			DestroyThing(GetParam(0));
+		}
+		else														//else, clear invisibility thingflag
+		{
+			ClearThingFlags(GetParam(0), 0x10);
+		}
+	}
+	if(GetSenderID() == 20)
+	{
+		if(GetThingSignature(GetParam(0)) != GetParam(1)) return;	//not the same thing...
+		// the dot code needs work -- if you're closer, the dot range should be wider, etc.
+		if(ThingViewDot(GetLocalPlayerThing(), GetParam(0)) < 0.7)	//player not looking at mark
+			DestroyThing(GetParam(0));								//so remove it
+		else
+			SetTimerEx(2, 20, GetParam(0), GetParam(1));			//Try again in a bit
+	}
+	return;
+	
 end

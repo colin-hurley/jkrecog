@@ -1,0 +1,29 @@
+# Jedi Knight Cog Script
+#
+# ITEM_CROSSHAIR.COG
+#
+# This is a buffer script. It collects the activated messages from the inventory list,
+# and forwards the messages to the crosshair bin.
+#
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+symbols
+
+message	activated
+
+int		xhair_bin=119		local
+
+end
+
+# ========================================================================================
+
+code
+
+activated:
+	SendMessage(GetInvCog(GetLocalPlayerThing(), xhair_bin), activated);
+	return;
+
+end
+

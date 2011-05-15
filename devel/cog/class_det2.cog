@@ -10,7 +10,7 @@
 #
 # [darthslaw]
 #
-# (c) 2006 JK Recog
+# (c) 2007 JK Recog
 
 symbols
 
@@ -24,6 +24,11 @@ sound		loopSound=ThermLoop02.wav		local
 int			channel=-1						local
 
 thing		dummy							local
+thing		player							local
+thing		TD								local
+
+int			i								local
+flex		dot								local
 
 template	tpl								local
 template	tpl1=+grenade2					local
@@ -57,7 +62,23 @@ timer:
 	Return;
 
 removed:
-	KillTimerEx(GetSenderRef() + 10);		//TDet will explode early -- cancel timers for warning beep
+	TD = GetSenderRef();
+	tpl = GetThingTemplate(TD);
+	if(tpl != tpl1 && tpl != tpl2 && tpl3 != tpl) return;		//don't do anything if the template is not the right one
+	KillTimerEx(TD + 10);		//TDet will explode early -- cancel timers for warning beep
+	for(i=0;i<=GetNumPlayers();i=i+1)
+	{
+		player = GetPlayerThing(i);
+		if(HasLOS(player, TD))
+		{
+			dot = ThingViewDot(player, TD);
+			dot = 200 * (3 - VectorDist(GetThingPos(player), GetThingPos(TD))) / 3 * ((dot + 1) / 2 * 0.6 + 0.4);
+			if(dot > 155)
+				dot = 155;
+			if(dot > 0)
+				AddDynamicAdd(player, dot, dot, dot / 1.05);
+		}
+	}
 	return;
 
 end
