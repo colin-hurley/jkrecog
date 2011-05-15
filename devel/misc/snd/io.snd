@@ -1,0 +1,54 @@
+# imperial officer foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+jump		jumpbasic01.wav		0x0	1.0     4.0
+falling		I00IC20Z.WAV		0x10000	1.0     4.0	   # aayyyeeeahhh
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+alert		i00o105z.wav		0x14000		# don't belong here
+alert		i00o101z.wav		0x14000		# blast him
+
+# curious		i00o108z.wav		0x10000		# find hime
+curious		i00o104z.wav		0x10000		# kill him
+
+death1		i00o109z.wav		0x10000     1.0     4.0	
+death2		i00o109z.wav		0x10000     1.0     4.0	
+
+# victory		i00o103z.wav		0x10000		# want ship checked
+
+hurtimpact	I00IC18Z.WAV		0x10000     1.0     4.0	   # agggh
+hurtenergy	I00IC17Z.WAV		0x10000     1.0     4.0	   # uhh
+hurtfire	I00IC17Z.WAV		0x10000     1.0     4.0    # uhh
+hurtmagic	I00IC18Z.WAV		0x10000     1.0     4.0    # agggh
+hurtspecial	I00IC18Z.WAV		0x10000     1.0     4.0    # agggh
+hurtspecial	I00IC19Z.WAV		0x10000     1.0     4.0    # uuugghhh
+
+fire1		trprsht1.wav		0x0     1.0     4.0
+
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+corpsehit	bodyfall01.wav		0x0     0.8     4.0
+
+# i00o101z.wav    # Blast him!
+# i00o102z.wav    # Don't let him get to the valley core.
+# i00o103z.wav    # I want every part of this ship checked.
+# i00o104z.wav    # If there's an intruder, kill him.
+# i00o105z.wav    # You don't belong here.
+# i00o106z.wav    # TK421, anything to report?
+# i00o107z.wav    # Remain at your post.
+# i00o108z.wav    # He's somewhere on this ship. Find him.
+# i00o109z.wav    # arruggh!
+
+

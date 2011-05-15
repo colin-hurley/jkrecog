@@ -1,0 +1,58 @@
+# Yun level 17 foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+death1		I00yu09Z.wav	0x010000     1.0     4.0
+death2		I00yu09Z.wav	0x010000     1.0     4.0
+
+choking		I00yu08Z.wav	0x010000
+
+gloat		I00yu10Z.wav    0x010000
+victory		I00yu13Z.wav	0x010000
+victory		I00yu11Z.wav	0x010000
+happy		I00yu13Z.wav	0x010000
+
+hurtenergy 	I00yu04Z.wav	0x010000     1.0     4.0
+hurtenergy 	I00yu05Z.wav	0x010000     1.0     4.0
+hurtenergy 	I00yu06Z.wav	0x010000     1.0     4.0
+hurtfire 	I00yu04Z.wav	0x010000     1.0     4.0
+hurtfire 	I00yu07Z.wav	0x010000     1.0     4.0
+hurtimpact 	I00yu05Z.wav	0x010000     1.0     4.0
+hurtimpact 	I00yu06Z.wav	0x010000     1.0     4.0
+hurtmagic 	I00yu06Z.wav	0x010000     1.0     4.0
+hurtmagic 	I00yu07Z.wav	0x010000     1.0     4.0
+hurtspecial	I00yu04Z.wav	0x010000     1.0     4.0
+hurtspecial	I00yu05Z.wav	0x010000     1.0     4.0
+hurtspecial	I00yu06Z.wav	0x010000     1.0     4.0
+hurtspecial	I00yu07Z.wav	0x010000     1.0     4.0
+
+fire1		LtSaberSwing02.wav	0x0     1.0     4.0
+fire2		LtSaberSwing04.wav	0x0     1.0     4.0
+
+alert		I00yu01Z.wav	0x014000	1.0     4.0
+surprise	I00yu12Z.wav	0x010000
+reserved1	I00yu12Z.wav	0x010000
+
+jump		I00yu11Z.wav    0x010000
+jumpmetal	I00yu11Z.wav	0x010000
+jumpwater	I00yu11Z.wav    0x010000
+jumpearth	I00yu11Z.wav    0x010000
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+
+corpsehit	bodyfall03.wav	0x0     1.0     5.0
+deflected	LtSaberHit12.wav
+deflected	LtSaberHit15.wav
+
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5

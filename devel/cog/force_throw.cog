@@ -1,0 +1,255 @@
+# Jedi Knight Cog Script
+#
+# FORCE_THROW.COG
+#
+# FORCEPOWER Script - Force Throw
+#  Dark Side Power
+#  Bin 30
+#
+# Pick up objects via the force and they hover in front of you
+# Release the button and the throwable(s) will fly forward
+# As rank increases, you can hold more objects:
+#  1 star  - 1 object
+#  2 stars - 3 objects
+#  3 stars - 5 objects
+#  4 stars - 7 objects
+#
+# This can be good as a shield
+#
+# [darthslaw]
+#
+# (C) 2006 JK ReCog
+
+
+symbols
+
+thing       player                           local
+thing       debris0=-1                       local
+thing       debris1=-1                       local
+thing       debris2=-1                       local
+thing       debris3=-1                       local
+thing       debris4=-1                       local
+thing       debris5=-1                       local
+thing       debris6=-1                       local
+
+int			maxdebris						local
+
+flex        mana                             local
+flex        maxDot                           local
+flex        dot                              local
+flex        cost=30                          local
+int         rank                             local
+
+vector      dir0                              local
+vector      dir1                              local
+vector      dir2                              local
+vector      dir3                              local
+vector      dir4                              local
+vector      dir5                              local
+vector      dir6                              local
+
+sound       throwSound=ForceThrow01.WAV      local
+
+template	ghost_tpl=+grip_ghost			local
+thing		dummy=-1						local
+thing		debris							local
+int			debriscount						local
+int			i								local
+vector		vec								local
+vector		rvec							local
+vector		uvec							local
+
+message     startup
+message     activated
+message     deactivated
+message     pulse
+message     newplayer
+message     killed
+message     deselected
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+	call stop_power;
+   Return;
+
+# ........................................................................................
+
+activated:
+	// Cannot use power if blinded
+	if(GetActorFlags(player) & 0x800) Return;
+
+	mana = GetInv(player, 14);
+	rank = GetInv(player, 30);
+	maxdebris = 2 * rank - 1;
+	debriscount = 0;
+
+	call find_debris;
+	if(debris0 != -1)
+	{
+		SetInvActivated(player, 30, 1);
+		SetPulse(0.1);
+	}
+
+	Return;
+
+# ........................................................................................
+
+pulse:
+	if(debriscount < maxdebris) call find_debris;	//can carry more debris
+	dummy = FireProjectile(player, ghost_tpl, -1, -1, '0 0.5 0', '0 0 0', 0, 0, 0, 0x0);
+	vec = GetThingPos(dummy);
+	uvec = GetThingUVec(dummy);
+	rvec = GetThingRVec(dummy);
+
+	dir0 = vec;
+	dir0 = VectorSub(dir0, GetThingPos(debris0));
+	
+	dir1 = VectorAdd(vec, VectorScale(rvec, 0.15));
+	dir1 = VectorAdd(dir1, VectorScale(uvec, -0.06));
+	dir1 = VectorSub(dir1, GetThingPos(debris1));
+	
+	dir2 = VectorAdd(vec, VectorScale(rvec, -0.14));
+	dir2 = VectorAdd(dir2, VectorScale(uvec, -0.04));
+	dir2 = VectorSub(dir2, GetThingPos(debris2));
+	
+	dir3 = VectorAdd(vec, VectorScale(rvec, -0.2));
+	dir3 = VectorAdd(dir3, VectorScale(uvec, 0.1));
+	dir3 = VectorSub(dir3, GetThingPos(debris3));
+	
+	dir4 = VectorAdd(vec, VectorScale(rvec, 0.2));
+	dir4 = VectorAdd(dir4, VectorScale(uvec, 0.05));
+	dir4 = VectorSub(dir4, GetThingPos(debris4));
+	
+	dir5 = VectorAdd(vec, VectorScale(rvec, 0.02));
+	dir5 = VectorAdd(dir5, VectorScale(uvec, 0.15));
+	dir5 = VectorSub(dir5, GetThingPos(debris5));
+	
+	dir6 = VectorAdd(vec, VectorScale(rvec, 0.15));
+	dir6 = VectorAdd(dir6, VectorScale(uvec, 0.2));
+	dir6 = VectorSub(dir6, GetThingPos(debris6));
+	
+	for(i = 0; i < maxdebris; i = i + 1)
+	{
+		if(debris0[i] != -1)
+		{
+			vec = VectorScale(dir0[i], 4.5);
+			ClearPhysicsFlags(debris0[i], 0x41);
+			DetachThing(debris0[i]);
+			if(vectorlen(vec) < 0.04) SetThingVel(debris0[i], '0 0 0');
+			else SetThingVel(debris0[i], vec);
+		}
+	}
+
+	Return;
+
+# ........................................................................................
+
+deactivated:
+   if((GetThingHealth(player) <= 0))
+   {
+      call stop_power;
+      Return;
+   }
+
+   // Cannot use power if blinded
+   if(GetActorFlags(player) & 0x800)
+   {
+      call stop_power;
+      Return;
+   }
+
+
+
+         PlayMode(player, 24);
+
+         PlaySoundThing(throwSound, player, 1.0, -1, -1, 0x80);
+         //if(GetInv(player, 64) != 1) ChangeInv(player, 14, -cost);
+         SetBinWait(player, 30, 0.2);
+         
+         dummy = FireProjectile(player, ghost_tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0x0);
+         vec = GetThingLVec(dummy);
+for(i = 0; i < maxdebris; i = i + 1)
+{
+	if(debris0[i] != -1)
+	{
+		detachthing(debris0[i]);
+		ApplyForce(debris0[i], VectorScale(vec, 300));
+	}
+}
+   call stop_power;
+   Return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 30);
+   Return;
+
+# ........................................................................................
+
+deselected:
+	call stop_power;
+   Return;
+
+# ........................................................................................
+
+killed:
+   if(GetSenderRef() != player) Return;
+
+newplayer:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   SetPulse(0);
+   SetInvActivated(player, 30, 0);
+   call stop_debris;
+
+   Return;
+   
+stop_debris:
+	for(i = 0; i < 7; i = i + 1)
+	{
+		if(debris0[i] != -1)
+		{
+			SetPhysicsFlags(debris0[i], 0x41);	//restore gravity effects and surface attachment
+		}
+		debris0[i] = -1;
+	}
+	debriscount = 0;
+return;
+
+find_debris:
+	// Check for debris objects in view.
+	debris = FirstThingInView(player, 120, 7, 0x010);   // 0x010 debris
+	while(debris != -1 && debriscount < maxdebris)
+	{
+		inlist = 0;
+		for(i = 0; i < debriscount; i = i + 1)
+		{
+			if(debris == debris0[i])
+			{
+				i = maxdebris;	//break
+				inlist = 1;		//debris is already in use; don't add again
+			}
+		}
+		if(!inlist && HasLOS(player, debris))	//player can see the debris and it is not in the list already
+		{
+			debris0[debriscount] = debris;
+			debriscount = debriscount + 1;
+		}
+		debris = NextThingInView();
+	}
+	return;
+end
+

@@ -1,0 +1,27 @@
+# Bossk foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+hurtimpact	bossk-3.wav	0x010000     1.0     4.0
+hurtenergy	bossk-3.wav	0x010000     1.0     4.0    	
+hurtspecial	bossk-3.wav	0x010000     1.0     4.0 	
+
+death1		bosskdie.wav	0x010000     1.0     4.0
+death2		bosskdie.wav	0x010000     1.0     4.0 	
+
+fire1		concuss5.wav	0x0     1.0     4.0
+fire2		SwingFist02.wav	0x0     0.5     2.5
+
+alert		bossk-1.wav	0x014000
+
+corpsehit	bodyfall05.wav	0x0     0.8     4.0
+
+
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5

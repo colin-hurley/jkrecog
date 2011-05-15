@@ -1,0 +1,42 @@
+# Tusken with stormtrooper rifle foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+falling		00TuskenFalling01.WAV	0x01	
+
+hurtimpact	00TuskenGetHit01.WAV	0x010000         1.0     4.0
+hurtenergy	00TuskenGetHit02.WAV	0x010000         1.0     4.0   	
+hurtenergy	00TuskenGetHit03.WAV	0x010000         1.0     4.0   	
+hurtmagic	00TuskenGetHit02.WAV	0x010000         1.0     4.0   	
+hurtfire	00TuskenGetHit03.WAV	0x010000         1.0     4.0	
+hurtspecial	00TuskenGetHit01.WAV	0x010000         1.0     4.0
+hurtspecial	00TuskenGetHit03.WAV	0x010000         1.0     4.0	
+
+death1		00TuskenDie01.WAV	0x010000         1.0     4.0
+death1		00TuskenDie02.WAV	0x010000         1.0     4.0
+death2		00TuskenDie01.WAV	0x010000         1.0     4.0
+death2		00TuskenDie02.WAV	0x010000         1.0     4.0
+
+fire1		trprsht1.WAV	0x0     	 1.0     4.0
+fire2		trprsht1.WAV	0x0     	 1.0     4.0
+alert		00TuskenHowl02.wav	0x014000
+victory		00TuskenHowl01.wav	0x010000
+curious		00TuskenHowl03.wav	0x010000
+
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+corpsehit	bodyfall03.wav		0x0     0.8     4.0
+
+
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5

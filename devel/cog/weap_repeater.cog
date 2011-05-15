@@ -1,0 +1,375 @@
+# Jedi Knight Cog Script
+#
+# WEAP_REPEATER.COG
+#
+# WEAPON 6 Script - Repeater
+# This is the same rifle that was in Dark Forces with the heat sink shield and the
+# three barrel design. It is a rapid fire rifle. With the option button you can fire
+# all three barrels at once at a slower rate.
+#
+# - Affected by MagSealed sectors/surfaces.
+#
+# The weapon now experiences recoil, and the secondary fire now fires in a triangular
+#  cluster pattern.  The projectiles for secondary fire are now more accurate, but
+#  less precise.
+#
+# [10/18/2006]
+#   Added code that makes shots increase in error with each shot.
+# [10/19/2006]
+#  Crosshair pulse added.
+#
+# [darthslaw]
+#
+# (C) 2006, JK ReCog
+
+
+symbols
+
+model       povModel=rptv.3do                   local
+model       weaponMesh=rptg.3do                 local
+
+keyframe    mountAnim=RptVmnt.key               local
+keyframe    dismountAnim=RptVdis.key            local
+keyframe    povfireAnim=RptVpst1.key            local
+keyframe    povfireAnim1=RptVpst2.key           local
+keyframe    povfireAnim2=RptVpst3.key           local
+keyframe    holsterAnim=kyhlstr.key             local
+
+sound       mountSound=df_bry_ready.wav         local
+sound       dismountSound=PutWeaponAway01.wav   local
+sound       fireSound=rpeatrlp.wav              local
+sound       fireSound1=repeat-1.wav             local
+sound       outSound=trprout.wav                local
+
+vector      fireOffset                          local
+#vector      adjOffset                           local
+vector      shakePos                            local
+vector      shakeAngle                          local
+vector		vec									local
+
+template    projectile=+repeaterball            local
+
+thing       player                              local
+
+flex        fireWait=0.1                        local
+flex        powerBoost                          local
+#flex        lastFireTime=0                      local
+#flex        curFireTime=0                       local
+flex        autoAimFOV=25                       local
+flex        autoAimMaxDist=5                    local
+#flex        numExpectedFires                    local
+#flex        extraSimTime                        local
+flex        holsterWait                         local
+flex		r									local
+flex		err									local
+
+int         trackID=-1                          local
+int         mode                                local
+int         fireChannel=-1                      local
+#int         dummy                               local
+int         ammoCost                            local
+int         holsterTrack                        local
+int			anim=0								local
+
+template	crosshair_tpl0=+crosshair_green_line_v	local
+template	crosshair_tpl1=+crosshair_green_line_d1	local
+template	crosshair_tpl2=+crosshair_green_line_d2	local
+vector		xhair_offset							local
+int			firing=0								local
+flex		offset									local
+
+message     startup
+message     activated
+message     deactivated
+message     selected
+message     deselected
+message     newplayer
+message     killed
+message     autoselect
+message     fire
+message     timer
+message		pulse
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+   fireOffset = '0.0186 0.0102 0.00';
+
+   Return;
+
+# ........................................................................................
+
+activated:
+   mode   = GetSenderRef();
+   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+
+   if(mode > 1) Return;
+
+   if (mode == 0) ammoCost = 1.0;
+   else if (mode == 1) ammoCost = 3.0;
+   if(GetInv(player, 12) < ammoCost)
+   {
+      PlaySoundThing(outSound, player, 1.0, -1, -1, 0x180);
+      Return;
+   }
+
+   if (mode == 0)
+   {
+      if(fireChannel == -1)
+         fireChannel = PlaySoundThing(fireSound, player, 1.0, -1, -1, 0x181);
+      fireWait = 0.1;
+   }
+   else
+   if (mode == 1)
+   {
+      fireWait = 0.3;
+   }
+   anim = 0;		//start with a steady shot, then randomize after that..
+   powerBoost = GetInv(player, 63);
+   ActivateWeapon(player, fireWait/powerBoost, mode);
+   firing = 1;
+
+   Return;
+
+# ........................................................................................
+
+fire:
+   mode = GetSenderRef();
+
+   // Check that the player is still alive.
+   if(GetThingHealth(player) <= 0)
+   {
+      if(fireChannel != -1)
+      {
+         StopSound( fireChannel, 0.1 );
+         fireChannel = -1;
+         PlaySoundThing(fireSound1, player, 1.0, -1, -1, 0x180);
+      }
+      Return;
+   }
+
+   if (mode == 0) ammoCost = 1.0;
+   else
+   if (mode == 1) ammoCost = 3.0;
+
+   if(GetInv(player, 12) < ammoCost)
+   {
+      if (fireChannel != -1)
+      {
+         StopSound( fireChannel, 0.1 );
+         fireChannel = -1;
+         PlaySoundThing(fireSound1, player, 1.0, -1, -1, 0x180);
+      }
+
+      if(GetAutoSwitch() & 1)
+         SelectWeapon(player, AutoSelectWeapon(player, 1));
+
+      Return;
+   }
+
+	jkPlayPOVKey(player, povfireAnim[anim], 1, 0x38);
+	
+	r = rand();
+	// decide NEXT anim (since first shot is always accurate, first anim should be the straight one)
+	if(r > 0.67) anim = 2;
+	else if(r > 0.33) anim = 1;
+	else anim = 0;
+	
+	if (mode == 0)
+	{
+		shakePos = VectorScale(RandVec(), .001);
+		shakeAngle = VectorScale(VectorSet(VectorX(vec), VectorY(vec), 0), 1);
+		vec = VectorScale(VectorSet(3 * (rand() - 0.5), 3 * (rand() - 0.5), 0), err);
+		FireProjectile(player, projectile, -1, 8, fireOffset, vec, 1.0, 0x30, autoAimFOV, autoAimFOV*2 );
+		if(err < 1)
+			err = err + 0.1 + r * 0.2;
+		if(err > 1)
+			err = 1;
+	}
+	else
+	if (mode == 1)
+	{
+		shakePos = VectorScale(RandVec(), .002);
+		shakeAngle = VectorScale(RandVec(), 2);
+		vec = VectorSet(0.5 + 1.5 * rand(), 0, 0);							//from '2.0 0 0'
+		FireProjectile(player, projectile, fireSound1, 8, fireOffset, vec, 1.0, 0, autoAimFOV, autoAimMaxDist );
+		vec = VectorSet(-0.25 - 1.25 * rand(), 0.25 + 1.25 * rand(), 0);	//from '-1.5 1.5 0'
+		FireProjectile(player, projectile, -1, 8, fireOffset, vec, 1.0, 0, autoAimFOV, autoAimMaxDist );
+		vec = VectorSet(-0.25 - 1.25 * rand(), -0.25 - 1.25 * rand(), 0);	//from '-1.5 -1.5 0'
+		FireProjectile(player, projectile, -1, 8, fireOffset, vec, 1.0, 0, autoAimFOV, autoAimMaxDist );
+	}
+
+	SetPOVShake(shakePos, shakeAngle, .05, 80.0);
+   ChangeInv(player, 12, -ammoCost);
+
+   powerBoost = GetInv(player, 63);
+   ChangeFireRate(player, fireWait/powerBoost);
+
+   if(GetInv(player, 12) == 0)
+   {
+      if (fireChannel != -1)
+      {
+         StopSound( fireChannel, 0.1 );
+         fireChannel = -1;
+         PlaySoundThing(fireSound1, player, 1.0, -1, -1, 0x180);
+      }
+
+      if(GetAutoSwitch() & 1)
+         SelectWeapon(player, AutoSelectWeapon(player, 1));
+   }
+
+   Return;
+
+# ........................................................................................
+
+deactivated:
+   mode = GetSenderRef();
+
+   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+   if(fireChannel != -1)
+   {
+      StopSound( fireChannel, 0.1);
+      fireChannel = -1;
+      PlaySoundThing(fireSound1, player, 1.0, -1, -1, 0x180);
+   }
+   DeactivateWeapon( player, mode );
+   
+   firing = 0;
+
+   Return;
+
+# ........................................................................................
+
+selected:
+   PlayMode(player, 41);
+   PlaySoundThing(mountSound, player, 1.0, -1, -1, 0x80);
+
+   jkSetPOVModel(player, povModel);
+   SetArmedMode(player, 1);
+   jkSetWeaponMesh(player, weaponMesh);
+   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+
+   trackID = jkPlayPOVKey(player, mountAnim, 0, 20);
+   SetMountWait(player, GetKeyLen(mountAnim));
+
+   jkClearFlags(player, 0x5);
+   SetCurWeapon(player, 6);
+   
+   SetPulse(0.01);		//activate crosshairs
+   err = 0;
+   firing = 0;
+
+   Return;
+
+# ........................................................................................
+
+deselected:
+   if(fireChannel != -1)
+   {
+      StopSound(fireChannel, 0.1);
+      fireChannel = -1;
+   }
+
+   PlaySoundThing(dismountSound, player, 1.0, -1, -1, 0x80);
+   jkPlayPOVKey(player, dismountAnim, 0, 18);
+
+   holsterWait = GetKeyLen(holsterAnim);
+   SetMountWait(player, holsterWait);
+   holsterTrack = PlayKey(player, holsterAnim, 1, 0x4);
+   SetTimerEx(holsterWait, 2, 0.0, 0.0);
+   if (trackID != -1)
+   {
+      jkStopPOVKey(player, trackID, 0);
+      trackID = -1;
+   }
+   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+
+   Return;
+
+# ........................................................................................
+
+newplayer:
+//   // Make sure that if the player is respawning, the old mount isn't playing anymore.
+//   if(trackID != -1) jkStopPOVKey(player, trackID, 0);
+
+   if(fireChannel != -1)
+   {
+      StopSound(fireChannel, 0.1);
+      fireChannel = -1;
+   }
+
+   Return;
+   
+# ........................................................................................
+
+killed:
+   if (player == GetSenderRef())
+   {  
+      if(fireChannel != -1)
+      {
+         StopSound(fireChannel, 0.1);
+         fireChannel = -1;
+      }
+      setpulse(0);
+   }
+   Return;
+
+# ........................................................................................
+
+autoselect:
+   // If the player has the weapon
+   if(GetInv(player, 6) != 0.0)
+   {
+      // If the player has ammo
+      if(GetInv(player, 12) != 0.0)
+      {
+         ReturnEx(800.0);
+      }
+      else
+      {
+         ReturnEx(-1.0);
+      }
+   }
+   else
+   {
+      ReturnEx(-1.0);
+   }
+
+   Return;
+
+# ........................................................................................
+
+timer:
+   StopKey(player, holsterTrack, 0.0);
+   SetPulse(0);
+   Return;
+
+pulse:
+	if(!firing && err > 0)
+		err = err - 0.08;
+	
+	if(err < 0)
+		err = 0;
+	
+	if(GetCurrentCamera() == 0)
+	{
+		offset = 0.003 + err * 0.003;
+		xhair_offset = VectorSet(0, 0.05, offset + 0.037);
+		FireProjectile(player, crosshair_tpl0, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+
+		xhair_offset = VectorSet(0.866 * offset, 0.05, -0.5 * offset + 0.037);
+		FireProjectile(player, crosshair_tpl1, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+
+		xhair_offset = VectorSet(-0.866 * offset, 0.05, -0.5 * offset + 0.037);
+		FireProjectile(player, crosshair_tpl2, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+	}
+	return;
+
+end
+
+

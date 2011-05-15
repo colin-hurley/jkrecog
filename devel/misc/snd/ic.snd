@@ -1,0 +1,71 @@
+# imperial commando foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+falling		I00IC20Z.WAV		0x10000	   # aayyyeeeahhh
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+alert           I00IC02Z.WAV            0x14000    # Drop your weapon!
+alert           I00IC16Z.WAV            0x14000    # Stop that jedi scum.
+alert           I00IC04Z.WAV            0x14000    # After him!
+alert           I00IC10Z.WAV            0x14000    # Blast him!
+alert           I00IC12Z.WAV            0x14000    # You're not authorized in here.
+alert           I00IC13Z.WAV            0x14000    # Halt!
+
+curious		I00IC15Z.WAV		0x10000	   # That Jedi's here somewhere.
+
+death1		I00IC19Z.WAV		0x10000     1.0     4.0	   # uuugghhh
+death1		I00IC21Z.WAV		0x10000     1.0     4.0	   # yaaaagggghhh
+death2		I00IC19Z.WAV		0x10000     1.0     4.0	   # uuugghhh
+death2		I00IC21Z.WAV		0x10000     1.0     4.0	   # yaaaagggghhh
+
+victory		I00IC01Z.WAV		0x10000	   # He won't be giving us any more trouble.
+victory		I00IC03Z.WAV		0x10000	   # That's one less rebel.
+
+hurtimpact	I00IC18Z.WAV		0x10000     1.0     4.0	   # agggh
+hurtenergy	I00IC17Z.WAV		0x10000     1.0     4.0	   # uhh
+hurtfire	I00IC17Z.WAV		0x10000     1.0     4.0    # uhh
+hurtmagic	I00IC18Z.WAV		0x10000     1.0     4.0    # agggh
+hurtspecial	I00IC18Z.WAV		0x10000     1.0     4.0    # agggh
+hurtspecial	I00IC19Z.WAV		0x10000     1.0     4.0    # uuugghhh
+
+fire1		trprsht2.wav		0x0     1.0     4.0
+
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+corpsehit	bodyfall03.wav		0x0     0.8     4.0
+
+# I00IC01Z.WAV		# He won't be giving us any more trouble.
+# I00IC02Z.WAV          # Drop your weapon!
+# I00IC03Z.WAV		# That's one less rebel.
+# I00IC04Z.WAV          # After him!
+# I00IC05Z.WAV          # Call for reinforcements.
+# I00IC06Z.WAV          # Stand at your post.
+# I00IC07Z.WAV          # Did you see where he went?
+# I00IC08Z.WAV          # Where did he go?
+# I00IC09Z.WAV          # We've lost sight of him sir.
+# I00IC10Z.WAV          # Blast him!
+# I00IC12Z.WAV          # You're not authorized in here.
+# I00IC13Z.WAV          # Halt!
+# I00IC14Z.WAV          # Set blasters on full.
+# I00IC15Z.WAV		# That Jedi's here somewhere.
+# I00IC16Z.WAV          # Stop that jedi scum.
+# I00IC18Z.WAV		# agggh
+# I00IC17Z.WAV		# uhh
+# I00IC18Z.WAV		# agggh
+# I00IC19Z.WAV		# uuugghhh
+# I00IC20Z.WAV		# aayyyeeeahhh
+# I00IC21Z.WAV		# yaaaagggghhh
+# I00IC22Z.WAV		# uh ugh uh ah
+

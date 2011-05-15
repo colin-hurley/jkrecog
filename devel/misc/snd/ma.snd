@@ -1,0 +1,45 @@
+# Maw foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+death1		mawdyc.wav	0x010000     1.0     4.0
+death2		mawdyc.wav	0x010000     1.0     4.0
+
+choking		mawgna.wav	0x010000
+choked		mawdyc.wav	0x010000
+
+victory		mawlfg.wav	0x010000
+happy		mawlff.wav	0x010000	
+
+hurtenergy 	mawcrd.wav	0x010000     1.0     4.0
+hurtenergy 	mawcrf.wav	0x010000     1.0     4.0
+hurtfire 	mawcrb.wav	0x010000     1.0     4.0
+hurtimpact 	mawcrf.wav	0x010000     1.0     4.0
+hurtmagic	mawcrc.wav	0x010000     1.0     4.0
+hurtspecial	mawcra.wav	0x010000     1.0     4.0
+hurtspecial	mawcrf.wav	0x010000     1.0     4.0
+
+fire1		ltsaberswing08.wav	0x0     1.0     4.0
+fire2		ltsaberswing06.wav	0x0     1.0     4.0
+reserved1	mawcrb.wav	0x010000	 1.0     4.0
+reserved2	Punch01.wav 	0x010000	 1.0     4.0
+
+curious		mawglb.wav	0x010000	
+alert		mawgla.wav	0x014000	1.0     4.0
+boast		i00ma01z.wav	0x010000
+gloat		i00ma02z.wav	0x010000
+help		mawylb.wav	0x010000
+surprise	mawylb.wav	0x010000
+
+deflected	LtSaberHit12.wav
+deflected	LtSaberHit15.wav
+
+#landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+

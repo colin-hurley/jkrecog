@@ -1,0 +1,66 @@
+# Greedo foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+falling		I00GR09Z.WAV	0x010000
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+death1		i00gr07z.wav	0x010000     1.0     4.0
+death1		i00gr12z.wav	0x010000     1.0     4.0
+death2		i00gr07z.wav	0x010000     1.0     4.0
+death2		i00gr12z.wav	0x010000     1.0     4.0
+
+choking		i00gr10z.wav	0x010000
+
+fire1		pistol-1.wav	0x0     1.0     4.0
+
+victory		i00gr01t.wav	0x010000
+
+hurtenergy 	i00gr04z.wav	0x010000     1.0     4.0
+hurtenergy	i00gr05z.wav	0x010000     1.0     4.0
+hurtenergy	i00gr06z.wav	0x010000     1.0     4.0
+hurtimpact 	i00gr04z.wav	0x010000     1.0     4.0
+hurtimpact	i00gr05z.wav	0x010000     1.0     4.0
+hurtimpact	i00gr06z.wav	0x010000     1.0     4.0
+hurtfire	i00gr04z.wav	0x010000     1.0     4.0
+hurtmagic	i00gr05z.wav	0x010000     1.0     4.0
+hurtspecial	i00gr06z.wav	0x010000     1.0     4.0
+
+curious		i00gr08z.wav	0x010000	
+curious		i00gr11z.wav	0x010000	
+
+alert		i00gr02z.wav	0x014000
+alert		i00gr03z.wav	0x014000
+
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+corpsehit	bodyfall01.wav		0x0     0.8     4.0
+
+# I00GR01T.WAV	# heh heh heh
+# I00GR02Z.WAV  # ee-thai
+# I00GR03Z.WAV  # smeenak tika neka
+# I00GR04Z.WAV  # e!
+# I00GR05Z.WAV  # gulgh!
+# I00GR06Z.WAV  # ughalgh
+# I00GR07Z.WAV  # aahhgh
+# I00GR08Z.WAV  # e too one say day teka
+# I00GR09Z.WAV  # eeeyaaahhh
+# I00GR10Z.WAV  # choking sound
+## I00GR11T.WAV  # awhadeekah su maka
+## I00GR11U.WAV  # tah boni tom ket sa infa dite
+## I00GR11V.WAV  # sah kutahmma
+## I00GR11W.WAV  # sa tina maqua
+# I00GR11Z.WAV  # ah sum ma teka teeta
+# I00GR12Z.WAV  # squeal
+

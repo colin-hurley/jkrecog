@@ -1,0 +1,45 @@
+# Gorc foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+death1		GorcDie02.wav	0x010000     1.0     4.0
+death2		GorcDie02.wav	0x010000     1.0     4.0
+
+victory		GorcTalk02.WAV	0x010000
+
+hurtenergy 	GorcGetHit01.WAV	0x010000     1.0     4.0
+hurtimpact 	GorcGetHit01.WAV	0x010000     1.0     4.0
+hurtfire 	GorcGetHit01.WAV	0x010000     1.0     4.0
+hurtMagic	GorcGetHit02.WAV	0x010000     1.0     4.0
+hurtspecial	GorcGetHit02.WAV	0x010000     1.0     4.0
+
+fire1		LtSaberSwing07.wav	0x0     1.0     4.0
+fire2		LtSaberSwing08.wav	0x0     1.0     4.0
+
+alert		GorcTalk02.WAV	0x014000	1.0     4.0
+surprise	GorcTalk02.WAV	0x010000
+fear		GorcTalk02.WAV	0x010000
+#gloat		GorcTalk01.WAV	0x010000
+
+jump		GorcGetHit02.WAV    	0x010000
+jumpmetal	GorcGetHit02.WAV    	0x010000
+jumpwater	GorcGetHit02.WAV    	0x010000
+jumpearth	GorcGetHit02.WAV    	0x010000
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+corpsehit	bodyfall05.wav		0x0     0.8     4.0
+deflected	LtSaberHit12.wav
+deflected	LtSaberHit15.wav
+
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5

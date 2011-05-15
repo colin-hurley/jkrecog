@@ -1,0 +1,137 @@
+# Jedi Knight Cog Script
+#
+# FORCE_SPEED.COG
+#
+# FORCEPOWER Script - Speed
+#  Basic Power
+#  Bin 22
+#
+# [YB]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+
+symbols
+
+thing       player                           local
+flex        cost                             local
+flex        mana                             local
+int         rank=0                           local
+
+sound       speedSound=ForceSpeed01.WAV      local
+sound       speedSound2=ForceSpeed02.WAV     local
+int         channel=-1                       local
+
+message     startup
+message     timer
+message     activated
+message		pulse
+message     newplayer
+message     killed
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+   cost = 0.5 * 400 / 20;					//20 seconds of speed with full mana
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+activated:
+   if(!IsInvActivated(player, 22))
+   {
+      mana = GetInv(player, 14);
+      if(mana >= cost)
+      {
+         
+         rank = GetInv(player, 22);
+         SetInvActivated(player, 22, 1);
+
+         PlayMode(player, 24);
+         SetPulse(0.5);		//deduct mana
+		if((GetInv(player, 64) != 1) && (GetInv(player, 65) != 1))
+		{
+			ChangeInv(player, 14, -cost);	//deduct mana if no surge is possessed
+		}
+
+         // Play activation sound
+         PlaySoundThing(speedSound, player, 1.0, -1, -1, 0x80);
+
+         // Play loop sound at 0.0 volume and fade it in to 1.0 volume in 0.75 secs
+         channel = PlaySoundThing(speedSound2, player, 0.0, -1, -1, 0x81);
+         ChangeSoundVol(channel, 1.0, 0.75);
+
+         SetActorExtraSpeed(player, 0.5 + rank / 2);
+         //SetTimer(30); 	//default 30 second timer
+      }
+   }
+	else
+	{
+		call stop_power;
+	}
+
+   Return;
+
+# ........................................................................................
+pulse:
+	if((GetInv(player, 64) != 1) && (GetInv(player, 65) != 1))
+	{
+		ChangeInv(player, 14, -cost);	//deduct mana if no surge is possessed
+	}
+	if(GetInv(player, 14) <= 0)		//out of mana
+	{
+		call stop_power;
+	}
+	return;
+	
+timer:
+	call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 22);
+   Return;
+
+# ........................................................................................
+
+killed:
+   if(GetSenderRef() != player) Return;
+
+newplayer:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   SetPulse(0);
+	if(channel != -1)
+	{
+		ChangeSoundPitch(channel, 0.05, 0.75);
+		SetBinWait(player, 22, 0.75);
+		Sleep(0.75);
+		StopSound(channel, 0.1);
+		channel = -1;
+	}
+
+   SetInvActivated(player, 22, 0);
+   SetActorExtraSpeed(player, 0);
+
+   Return;
+
+end
+
+
+

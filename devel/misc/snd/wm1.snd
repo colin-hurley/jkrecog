@@ -1,0 +1,52 @@
+# Woman civilian 1 description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+hurtimpact	i00wm04z.wav	0x010000     1.0     4.0
+hurtenergy	i00wm04z.wav	0x010000     1.0     4.0    	
+hurtspecial	i00wm04z.wav	0x010000     1.0     4.0 	
+
+death1		i00wm05z.wav	0x010000     1.0     4.0
+death1		i00wm06z.wav	0x010000     1.0     4.0
+death1		i00wm01z.wav	0x010000     1.0     4.0
+death2		i00wm01z.wav	0x010000     1.0     4.0
+death2		i00wm05z.wav	0x010000     1.0     4.0
+death2		i00wm06z.wav	0x010000     1.0     4.0
+
+choking		i00wm08z.wav	0x010000
+
+falling		i00wm07z.wav	0x010000     1.0     4.0 			
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+fear		i00wm14z.wav	0x010000
+fear		i00wm10z.wav	0x010000
+
+victory		i00wm11z.wav	0x010000
+
+corpsehit	bodyfall01.wav	0x0     0.8     4.0
+
+hurtspecial	i00wm04z.wav	0x010000     1.0     4.0 	
+
+# i00wm01z.wav	"Aaaaaaaaauuuuuggggghhhh!"
+# i00wm02z.wav  "Run!"
+# i00wm03z.wav	"No Blasters! No Blasters!"
+# i00wm04z.wav  "Aaaagguh!"
+# i00wm05z.wav  "Aaaaaaooooo!"
+# i00wm06z.wav  "Aaaaaahhhhhh!"
+# i00wm07z.wav	"Aaaaaaaaayyyyyyyy!"
+# i00wm08z.wav  "ecchgggeuggh"
+# i00wm10z.wav	"Leave me alone."
+# i00wm11z.wav	"Long live the rebellion"
+# i00wm12z.wav	"I know nothing"
+# i00wm13z.wav  "Mind your own business"
+# i00wm14z.wav  "Please don't hurt me."
+# i00wm15z.wav  "Look out!"
+# i00wm17z.wav  "Leave us in peace."
+

@@ -1,0 +1,91 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.jkhub.jkrecog</groupId>
+	<artifactId>jkrecog</artifactId>
+	<version>${revision}</version>
+	<packaging>pom</packaging>
+	<name>Jedi Knight ReCog</name>
+	<description>A mod to enhance and improve the scripted features in Jedi Knight, including weapons and force powers</description>
+	<properties>
+		<revision>0.0.1-SNAPSHOT</revision>
+		<jklib.version>0.0.1</jklib.version>
+	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>jkrecog-mod</artifactId>
+				<version>${project.version}</version>
+				<type>gob</type>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>jkrecog-release</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>net.jkhub.jklib</groupId>
+					<artifactId>jklib-maven-plugin</artifactId>
+					<version>${jklib.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.1.1</version>
+					<dependencies>
+						<dependency>
+							<!-- Make jklib extensions visible to the dependency plugin -->
+							<groupId>net.jkhub.jklib</groupId>
+							<artifactId>jklib-maven-plugin</artifactId>
+							<version>${jklib.version}</version>
+						</dependency>
+						<dependency>
+							<!-- jklib needs a newer commons-io than the one the assembly plugin wants to use ? -->
+							<!-- TODO: investigate this - according to the maven site, dep plugin 3.1.1 uses commons io 2.5, not 1.x -->
+							<groupId>commons-io</groupId>
+							<artifactId>commons-io</artifactId>
+							<version>2.6</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>3.1.1</version>
+					<dependencies>
+						<dependency>
+							<!-- Make jklib extensions visible to the dependency plugin -->
+							<groupId>net.jkhub.jklib</groupId>
+							<artifactId>jklib-maven-plugin</artifactId>
+							<version>${jklib.version}</version>
+						</dependency>
+						<dependency>
+							<!-- jklib needs a newer commons-io than the one the dependency plugin wants to use -->
+							<!-- TODO: investigate this - according to the maven site, dep plugin 3.1.1 uses commons io 2.5, not 1.x -->
+							<groupId>commons-io</groupId>
+							<artifactId>commons-io</artifactId>
+							<version>2.6</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>net.jkhub.jklib</groupId>
+				<artifactId>jklib-maven-plugin</artifactId>
+				<extensions>true</extensions>
+			</plugin>
+		</plugins>
+	</build>
+	<modules>
+		<module>mod</module>
+		<module>release</module>
+	</modules>
+</project>

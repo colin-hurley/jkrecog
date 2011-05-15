@@ -1,0 +1,50 @@
+# Boc foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+###################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+death1		I00BO071.WAV	0x010000     1.0     4.0
+death2		I00BO071.WAV	0x010000     1.0     4.0
+
+victory		i00bo03z.wav	0x010000
+happy		C34BO03N.WAV	0x010000	
+
+hurtenergy 	I00BO072.WAV	0x010000     1.0     4.0
+hurtfire	C39BO03T.WAV	0x010000     1.0     4.0
+hurtimpact	I00BO073.WAV	0x010000     1.0     4.0
+hurtmagic	C10BO06N.WAV	0x010000     1.0     4.0
+hurtspecial	i00bo07z.wav	0x010000     1.0     4.0
+hurtspecial	I00BO073.WAV	0x010000     1.0     4.0
+hurtspecial	I00BO073.WAV	0x010000     1.0     4.0
+choking		C10BO04A.WAV	0x010000
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+fire1		LtSaberSwingDbl01.wav	0x0     1.0     4.0
+fire2		LtSaberSwingDbl01.wav	0x0     1.0     4.0
+
+alert		i00bo03z.wav	0x014000	1.0     4.0
+idle		i00bo02z.wav	0x010000
+gloat		i00bo05z.wav	0x010000
+fear		i00bo06z.wav	0x010000
+boast		i00bo04z.wav	0x010000
+
+jump		i00bo01z.wav	0x010000
+jumpmetal	i00bo01z.wav	0x010000
+jumpwater	i00bo01z.wav	0x010000
+jumpearth	i00bo01z.wav	0x010000
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+corpsehit	bodyfall03.wav		0x0     0.8     4.0
+deflected	LtSaberHit12.wav
+deflected	LtSaberHit15.wav
+

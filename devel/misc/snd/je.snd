@@ -1,0 +1,45 @@
+# Jerec foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+death1		i00je04z.wav	0x010000     1.0     4.0
+death2		i00je04z.wav	0x010000     1.0     4.0
+
+victory		i00je01z.wav	0x010000	# Heh heh heh ha
+
+hurtspecial	i00je03z.wav	0x010000     1.0     4.0	# Ugggaaawaaah
+
+fire1		LtSaberSwing04.wav	0x0     1.0     4.0
+fire2		LtSaberSwing02.wav	0x0     1.0     4.0
+
+alert		i00je05z.wav	0x014000	1.0     4.0 	# You cannot defeat me.
+surprise	i00je02z.wav	0x010000	1.0     4.0 	# The Force is strong with you.
+
+jump		jumpbasic01.wav		0x0
+jumpmetal	jumpMetalDry01.wav	0x0
+jumpwater	fswtr2r.wav		0x0
+jumpearth	jumpDirt01.wav		0x0
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+
+deflected	LtSaberHit12.wav
+deflected	LtSaberHit15.wav
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+# i00je01z.wav # Heh heh heh ha
+# i00je02z.wav # The Force is strong with you.
+# i00je03z.wav # Ugggaaawaaah
+# i00je04z.wav # heavy breathing
+# i00je05z.wav # You cannot defeat me.
+

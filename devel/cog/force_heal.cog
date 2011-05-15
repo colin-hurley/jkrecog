@@ -1,0 +1,148 @@
+# Jedi Knight Cog Script
+#
+# FORCE_HEALING.COG
+#
+# FORCEPOWER Script - Healing
+#  Light Side Power
+#  Bin 25
+#
+# Mana cost per HP decreases with the number of stars assigned to healing.
+# For a rank 8 Jedi, the following are the yields for a full force mana:
+#  1 star  = 30 HP
+#  2 stars = 45 HP
+#  3 stars = 60 HP
+#  4 stars = 75 HP
+#
+# The rate at which HP are replenished also increases with the number of
+#  stars assigned to healing:
+#  1 star  = 5 HP / second
+#  2 stars = 4 HP / second
+#  3 stars = 3 HP / second
+#  4 stars = 2 HP / second
+#
+# [darthslaw]
+#
+# (C) 2006 JK ReCog
+
+
+symbols
+
+thing       player                           local
+
+flex        cost=200.0                       local
+int         rank                             local
+flex        mana                             local
+flex		rotvel=40.0						local
+flex		rate							local
+
+sound       healingSound=ForceHealing01.WAV  local
+
+template    sphere_tpl=+force_heal           local
+int         sphere=-1                        local
+
+vector      position                         local
+
+message     startup
+message     activated
+message		pulse
+message     newplayer
+message     killed
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+   call stop_power;
+   Return;
+
+# ........................................................................................
+
+activated:
+	if(IsInvActivated(player, 25))
+	{
+		call stop_power;
+	}
+	else
+	{
+		if((GetThingHealth(player) != 100) && (GetThingHealth(player) > 0))
+		{
+			rank = GetInv(player, 25);
+			cost = 400 / (15 + 15 * rank);
+			if(rank == 4) rate = 0.2;
+			else if(rank == 3) rate = 0.25;
+			else if(rank == 2) rate = 0.33;
+			else rate = 0.5;
+			mana = GetInv(player, 14);
+			if(mana >= cost)
+			{
+				SetInvActivated(player, 25, 1);
+				PlayMode(player, 24);
+				PlaySoundThing(healingSound, player, 1.0, -1, -1, 0x80);
+				SetPulse(rate);				//heal faster as rank increases
+			}
+		}
+	}
+
+   Return;
+
+# ........................................................................................
+pulse:
+	if(GetThingHealth(player) <= 0 || GetThingHealth(player) >= 100 || GetInv(player, 14) < cost)
+	{
+		call stop_power;
+		return;
+	}
+	
+	
+	
+			## camera code
+		#dummy = FireProjectile(player, LoadTemplate("+grip_ghost"), -1, -1, '-0.1 0.3 0', '0 0 0', 0, 0, 0, 0x0);
+		#SetLifeLeft(dummy, 0.3);
+		#SetThingLook(dummy, VectorSub(GetThingPos(player), GetThingPos(dummy)));
+		#SetCameraFocus(0, dummy);
+		#SetCurrentCamera(0);
+	
+	
+	
+	if(GetInv(player, 65) != 1) ChangeInv(player, 14, -cost);
+	// Create the sphere
+	position = VectorAdd(GetThingPos(player), '0.0 0.0 0.01');
+	sphere = CreateThingAtPosNR(sphere_tpl, GetThingSector(player), position, '0.0 0.0 0.0');
+	AttachThingToThingEx(sphere, player, 0x8);
+	SetParticleGrowthSpeed(sphere, -1.0);
+	SetThingRotVel(sphere, VectorSet(rotvel, rotvel, rotvel));
+	SetLifeLeft(sphere, 0.6);
+	HealThing(player, 1);
+	return;
+	
+selected:
+   jkPrintUNIString(player, 25);
+   Return;
+
+# ........................................................................................
+
+killed:
+   if(GetSenderRef() != player) Return;
+
+newplayer:
+   call stop_power;
+
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   SetInvActivated(player, 25, 0);
+   SetPulse(0);
+SetCameraFocus(0, player);
+   Return;
+
+end
+
+
+

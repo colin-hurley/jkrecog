@@ -1,0 +1,305 @@
+# Jedi Knight Cog Script
+#
+# WEAP_SEQCHARGE.COG
+#
+# WEAPON 8 Script - Sequencer Charge
+#
+# Heartier than the Thermals and the DF IM Mines these are used by placing them on
+#  the ground or on walls.  These have both delayed and proximity options.
+#
+# - Not affected by MagSealed sectors/surfaces.
+#
+# [YB & CYW]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+# ========================================================================================
+
+symbols
+
+model       povModel=seqv.3do             local
+model       weaponMesh=seqg.3do           local
+
+keyframe    mountAnim=SeqVmnt.key         local
+keyframe    dismountAnim=SeqVdis.key      local
+keyframe    povfireAnim=SeqVpst1.key      local
+keyframe    holsterAnim=kyhlstr.key       local
+
+flex        mountWait                     local
+flex        fireWait=0.8                  local
+flex        holsterWait                   local
+
+template    projectile_tpl=+seqchrg2      local
+#int         projectile                    local
+
+material    flashing=seq0mtp3.mat         local
+#int         cel                           local
+int         mode                          local
+
+thing       player                        local
+int         trackID=-1                    local
+int         holsterTrack                  local
+
+int         selectMode=1                  local
+
+int			i							local
+int			things						local
+int			count						local
+int			hold						local
+int			placed						local
+
+message     startup
+message     activated
+message     deactivated
+message     selected
+message     deselected
+message     newplayer
+message     autoselect
+message     fire
+message     timer
+message		changed
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   // Setup delays and variables.
+   mountWait    = GetKeyLen(mountAnim);
+things = GetThingCount();
+   // Start the material flashing.
+   MaterialAnim( flashing, 4, 1 );
+newplayer:
+   hold = 0;
+   placed = 0;
+
+   Return;
+
+# ........................................................................................
+
+fire:
+   player = GetSourceRef();
+   mode = GetSenderRef();
+
+   // Check that the player is still alive.
+   if(GetThingHealth(player) <= 0)
+   {
+      Return;
+   }
+
+	if(GetInv(player, 8) < 1)
+	{
+		DeactivateWeapon( player, mode );	//don't show sequencer if we're out, but allow manual detonation still
+		Return;
+	}
+
+   FireProjectile(player, projectile_tpl, -1, 16, '0 0.05 0.00', '0 0 0', 1.0, 0, 0.0, 0.0);
+   jkPlayPOVKey(player, povfireAnim, 1, 0x38);
+   ChangeInv(player, 8, -1.0);
+   placed = 1;
+
+	if(GetInv(player, 8) < 1)
+	{
+		if (trackID != -1)
+		{
+			jkStopPOVKey(player, trackID, 0);	//put the arm down so we don't see a sequencer
+			trackID = -1;
+		}
+   		hold = 1;		//holding hand down in anim
+   	}
+
+   // If out of ammo try to autoswitch to another weapon
+   // if autoswitch is enabled else just switch to fists.
+#   if(GetInv(player, 8) < 1)
+#   {
+#      if(GetAutoSwitch() & 1)
+#      {
+#         SelectWeapon(player, AutoSelectWeapon(player, 1));
+#      }
+#      else
+#      {
+#         SelectWeapon(player, 1);
+#      }
+#   }
+
+   Return;
+
+# ........................................................................................
+
+activated:
+   player = GetSourceRef();
+   mode = GetSenderRef();
+
+   if(mode > 1) Return;
+
+   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	if(mode == 0)
+	{
+		if(hold)
+		{
+			Print("Out of ammo. Use FIRE 2 to manually detonate placed charges.");
+			Return;
+		}
+		ActivateWeapon( player, fireWait, mode );
+	}
+	else
+	{
+		placed = 0;
+		count = 0;
+		for(i = 0; i < things; i = i + 1)
+		{
+			if(GetThingTemplate(i) == projectile_tpl && GetThingParent(i) == player)
+			{
+				count = count + 1;
+				SetLifeLeft(i, 0.05 * count);	//detonate in sequence
+			}
+		}
+		// If out of ammo try to autoswitch to another weapon
+		// if autoswitch is enabled else just switch to fists.
+		if(GetInv(player, 8) < 1)
+		{
+			if(GetAutoSwitch() & 1)
+			{
+				SelectWeapon(player, AutoSelectWeapon(player, 1));
+			}
+			else
+			{
+				SelectWeapon(player, 1);
+			}
+		}
+	}
+
+   Return;
+
+# ........................................................................................
+
+deactivated:
+   player = GetSourceRef();
+   mode = GetSenderRef();
+
+   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+   DeactivateWeapon( player, mode );
+   Return;
+
+# ........................................................................................
+
+selected:
+   player = GetSourceRef();
+
+   PlayMode(player, 40);
+   jkSetPOVModel(player, povModel);
+   SetArmedMode(player, 0);
+   jkSetWeaponMesh(player, weaponMesh);
+   if(GetInv(player, 8) > 0) hold = 0;
+   else hold = 1;
+   trackID = -1;
+	if(!hold)	//if we have a sequencer, play the mount anim; if not, leave the arm down
+		trackID = jkPlayPOVKey(player, mountAnim, 0, 0x14);	//pause on last frame + end smoothly
+
+   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+
+   SetMountWait(player, mountWait);
+   jkClearFlags(player, 0x5);
+   SetCurWeapon(player, 8);
+
+   Return;
+
+# ........................................................................................
+
+deselected:
+   player = GetSourceRef();
+
+	if(!hold)	//if holding a sequencer, play dismount anim; else, the arm is already down, so don't do anything
+		jkPlayPOVKey(player, dismountAnim, 0, 18);
+
+   holsterWait = GetKeyLen(holsterAnim);
+   SetMountWait(player, holsterWait);
+   holsterTrack = PlayKey(player, holsterAnim, 1, 0x4);
+   SetTimerEx(holsterWait, 2, 0.0, 0.0);
+   if (trackID != -1)
+   {
+      jkStopPOVKey(player, trackID, 0);
+      trackID = -1;
+   }
+   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+   
+   Return;
+
+# ........................................................................................
+
+//newplayer:
+//   player = GetSourceRef();
+//
+//   // Make sure that if the player is respawning, the old mount isn't playing anymore.
+//   if (trackID != -1)
+//      jkStopPOVKey(player, trackID, 0);
+//
+//   Return;
+
+# ........................................................................................
+
+autoselect:
+   selectMode = GetSenderRef();
+   player = GetSourceRef();
+
+   // If the player has ammo
+   if(GetInv(player, 8) != 0 || placed)		//if we have mines, or have not detonated placed ones
+   {
+      // query for ammo
+      if(selectMode == -1)
+      {
+         ReturnEx(300.0);
+         Return;
+      }
+
+      if((selectMode == 0) && !(GetAutoPickup() & 2))
+      {
+         ReturnEx(300.0);
+         Return;
+      }
+
+      if((selectMode == 1) && !(GetAutoSwitch() & 2))
+      {
+         ReturnEx(300.0);
+         Return;
+      }
+
+      if((selectMode == 2) && !(GetAutoPickup() & 2))
+      {
+         ReturnEx(300.0);
+         Return;
+      }
+
+      ReturnEx(-2.0);
+      Return;
+
+   }
+   else			//no extra or placed mines -- can't select
+   {
+      ReturnEx(-1.0);
+   }
+
+   Return;
+
+# ........................................................................................
+
+timer:
+   StopKey(player, holsterTrack, 0.0);
+   Return;
+
+# ........................................................................................
+   
+changed:
+	//if we pick up sequencers...
+	if(GetCurWeapon(player) != 8) return;	//if sequencers are not armed, don't do anything
+
+	if(hold && GetInv(player, 8) > 0)	//arm is down and we picked up some mines...
+	{
+		trackID = jkPlayPOVKey(player, mountAnim, 0, 0x14);	//pause on last frame + end smoothly
+		hold = 0;		//not holding arm down anymore
+	}
+	return;
+
+end
+

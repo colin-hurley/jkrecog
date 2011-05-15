@@ -1,0 +1,47 @@
+# Man civilian 1 description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+hurtimpact	i00mn05z.wav	0x010000     1.0     4.0
+hurtenergy	i00mn04z.wav	0x010000     1.0     4.0    	
+hurtspecial	i00mn04z.wav	0x010000     1.0     4.0 	
+
+death1		i00mn06z.wav	0x010000     1.0     4.0
+death1		i00mn01z.wav	0x010000     1.0     4.0
+death2		i00mn06z.wav	0x010000     1.0     4.0
+death2		i00mn01z.wav	0x010000     1.0     4.0
+
+choking		i00mn08z.wav	0x010000
+
+falling		i00mn07z.wav	0x010000     1.0     4.0 			
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+fear		i00mn14z.wav	0x010000     0.8     3.6
+
+corpsehit	bodyfall01.wav	0x0     0.8     4.0
+
+
+# i00mn01z.wav	"Whhhaaaauuuggghhh!"
+# i00mn02z.wav  "Hey!"
+# i00mn03z.wav	"No Blasters! No Blasters!"
+# i00mn04z.wav  "Aaaagguh!"
+# i00mn05z.wav  "Aaaaaaooooo!"
+# i00mn06z.wav  "Aaaaaahhhhhh!"
+# i00mn07z.wav	"Aaaaaaaaayyyyyyyy!"
+# i00mn08z.wav  "ecchgggeuggh"
+# i00mn10z.wav	"Leave me alone."
+# i00mn11z.wav	"Long live the rebellion"
+# i00mn12z.wav	"I know nothing"
+# i00mn13z.wav  "Mind your own business"
+# i00mn14z.wav  "Please don't hurt me."
+# i00mn17z.wav  "Leave us in peace."
+# i00mn18z.wav  "I wish he wouldn't shoot paying customers."
+# i00mn19z.wav  "Get out of my bar. You always cause trouble."
+

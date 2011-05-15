@@ -1,0 +1,26 @@
+# Ugnaut foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+hurtFire	UgnautGetHit01.wav	0x010000     1.0     4.0
+hurtMagic	UgnautGetHit02.wav	0x010000     1.0     4.0
+hurtImpact	UgnautGetHit02.wav	0x010000     1.0     4.0
+hurtEnergy	UgnautGetHit01.wav	0x010000     1.0     4.0    	
+hurtSpecial	UgnautGetHit01.wav	0x010000     1.0     4.0 	
+
+death1		UgnautDie01.wav		0x010000     1.0     4.0
+death2		UgnautDie01.wav		0x010000     1.0     4.0
+
+curious		UgnautTalk01.wav	0x010000     1.0     4.0
+
+corpsehit	bodyfall01.wav		0x0     0.8     4.0
+
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5

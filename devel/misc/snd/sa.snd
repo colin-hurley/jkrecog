@@ -1,0 +1,57 @@
+# Sarris foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+falling		I00SA14Z.wav	0x010000	1.0     4.0
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
+
+death1		I00SA11Z.wav	0x010000        1.0     4.0
+death2		I00SA11Z.wav	0x010000        1.0     4.0
+
+choking		I00SA12Z.wav	0x010000
+
+#victory		I00SA05Z.wav	0x010000
+victory		I00SA14Z.wav	0x010000	1.0     4.0
+victory		I00SA06Z.wav	0x010000	1.0     4.0
+happy		I00SA06Z.wav	0x010000        1.0     4.0
+
+hurtenergy 	I00SA01Z.wav	0x010000        1.0     4.0	
+hurtenergy	I00SA02Z.wav	0x010000        1.0     4.0	
+hurtenergy	I00SA03Z.wav	0x010000        1.0     4.0	
+hurtimpact 	I00SA01Z.wav	0x010000        1.0     4.0	
+hurtimpact	I00SA02Z.wav	0x010000        1.0     4.0	
+hurtimpact	I00SA03Z.wav	0x010000        1.0     4.0	
+hurtspecial	I00SA04Z.wav	0x010000        1.0     4.0	
+hurtspecial	I00SA01Z.wav	0x010000        1.0     4.0	
+
+fire1		LtSaberSwing04.wav	0x0     1.0     4.0
+fire2		LtSaberSwing03.wav	0x0     1.0     4.0
+
+alert		I00SA07Z.wav	0x014000	1.0     4.0
+suprise		I00SA09Z.wav	0x010000        1.0     4.0
+fear		I00SA08Z.wav	0x010000        1.0     4.0
+gasp		I00SA08Z.wav	0x010000        1.0     4.0
+
+jump		I00SA09Z.wav    0x010000         1.0     4.0
+jumpmetal	I00SA09Z.wav	0x010000         1.0     4.0
+jumpwater	I00SA09Z.wav    0x010000         1.0     4.0
+jumpearth	I00SA09Z.wav    0x010000         1.0     4.0
+reserved1	I00SA05Z.wav	0x010000	 1.0     4.0
+
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+corpsehit	bodyfall01.wav		0x0     0.8     4.0
+deflected	LtSaberHit12.wav
+deflected	LtSaberHit15.wav
+

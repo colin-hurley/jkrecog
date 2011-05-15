@@ -1,0 +1,155 @@
+# Jedi Knight Cog Script
+#
+# FORCE_LIGHTNING.COG
+#
+# FORCEPOWER Script - Lightning
+#  Dark Side Power
+#  Bin 32
+#
+# [darthslaw]
+#
+# (C) 2006 JK ReCog
+
+
+symbols
+
+thing       player                           local
+
+flex        cost=40.0                        local
+int         rank                             local
+int         mana                             local
+int         bin                              local
+
+template    lightning=+force_lightning       local
+
+sound       fireSound=ForceLitning02.wav     local
+int         fireChannel=-1                   local
+int         modeTrack=-1                     local
+
+message     startup
+message     activated
+message     deactivated
+message     fire
+message     killed
+message     selected
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+
+   Return;
+
+# ........................................................................................
+
+fire:
+	mana = GetInv(player, 14);
+	if((mana >= cost) && (GetThingHealth(player) > 0))
+	{
+		if(GetInv(player, 64) != 1) ChangeInv(player, 14, -cost);
+
+		if(fireChannel == -1)
+			fireChannel = PlaySoundThing(fireSound, player, 1.0, -1, -1, 0x81);
+		vec = VectorSet((rand() - 0.5) * 2.0, (rand() - 0.5) * 1.5, 0);  
+		FireProjectile(player, lightning, -1, -1, '-0.025 0.01 0', vec, 1.0, 0x0, 0, 0);
+		if(rank >= 2)
+		{
+			vec = VectorSet((rand() - 0.5) * 5.0, 7.5 + (rand() - 0.5) * 4.5, 0); 
+			FireProjectile(player, lightning, -1, -1, '-0.025 0.01 0', vec, 1.0, 0x0, 0, 0);
+			vec = VectorSet((rand() - 0.5) * 5.0, -7.5 - (rand() - 0.5) * 4.5, 0);  
+			FireProjectile(player, lightning, -1, -1, '-0.025 0.01 0', vec, 1.0, 0x0, 0, 0);
+		}
+		if(rank >= 3)
+		{
+			vec = VectorSet((rand() - 0.5) * 4.0, 15 + (rand() - 0.5) * 4.5, 0); 
+			FireProjectile(player, lightning, -1, -1, '-0.025 0.01 0', vec, 1.0, 0x0, 0, 0);
+			vec = VectorSet((rand() - 0.5) * 4.0, -15 - (rand() - 0.5) * 4.5, 0);  
+			FireProjectile(player, lightning, -1, -1, '-0.025 0.01 0', vec, 1.0, 0x0, 0, 0);
+		}
+		if(rank >= 4)
+		{
+			vec = VectorSet((rand() - 0.5) * 3.0, 22.5 + (rand() - 0.5) * 4.5, 0); 
+			FireProjectile(player, lightning, -1, -1, '-0.025 0.01 0', vec, 1.0, 0x0, 0, 0);
+			vec = VectorSet((rand() - 0.5) * 3.0, -22.5 - (rand() - 0.5) * 4.5, 0);  
+			FireProjectile(player, lightning, -1, -1, '-0.025 0.01 0', vec, 1.0, 0x0, 0, 0);
+		}
+	}
+	else
+	{
+      if(fireChannel != -1)
+      {
+         StopSound( fireChannel, 0.1);
+         fireChannel = -1;
+      }
+	}
+   return;
+
+# ........................................................................................
+
+activated:
+   bin = GetSenderRef();
+   rank = GetInv(player, 32);
+
+   if(rank == 1)
+      cost = 0.15 * 400 / 4;			//4 seconds of lightning with full mana
+   else if(rank == 2)
+      cost = 0.15 * 400 / 4;			//4 seconds of lightning with full mana
+   else if(rank == 3)
+      cost = 0.15 * 400 / 5;			//5 seconds of lightning with full mana
+   else if(rank == 4)
+      cost = 0.15 * 400 / 5;			//5 seconds of lightning with full mana
+
+   ActivateBin(player, 0.15, bin);
+   SetInvActivated(player, bin, 1);
+   if (modeTrack == -1)
+      modeTrack = PlayMode(player, 24);
+
+   Return;
+
+# ........................................................................................
+
+selected:
+   jkPrintUNIString(player, 32);
+   Return;
+
+# ........................................................................................
+
+deactivated:
+   bin = GetSenderRef();
+   DeactivateBin(player, bin);
+   call stop_power;
+   Return;
+
+# ........................................................................................
+
+killed:
+   if(GetSenderRef() != player) Return;
+
+   call stop_power;
+   Return;
+
+# ........................................................................................
+
+stop_power:
+   SetInvActivated(player, bin, 0);
+   if(fireChannel != -1)
+   {
+      StopSound( fireChannel, 0.1);
+      fireChannel = -1;
+   }
+
+   if(modeTrack != -1)
+   {
+      StopKey(player,modeTrack,0.5);
+      modeTrack = -1;
+   }
+
+   Return;
+
+end
+
+

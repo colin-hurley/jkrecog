@@ -1,0 +1,33 @@
+# ReeYees with Det foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+hurtenergy	reeyee2.wav	0x010000        1.0     4.0
+hurtimpact	reeyee2.wav	0x010000        1.0     4.0
+hurtspecial	reeyee2.wav	0x010000        1.0     4.0
+hurtmagic	reeyee2.wav	0x010000        1.0     4.0
+hurtfire	reeyee2.wav	0x010000        1.0     4.0
+
+death1		reeyee4.wav  	0x010000        1.0     4.0
+death2		reeyee4.wav	0x010000        1.0     4.0
+alert		reeyee03.wav	0x014000
+
+fire1		ThermalThrow01.wav      0x0     1.0     4.0
+fire2		SwingFist01.wav      0x0     0.5     2.5
+
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+corpsehit	bodyfall05.wav		0x0     0.8     4.0
+
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5

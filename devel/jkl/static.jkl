@@ -1,0 +1,206 @@
+#### Copyright information #####
+SECTION: COPYRIGHT
+................................
+................@...@...@...@...
+.............@...@..@..@...@....
+................@.@.@.@.@.@.....
+@@@@@@@@......@...........@.....
+@@@@@@@@....@@......@@@....@....
+@@.....@.....@......@@@.....@@..
+@@.@@@@@......@.....@@@......@@.
+@@@@@@@@.......@....@@.....@@...
+@@@@@@@@.........@@@@@@@@@@.....
+@@@@@@@@..........@@@@@@........
+@@.....@..........@@@@@.........
+@@.@@@@@.........@@@@@@.........
+@@.....@.........@@@@@@.........
+@@@@@@@@.........@@@@@@.........
+@@@@@@@@.........@@@@@@@........
+@@@...@@.........@@@@@@@........
+@@.@@@.@.........@.....@........
+@@..@..@........@.......@.......
+@@@@@@@@........@.......@.......
+@@@@@@@@.......@........@.......
+@@..@@@@.......@........@.......
+@@@@..@@......@.........@.......
+@@@@.@.@......@.........@.......
+@@....@@........................
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@.@@@@@@@@@@@@@@@@@@
+@@.@@..@@@@@..@@@@@@@@@@.@@@@@@@
+@@.@.@.@@@@.@.@@@.@..@@...@@@..@
+@@..@@@@@@....@@@..@@@@@.@@@@.@@
+@@@@@@@@...@@.@@@.@@@@@..@@...@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@.copyright.(c).1997.lucasarts.@
+@@@@@@..entertainment.co..@@@@@@
+################################
+
+
+###### Header information ######
+SECTION: HEADER
+# version and global constant settings
+Version 1
+World Gravity 4.00
+Ceiling Sky Z    3.000000
+Horizon Distance 100.000000
+Horizon Pixels per Rev 768.000000
+Horizon Sky Offset   0.000000 0.000000
+Ceiling Sky Offset   0.000000 0.000000
+MipMap Distances	1.000000	2.000000	3.000000	4.000000
+LOD Distances		0.300000	0.600000	0.900000	1.200000
+Perspective distance 2.00
+Gouraud distance 2.00
+################################
+
+
+###### Sound information  ######
+SECTION: SOUNDS
+World sounds 1000
+end
+################################
+
+
+##### Material information #####
+SECTION: MATERIALS
+World materials 1000
+end
+################################
+
+
+#### Soundclass information ####
+Section: Soundclass
+World soundclasses 1000
+0:	ky.snd
+end
+################################
+
+
+###### Models information ######
+Section: MODELS
+World models 1000
+0:	bryv.3do
+1:	bryg.3do
+2:	sabv.3do
+3:	sabg.3do
+4:	rldv.3do
+5;	rldg.3do
+6:	conv.3do
+7:	cong.3do
+8:	strv.3do
+9:	strg.3do
+10: rptv.3do
+11: rptg.3do
+12: detv.3do
+13: detg.3do
+14: seqv.3do
+15: seqg.3do
+16: fistv.3do
+17: fistg.3do
+18: bowv.3do
+19: bowg.3do
+20: ky.3do
+21: bry0.3do
+22: con0.3do
+23: dflt.3do
+24: rep0.3do
+25: det0.3do
+26: seqp.3do
+27: rld0.3do
+end
+################################
+
+
+###### Sprite information ######
+Section: SPRITES
+World sprites 1000
+0: bryx.spr
+1: detx.spr
+2: bowx2.spr
+3: bowx.spr
+4: rptx.spr
+5: seqx2.spr
+6: debrisx.spr
+7: rldx.spr
+8: conx.spr
+end
+################################
+
+
+##### Keyframe information #####
+Section: KEYFRAMES
+World keyframes 1000
+end
+################################
+
+
+###### Animation Classes #######
+Section: ANIMCLASS
+World puppets 1000
+0:	ky.pup
+end
+################################
+
+
+########## COG scripts #########
+Section: cogscripts
+World scripts 1000
+0:	class_det.cog
+1:	class_det2.cog
+
+end
+################################
+
+
+######### COG placement ########
+Section: cogs
+World cogs 1000
+#Num	Script          Symbol values
+end
+################################
+
+
+##### Template information #####
+SECTION: TEMPLATES
+World templates 1000
+#Name			Parent			Values
+_weaponn          none              orient=(0.000000/0.000000/0.000000) type=weapon collide=1 move=physics thingflags=0x20000000 timer=10.000000 mass=5.000000 physflags=0x200 maxrotvel=90.000000 damageclass=0x2 typeflags=0x1
+_explosionn       none              orient=(0/0/0) type=explosion typeflags=0x1 damageclass=0x4
++whitecloudn      none              orient=(0.000000/0.000000/0.000000) type=particle timer=0.200000 typeflags=0x3f material=00gsmoke.mat range=0.020000 rate=128.000000 maxthrust=30.000000 elementsize=0.007000 count=128
++dustcloudn       +whitecloudn       timer=0.120000 material=dusty.mat range=0.015000 rate=256.000000 maxthrust=80.000000 elementsize=0.010000
++firecloudn       +dustcloudn        material=00explosion.mat range=0.050000 rate=64.000000 maxthrust=40.000000 count=64
++grenade_exp     _explosionn        thingflags=0x1 light=0.2 timer=0.8 sprite=detx.spr soundclass=exp_det.snd creatething=+firecloudn typeflags=0x17 damage=75.000000 blasttime=0.700000 force=100.000000 maxlight=0.800000 range=0.450000
++grenade2        _weaponn           timer=3.000000 model3d=det0.3do size=0.014895 movesize=0.014895 soundclass=det.snd surfdrag=3.000000 airdrag=0.800000 mass=1.000000 physflags=0x225 vel=(0.000000/2.000000/1.500000) angvel=(90.000000/45.000000/90.000000) buoyancy=0.250000 explode=+grenade_exp fleshhit=+grenade_exp damageclass=0x4 typeflags=0x40309 cog=class_det2.cog
++grenade1        +grenade2          timer=10.000000 typeflags=0x4030d cog=class_det.cog
++egrenade_exp    +grenade_exp       damage=50.000000
++actor_grenade   +grenade1          surfdrag=0.000000 airdrag=0.000000 vel=(0.000000/2.000000/0.000000) explode=+egrenade_exp fleshhit=+egrenade_exp
++actor_grenade2  +grenade2          vel=(0.000000/2.000000/0.000000) explode=+egrenade_exp fleshhit=+egrenade_exp
++spec_grenade    +grenade2          vel=(0.000000/0.000000/0.000000)
+
++grip_ghost	none		orient=(0/0/0) type=weapon collide=1 move=physics size=0.001 movesize=0.001 thingflags=0x0 mass=0.1 physflags=0x200 maxvel=0 vel=(0/0/0) timer=0.01 damageclass=0x0 typeflags=0x1
+
++force_ltpeice		none			orient=(0.000000/0.000000/0.000000) type=weapon move=physics timer=0.15000 model3d=ligt2.3do size=0.005000 movesize=0.005000 physflags=0x200 maxrotvel=720.000000 angvel=(0.000000/0.000000/720.000000)
++lightninghit		none			orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=0.1500000 typeflags=0x2b material=00ramp4.mat range=0.020000 rate=16.000000 maxthrust=8.000000 elementsize=0.003000 count=16
++force_lightning	_weaponn		thingflags=0x1 light=0.100000 timer=0.150000 size=0.005000 movesize=0.005000 vel=(0.000000/1.000000/0.000000) angvel=(0.000000/0.000000/720.000000) explode=+lightninghit fleshhit=+lightninghit trailthing=+force_ltpeice elementsize=0.075000 trailrandangle=60.000000 damage=5.000000 damageclass=0x8 typeflags=0x1840d range=1.000000
++force_lightning2	+force_lightning	damage=5.000000                 
++force_lightning3	+force_lightning	damage=5.000000                 
++force_lightning4	+force_lightning	damage=5.000000                 
+
++force_heal      none              orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=2.000000 angvel=(90/90/90) typeflags=0x3f material=00teleport.mat range=0.200000 rate=32.000000 maxthrust=0.010000 elementsize=0.001500 count=32
+
+## Crosshair Templates
+_crosshair			none			orient=(0/0/0) type=weapon collide=0 move=physics mass=0 physflags=0x0 maxrotvel=90 typeflags=0x1 size=0.001 movesize=0.001 maxvel=0 vel=(0/0/0) timer=0.01 thingflags=0 damageclass=0 
++crosshair_green_line_h		_crosshair		model3d=crosshair_green_line_h.3do
++crosshair_green_line_v		_crosshair		model3d=crosshair_green_line_v.3do
++crosshair_green_line_d1	_crosshair		model3d=crosshair_green_line_d1.3do
++crosshair_green_line_d2	_crosshair		model3d=crosshair_green_line_d2.3do
+
+## Weapon Effects (Nightfire mod for resources)
+_muzzleflash		_crosshair		timer=0.05
++muzzleflash0		_muzzleflash		model3d=flash0-0.3do cog=class_flash0.cog
+
++bullethole		none			orient=(0/0/0) type=weapon collide=1 move=physics thingflags=0x10 mass=0 model3d=bullethole.3do vel=(0/1/0) size=0.0001 movesize=0.0001 height=0.0001 typeflags=0x180 physflags=0x4000D0 timer=7.5
+
+
+end
+

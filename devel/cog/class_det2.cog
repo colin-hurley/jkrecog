@@ -1,0 +1,63 @@
+# Jedi Knight Cog Script
+#
+# class_det2.cog
+#
+# Class Cog - Thermal Detonator 2
+#
+# Makes live Thermal Detonator Projectiles tick
+# This cog will also make the bouncing detonators give off a warning beep
+#  and tick faster when they are about to explode.
+#
+# [darthslaw]
+#
+# (c) 2006 JK Recog
+
+symbols
+
+message		created
+message		timer
+message		removed
+
+sound		warnSound=ThermWarn3.wav		local
+sound		loopSound=ThermLoop02.wav		local
+
+int			channel=-1						local
+
+thing		dummy							local
+
+template	tpl								local
+template	tpl1=+grenade2					local
+template	tpl2=+actor_grenade2			local
+template	tpl3=+spec_grenade				local
+
+end
+
+code
+
+created:
+	dummy = GetSenderRef();
+	tpl = GetThingTemplate(dummy);
+	if(tpl != tpl1 && tpl != tpl2 && tpl3 != tpl) return;		//don't do anything if the template is not the right one
+	channel = PlaySoundThing(loopSound, dummy, 1.0, -1, -1, 0x81);
+	if(channel != -1) SetTimerEx(2.0, dummy + 10, 1, channel);
+	SetTimerEx(2.4, dummy + 10, 2, dummy);
+	sleep(1);
+	printint(dummy);
+	Return;
+	
+timer:
+	if(GetParam(0) == 1)
+	{
+		ChangeSoundPitch(GetParam(1), 1.5, 0.5);						//beep faster...
+	}
+	else if(GetParam(0) == 2)
+	{
+		PlaySoundThing(WarnSound, GetParam(1), 1.0, -1, -1, 0x80);	//WARNING!!!
+	}
+	Return;
+
+removed:
+	KillTimerEx(GetSenderRef() + 10);		//TDet will explode early -- cancel timers for warning beep
+	return;
+
+end

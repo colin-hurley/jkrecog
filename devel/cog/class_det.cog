@@ -1,0 +1,36 @@
+# Jedi Knight Cog Script
+#
+# class_det.cog
+#
+# Class Cog - Thermal Detonator 1
+#
+# Makes live Thermal Detonator Projectiles tick
+#
+# [darthslaw]
+#
+# (c) 2006 JK Recog
+
+symbols
+
+message		created
+
+sound		loopSound=ThermLoop02.wav		local
+
+thing		dummy							local
+
+template	tpl								local
+template	tpl1=+grenade1					local
+template	tpl2=+actor_grenade				local
+
+end
+
+code
+
+created:
+	dummy = GetSenderRef();
+	tpl = GetThingTemplate(dummy);
+	if(tpl != tpl1 && tpl != tpl2) return;		//don't do anything if the template is not the right one
+	PlaySoundThing(loopSound, GetSenderRef(), 1.0, -1, -1, 0x81);
+	Return;
+
+end

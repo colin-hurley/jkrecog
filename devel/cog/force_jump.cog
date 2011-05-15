@@ -1,0 +1,199 @@
+# Jedi Knight Cog Script
+#
+# FORCE_JUMP.COG
+#
+# FORCEPOWER Script - Force Jump
+#  Basic Power
+#  Bin 21
+#
+#  This ability is controlled by the length of the key press.
+#
+# [10/21/06]
+#   Added a hack to enable force jump in JK Co-op.  Basically, we set the bin available at respawn, and check
+#   0.5 s after respawn to see if Co-op is being played (the availability of the bin will be 0). If it is,
+#   set the bin available, but set the bin stars to 0.
+#   Also, in higher levels, Co-op will not disable jump, but this won't matter anyway because we are only
+#   checking whether the bin was disabled after we enabled it.
+#
+# [darthslaw]
+#
+# (C) 2006 JK Recog
+
+symbols
+
+message		startup
+message		timer
+message		activated
+message		deactivated
+message		pulse
+message		selected
+message		killed
+message		newplayer
+
+thing		player						local
+
+vector		vel							local
+
+int			count						local
+int			count2						local
+int			countmax					local
+int			attachflags					local
+
+flex		mana						local
+flex		cost						local
+
+sound		jumpSound=ForceJump02.wav	local
+int			channel=-1					local
+
+int			mode						local
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+newplayer:
+	player = GetLocalPlayerThing();
+	count = 0;
+	channel = -1;
+	cost = 12.0;			//about 4 full jumps with full mana
+	call stop_power;
+	
+	//This next part is a hack to counteract the force-disabling properties of JK Co-op
+	SetInvAvailable(player, 21, 1);			//always available
+	SetTimerEx(0.5, 10, 0, 0);
+	Return;
+	
+timer:
+	if(GetSenderID() == 10)
+	{
+		//if not available, then JK Co-op disabled jump for the level.
+		//So, in this cog, enable jump, but set stars to 0, so that we can still use f_jump as the jump key
+		if(!IsInvAvailable(player, 21))
+		{
+			SetInv(player, 21, 0);		//remove stars
+			SetInvAvailable(player, 21, 1);
+		}
+	}
+	return;
+
+# ........................................................................................
+
+activated:
+	if(IsInvActivated(player, 21)) Return;			//if jumping
+	
+	countmax = 2 * GetInv(player, 21);
+	count = 0;
+	
+	// Must be attached to a world surface or thing face or on the surface of water.
+	attachFlags = GetAttachFlags(player);
+	if((attachFlags & 1) || (attachFlags & 2) || (GetPhysicsFlags(player) & 0x100000))
+	{
+		vel = GetThingVel(player);
+		vel = VectorAdd(vel, '0 0 1.5');			//normal jump
+		DetachThing(player);
+		SetThingVel(player, vel);
+		ClearPhysicsFlags(player, 0x100000);		//clear "at surface of water" flag
+		if(getInv(player, 21) > 0)	//if holding key, and has at least one star on power... 
+			SetPulse(0.1);			//...augment jump via force
+		vel = GetThingPos(player);
+		mode = 0;
+	}
+	else if(GetThingFlags(player) & 0x2000000)		//underwater
+	{
+		mode = 1;
+		print("mode = 1");
+		SetPulse(0.1);
+	}
+
+	Return;
+
+# ........................................................................................
+
+deactivated:
+	if(mode == 1)
+	{
+		SetPulse(0);
+		Return;
+	}
+	call stop_power;
+	Return;
+
+# ........................................................................................
+
+pulse:
+	if(mode == 1)
+	{
+		if(GetPhysicsFlags(player) & 0x100000 || !(GetThingFlags(player) & 0x2000000))	//reached surface of water
+		{
+			print("surface!");
+			//SetPulse(0);		//don't disable pulse... player may jump back in and still have the button pressed
+			return;
+		}
+		print("underwater... swimming up");
+		ApplyForce(player, VectorScale(GetThingUVec(player), 15));	//swim up
+		Return;
+	}
+	mana = GetInv(player, 14);
+	SetInvActivated(player, 21, 1);					//show force icon
+	if(VectorZ(GetThingPos(player)) - VectorZ(vel) < 0.07)	//player has risen less than 0.07 jku... stuck?
+		count2 = count2 + 1;		//count the times we don't seem to move up
+	else
+		count2 = 0;					//if we have risen by more than 0.07 jku, reset count
+	if(count2 > 1)					//we seem to be stuck by a ceiling or something... stop the power
+	{
+		call stop_power;
+		return;
+	}
+	
+	if(mana >= cost && count < countmax)			//if enough mana to jump
+	{
+		vel = GetThingVel(player);
+		vel = VectorSet(VectorX(vel), VectorY(vel), 0);
+		vel = VectorAdd(vel, '0 0 1.5');
+		SetThingVel(player, vel);
+		DetachThing(player);
+		if((GetInv(player, 64) != 1) && (GetInv(player, 65) != 1))	//if no force surges, deduct mana
+			ChangeInv(player, 14, -cost);
+
+		count = count + 1;
+		if(channel == -1)
+			channel = PlaySoundThing(jumpSound, player, 0.7, -1, -1, 0x80);
+	}
+	else											//jump needs to be halted... cannot continue now
+	{
+		call stop_power;
+	}
+	vel = GetThingPos(player);
+
+	Return;
+
+# ........................................................................................
+
+selected:
+	jkPrintUNIString(player, 21);
+	Return;
+
+# ........................................................................................
+
+killed:
+	if(GetSenderRef() != player) Return;
+
+# ........................................................................................
+
+stop_power:
+	if(channel != -1)
+	{
+		ChangeSoundVol(channel, 0.0, 0.5);		//fade out
+		StopSound(channel, 0.5);
+		channel = -1;
+	}
+	SetPulse(0);
+	SetInvActivated(player, 21, 0);
+	return;
+
+end
+
+

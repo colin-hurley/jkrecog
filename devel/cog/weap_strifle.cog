@@ -1,0 +1,251 @@
+# Jedi Knight Cog Script
+#
+# WEAP_STRIFLE.COG
+#
+# WEAPON 3 script - Stormtrooper Rifle
+#
+# The standard rifle used by the stormtroopers.  Not as accurate as the Bryar Pistol.
+# This weapon has only one type of fire.
+#
+# - Affected by MagSealed sectors/surfaces.
+#
+# This weapon now features the following fire modes:
+#  Fire 1 = Slower fire rate, better precision, 1 energy unit per shot
+#  Fire 2 = Faster fire rate, lessened precision, 2 energy units per shot
+#
+# [10/18/2006]
+#   Added code that makes shots increase in error with each shot.
+#
+# [darthslaw]
+#
+# (C) 2006, JK ReCog
+
+symbols
+
+model       povModel=strv.3do                   local
+model       weaponMesh=strg.3do                 local
+
+keyframe    mountAnim=StrVmnt.key               local
+keyframe    dismountAnim=StrVdis.key            local
+keyframe    povfireAnim=StrVpst1.key            local
+keyframe    holsterAnim=kyhlstr.key             local
+
+sound       mountSound=df_rif_ready.wav         local
+sound       dismountSound=PutWeaponAway01.wav   local
+sound       fireSound=trprsht2.wav              local
+sound       outSound=trprout.wav                local
+
+template    projectile=+stlaser                 local
+
+thing       player                              local
+
+vector      rVec                                local
+
+flex        fireWait=0.4                        local
+flex        fireWait2=0.15                      local
+flex        holsterWait                         local
+flex        powerBoost                          local
+flex        autoAimFOV=25                       local
+
+int         trackID=-1                          local
+int         holsterTrack                        local
+int         mode                                local
+
+flex		err									local
+
+template	crosshair_tpl0=+crosshair_green_line_v	local
+template	crosshair_tpl1=+crosshair_green_line_h	local
+vector		xhair_offset							local
+flex		offset									local
+int			firing=0								local
+
+message     activated
+message     deactivated
+message     selected
+message     deselected
+message     autoselect
+message     fire
+message     timer
+message		pulse
+
+end
+
+# ========================================================================================
+
+code
+
+fire:
+   player = GetSourceRef();
+   mode = GetSenderRef();
+
+   // Check that the player is still alive.
+   if(GetThingHealth(player) <= 0)
+   {
+      Return;
+   }
+
+   // Check Ammo - If we are out, autoselect best weapon.
+   // It should always use two energy cells, but -- as in DF --
+   // allow the last fire if there is only one left...
+   if(GetInv(player, 11) < 1.0)
+   {
+      PlaySoundThing(outSound, player, 1.0, -1, -1, 0x80);
+      if((GetAutoSwitch() & 1))
+         SelectWeapon(player, AutoSelectWeapon(player, 1));
+      Return;
+   }
+
+   // Get random aiming error
+	if(mode == 0)
+	{	
+		rVec = VectorSet((Rand()-0.5)*2 * err / 0.3, (Rand()-0.5)*2 * err / 0.3, 0.0);
+		ChangeInv( player, 11, -1.0 );
+		if(err < 0.3)
+			err = err + 0.06;	//increase error with each shot
+		if(err > 0.3)
+			err = 0.3;			//error scale factor cannot be greater than 1
+	}
+	else
+	{
+		rVec = VectorSet((Rand()-0.5)*7 * err, (Rand()-0.5)*7 * err, 0.0);
+		ChangeInv( player, 11, -2.0 );
+		if(err < 1)
+			err = err + 0.1 + rand() * 0.3;	//increase error with each shot
+		if(err > 1)
+			err = 1;			//error scale factor cannot be greater than 1
+	}
+
+   SetPOVShake('0.0 -.003 0.0', VectorScale('1.5 0 0', err + 0.1), .05, 80.0);
+   FireProjectile(player, projectile, fireSound, 8, '0.0168 0.1896 0.00', rVec, 1.0, 0x30, autoAimFOV, autoAimFOV*2);
+
+   jkPlayPOVKey( player, povfireAnim, 1, 0x38 );
+
+   powerBoost = GetInv(player, 63);
+   ChangeFireRate(player, fireWait[mode]/powerBoost);
+
+   Return;
+
+# ........................................................................................
+
+activated:
+   player = GetSourceRef();
+   mode = GetSenderRef();
+   err = 0.1;		//even the first shot isn't completely accurate with this gun
+
+   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+   powerBoost = GetInv(player, 63);
+   ActivateWeapon(player, fireWait[mode]/powerBoost, mode);
+   firing = 1;
+   Return;
+
+# ........................................................................................
+
+deactivated:
+   player = GetSourceRef();
+   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+   DeactivateWeapon(player, mode);
+   firing = 0;
+   Return;
+
+# ........................................................................................
+
+selected:
+   player = GetSourceRef();
+
+	firing = 0;
+	SetPulse(0.01);
+   PlayMode(player, 41);
+   PlaySoundThing(mountSound, player, 1.0, -1, -1, 0x80);
+   jkSetPOVModel(player, povModel);
+   SetArmedMode(player, 1);
+   jkSetWeaponMesh(player, weaponMesh);
+   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+   trackID = jkPlayPOVKey(player, mountAnim, 0, 20);
+   SetMountWait(player, GetKeyLen(mountAnim));
+   jkClearFlags(player, 0x5);
+   SetCurWeapon(player, 3);
+
+   Return;
+
+# ........................................................................................
+
+deselected:
+   player = GetSourceRef();
+
+   PlaySoundThing(dismountSound, player, 1.0, -1, -1, 0x80);
+   jkPlayPOVKey(player, dismountAnim, 0, 0x18);
+   holsterWait = GetKeyLen(holsterAnim);
+   SetMountWait(player, holsterWait);
+   holsterTrack = PlayKey(player, holsterAnim, 1, 0x4);
+   SetTimerEx(holsterWait, 2, 0.0, 0.0);
+   if (trackID != -1)
+   {
+      jkStopPOVKey(player, trackID, 0);
+      trackID = -1;
+   }
+   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+
+   Return;
+
+# ........................................................................................
+
+autoselect:
+   player = GetSourceRef();
+
+   // If the player has the weapon
+   if(GetInv(player, 3) != 0.0)
+   {
+      // If the player has ammo
+      if(GetInv(player, 11) != 0.0)
+      {
+         ReturnEx(600.0);
+      }
+      else
+      {
+         ReturnEx(-1.0);
+      }
+   }
+   else
+   {
+      ReturnEx(-1.0);
+   }
+
+   Return;
+
+# ........................................................................................
+
+timer:
+   StopKey(player, holsterTrack, 0.0);
+   SetPulse(0);
+   Return;
+
+# ........................................................................................
+
+pulse:
+	if(!firing && err > 0)
+		err = err - 0.05;
+	
+	if(err < 0)
+		err = 0;
+	
+	if(GetCurrentCamera() == 0)
+	{
+		offset = 0.0035 + err * 0.004;
+		
+		xhair_offset = VectorSet(0, 0.05, offset + 0.037);
+		FireProjectile(player, crosshair_tpl0, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorSet(0, 0.05, -offset + 0.037);
+		FireProjectile(player, crosshair_tpl0, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorSet(offset, 0.05, 0.037);
+		FireProjectile(player, crosshair_tpl1, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorSet(-offset, 0.05, 0.037);
+		FireProjectile(player, crosshair_tpl1, -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+	}
+
+	return;
+	
+end
+

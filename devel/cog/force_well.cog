@@ -1,0 +1,62 @@
+# Jedi Knight Cog Script
+#
+# FORCE_WELL.COG
+#
+# JEDI RANK Script
+#  Bin 20
+#
+# The rank of a Jedi determines his maximum mana points.
+# Mana recharge rate is the same for all Jedi.
+#
+# [darthslaw]
+#
+# (C) 2006 JK ReCog
+
+
+symbols
+
+thing       player                           local
+
+int			i								local
+int			forceactive						local
+
+message     startup
+message     pulse
+
+end
+
+# ========================================================================================
+
+code
+
+startup:
+   player = GetLocalPlayerThing();
+   Sleep(1.0);
+   SetPulse(0.25);
+
+   Return;
+
+# ........................................................................................
+
+pulse:
+	// don't do anything if the player is currently dead
+	if(GetThingHealth(player) < 1) Return;
+
+	forceactive = 0;
+	for(i = 21; i <= 34 && !forceactive; i = i + 1)			//loop through force power bins
+	{
+		if(IsInvActivated(player, i)) forceactive = 1;		//player is using a force power
+	}
+
+	if(forceactive) return;									//do not charge mana when using a force power
+	
+	//ChangeInv(player, 14, GetInv(player, 20) * 50 / 45 * 0.25);		//45 seconds to fully charge mana
+	ChangeInv(player, 14, 400 / 45 * 0.25);					//45 seconds for full 400 mana points
+
+	if(GetInv(player, 14) > GetInv(player, 20) * 50) SetInv(player, 14, GetInv(player, 20) * 50);
+
+	Return;
+
+end
+
+

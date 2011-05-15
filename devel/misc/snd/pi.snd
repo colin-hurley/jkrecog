@@ -1,0 +1,55 @@
+# Pic foley description
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+####################################################################################################
+#
+
+enterwater	splash1.wav		0x0	1.0	5.0
+enterwaterslow	splash1.wav		0x0	0.5	3.0
+
+death1		I00PI13Z.WAV	0x010000	1.0     4.0
+death2		I00PI13Z.WAV	0x010000        1.0     4.0
+
+victory		I00PI05Z.WAV	0x010000
+
+hurtenergy 	I00PI04Z.WAV	0x010000	1.0     4.0
+hurtenergy 	I00PI01Z.WAV	0x010000	1.0     4.0
+hurtimpact 	I00PI12Z.WAV	0x010000	1.0     4.0
+hurtimpact 	I00PI09Z.WAV	0x010000	1.0     4.0
+hurtfire 	I00PI12Z.WAV	0x010000	1.0     4.0
+hurtfire 	I00PI01Z.WAV	0x010000	1.0     4.0
+hurtMagic	I00PI09Z.WAV	0x010000	1.0     4.0
+hurtMagic	I00PI04Z.WAV	0x010000	1.0     4.0
+hurtspecial	I00PI07Z.WAV	0x010000	1.0     4.0
+hurtspecial	I00PI12Z.WAV	0x010000	1.0     4.0
+
+fire1		LtSaberSwing03.wav	0x0     1.0     4.0
+fire2		LtSaberSwing05.wav	0x0     1.0     4.0
+fire3		LtSaberSwing03.wav	0x0	1.0	4.0
+
+curious		I00PI10Z.WAV	0x010000	1.0     4.0
+alert		I00PI08Z.WAV	0x014000	1.0     4.0
+surprise	I00PI02Z.WAV	0x010000
+fear		I00PI03Z.WAV	0x010000
+boast		I00PI06Z.WAV	0x010000
+gloat		I00PI11Z.WAV	0x010000
+
+jump		I00PI11Z.WAV    0x010000
+jumpmetal	I00PI11Z.WAV	0x010000
+jumpwater	I00PI11Z.WAV    0x010000
+jumpearth	I00PI11Z.WAV    0x010000
+
+landhard	landbasic01.wav		0x0
+landmetal	landmetaldry01.wav	0x0
+landearth	landDirt01.wav		0x0
+landpuddle	fswtr1l.wav		0x0
+landwater	fswtr2l.wav		0x0
+
+deflected	LtSaberHit12.wav
+deflected	LtSaberHit15.wav
+corpsehit	bodyfall01.wav		0x0     0.8     4.0
+	
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5

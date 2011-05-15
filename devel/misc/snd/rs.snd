@@ -1,0 +1,25 @@
+# Foley description for Robotic Sentry
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+enterwater	ploop01.wav 	      0x0     1.0     5.0
+enterwaterslow	ploop01.wav 	      0x0     0.5     3.0
+
+Activate	SProbeHover01.WAV	0x801	0.7	3.3
+Fire1		SProbeGun01.WAV		0x0     1.0     4.0
+
+HurtImpact	SProbeGetHit01.WAV	0x10000     1.0     4.0
+HurtEnergy	SProbeGetHit01.WAV      0x10000     1.0     4.0
+HurtFire	SProbeGetHit01.WAV      0x10000     1.0     4.0
+HurtMagic	SProbeGetHit01.WAV      0x10000     1.0     4.0
+HurtSpecial	SProbeGetHit01.WAV	0x10000     1.0     4.0
+
+curious         SProbeTalk01.WAV	0x10000     3.0     8.0
+Alert		SProbeTalk01.WAV        0x14000     3.0     8.0
+Victory		SProbeTalk01.WAV        0x10000
+
+
+landhurt	landhard01.wav		0x0            1.5     2.5
+splattered	landhard01.wav		0x0            1.5     2.5
+hitdamaged	landhard01.wav		0x0            1.5     2.5
