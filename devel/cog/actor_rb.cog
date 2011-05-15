@@ -30,8 +30,7 @@ thing       victim                           local
 int         bin                              local
 int         senderref=-1                     local
 #ai          flee_ai=noweapon.ai              local
-#ai			punch_ai=rypundefault.ai		local
-ai			punch_ai=grfist.ai		local
+ai			punch_ai=rypundefault.ai		local
 template	punch_tpl=+ry_punch				local
 int         damage                           local
 

@@ -236,6 +236,15 @@ client			140		0.0	0.0	0x000	cog=client_jkrecog.cog
 # bin 145 = Safe Save feature
 safesave		145		1.0	1.0	0x102	cog=item_safesave.cog
 
+# bins 160-167 = Dark Jedi Actor Cogs
+djcog_yun		160		0.0	0.0	0x000	cog=actor_yun.cog
+djcog_gorc		161		0.0	0.0	0x000	cog=actor_gorc.cog
+djcog_pic		162		0.0	0.0	0x000	cog=actor_pic.cog
+djcog_maw		163		0.0	0.0	0x000	cog=actor_maw.cog
+djcog_sariss		164		0.0	0.0	0x000	cog=actor_sariss.cog
+djcog_boc		165		0.0	0.0	0x000	cog=actor_boc.cog
+djcog_jerec		166		0.0	0.0	0x000	cog=actor_jerec.cog
+djcog_yun2		167		0.0	0.0	0x000	cog=actor_yun2.cog
 
 ## End new items section ##	
 

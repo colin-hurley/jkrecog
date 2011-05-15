@@ -49,6 +49,9 @@ template	crosshair6_tpl2_0=+crosshair_green_line_d2	local
 template	crosshair6_tpl2_1=+crosshair_red_line_d2	local
 template	crosshair6_tpl2_2=+crosshair_blue_line_d2	local
 
+template	hit_tpl=+xhairhit							local
+template	ghost_tpl=+timed_ghost						local
+
 vector		xhair_offset								local
 
 vector		master_offset	local
@@ -89,7 +92,7 @@ newplayer:
 	return;
 	
 activated:
-	print("DEBUG -- Crosshair cog ACTIVATED");
+	#print("DEBUG -- Crosshair cog ACTIVATED");
 	style = style + 1;
 	if(style > 3)
 		style = 0;
@@ -124,6 +127,19 @@ pulse:
 
 	if(weapon == 2)				// Bryar Pistol
 	{
+		dummy = fireprojectile(player, hit_tpl, -1, -1, '0.0135 5 -0.005', '0 0 0', 0, 0, 0, 0);
+		//SetThingModel(dummy, LoadModel("dflt.3do"));
+		ghost = fireprojectile(player, ghost_tpl, -1, -1, '0 0 0.037', '0 0 0', 0, 0, 0, 0);
+		diff = VectorNorm(VectorSub(GetThingPos(dummy), GetThingPos(ghost)));
+		rvec = GetThingRVec(ghost);
+		uvec = GetThingUVec(ghost);
+		lvec = GetThingLVec(ghost);
+		master_offset = VectorSet(
+			0.05 * VectorDot(rvec, diff) / VectorDot(lvec, diff),			// X
+			0.05,															// Y
+			0.037 + 0.05 * VectorDot(uvec, diff) / VectorDot(lvec, diff)	// Z
+		);
+		
 		offset = 0.0016 + err * 0.0015;
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
@@ -140,6 +156,18 @@ pulse:
 	}
 	else if(weapon == 3)		// Stormtrooper Rifle
 	{
+		dummy = fireprojectile(player, hit_tpl, -1, -1, '0.0168 5 0', '0 0 0', 0, 0, 0, 0);
+		//SetThingModel(dummy, LoadModel("dflt.3do"));
+		ghost = fireprojectile(player, ghost_tpl, -1, -1, '0 0 0.037', '0 0 0', 0, 0, 0, 0);
+		diff = VectorNorm(VectorSub(GetThingPos(dummy), GetThingPos(ghost)));
+		rvec = GetThingRVec(ghost);
+		uvec = GetThingUVec(ghost);
+		lvec = GetThingLVec(ghost);
+		master_offset = VectorSet(
+			0.05 * VectorDot(rvec, diff) / VectorDot(lvec, diff),			// X
+			0.05,															// Y
+			0.037 + 0.05 * VectorDot(uvec, diff) / VectorDot(lvec, diff)	// Z
+		);
 		offset = 0.0016 + err * 0.0023;
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
@@ -156,6 +184,18 @@ pulse:
 	}
 	else if(weapon == 5)		// Bowcaster
 	{
+		dummy = fireprojectile(player, hit_tpl, -1, -1, '0.0207 5 0', '0 0 0', 0, 0, 0, 0);
+		//SetThingModel(dummy, LoadModel("dflt.3do"));
+		ghost = fireprojectile(player, ghost_tpl, -1, -1, '0 0 0.037', '0 0 0', 0, 0, 0, 0);
+		diff = VectorNorm(VectorSub(GetThingPos(dummy), GetThingPos(ghost)));
+		rvec = GetThingRVec(ghost);
+		uvec = GetThingUVec(ghost);
+		lvec = GetThingLVec(ghost);
+		master_offset = VectorSet(
+			0.05 * VectorDot(rvec, diff) / VectorDot(lvec, diff),			// X
+			0.05,															// Y
+			0.037 + 0.05 * VectorDot(uvec, diff) / VectorDot(lvec, diff)	// Z
+		);
 		offset = 0.0016 + err * 0.002;
 		
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
@@ -172,6 +212,18 @@ pulse:
 	}
 	else if(weapon == 6)		// Repeater
 	{
+		dummy = fireprojectile(player, hit_tpl, -1, -1, '0.0186 5 0', '0 0 0', 0, 0, 0, 0);
+		//SetThingModel(dummy, LoadModel("dflt.3do"));
+		ghost = fireprojectile(player, ghost_tpl, -1, -1, '0 0 0.037', '0 0 0', 0, 0, 0, 0);
+		diff = VectorNorm(VectorSub(GetThingPos(dummy), GetThingPos(ghost)));
+		rvec = GetThingRVec(ghost);
+		uvec = GetThingUVec(ghost);
+		lvec = GetThingLVec(ghost);
+		master_offset = VectorSet(
+			0.05 * VectorDot(rvec, diff) / VectorDot(lvec, diff),			// X
+			0.05,															// Y
+			0.037 + 0.05 * VectorDot(uvec, diff) / VectorDot(lvec, diff)	// Z
+		);
 		offset = 0.0016 + err * 0.002;
 		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
 		FireProjectile(player, crosshair6_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
@@ -181,6 +233,34 @@ pulse:
 
 		xhair_offset = VectorAdd(master_offset, VectorSet(-0.866 * offset, 0, -0.5 * offset));
 		FireProjectile(player, crosshair6_tpl2_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+	}
+	else if(weapon == 7)		// Rail Detonator
+	{
+		dummy = fireprojectile(player, hit_tpl, -1, -1, '0.0168 5 0', '0 0 0', 0, 0, 0, 0);
+		//SetThingModel(dummy, LoadModel("dflt.3do"));
+		ghost = fireprojectile(player, ghost_tpl, -1, -1, '0 0 0.037', '0 0 0', 0, 0, 0, 0);
+		diff = VectorNorm(VectorSub(GetThingPos(dummy), GetThingPos(ghost)));
+		rvec = GetThingRVec(ghost);
+		uvec = GetThingUVec(ghost);
+		lvec = GetThingLVec(ghost);
+		master_offset = VectorSet(
+			0.05 * VectorDot(rvec, diff) / VectorDot(lvec, diff),			// X
+			0.05,															// Y
+			0.037 + 0.05 * VectorDot(uvec, diff) / VectorDot(lvec, diff)	// Z
+		);
+		offset = 0.0025 + err * 0.002;
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, offset));
+		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(0, 0, -offset));
+		FireProjectile(player, crosshair3_tpl0_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(offset, 0, 0));
+		FireProjectile(player, crosshair3_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
+		
+		xhair_offset = VectorAdd(master_offset, VectorSet(-offset, 0, 0));
+		FireProjectile(player, crosshair3_tpl1_0[temp_style], -1, -1, xhair_offset, '0 0 0', 0, 0, 0, 0);
 	}
 	return;
 	

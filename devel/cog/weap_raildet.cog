@@ -10,9 +10,9 @@
 #
 # - Not affected by MagSealed sectors/surfaces.
 #
-# [YB & CYW]
+# [darthslaw]
 #
-# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+# (C) 2007 JK ReCog
 
 
 symbols
@@ -39,7 +39,7 @@ thing       rail                                local
 flex        fireWait=1.0                        local
 flex        powerBoost                          local
 flex        autoAimFOV=25                       local
-flex        autoAimMaxDist=5                    local
+#flex        autoAimMaxDist=5                    local
 flex        holsterWait                         local
 
 keyframe    railAnim=rld0anim.key               local
@@ -50,20 +50,35 @@ int         holsterTrack                        local
 
 int         selectMode=1                        local
 
+int			xhair_bin=119						local
+flex		err									local
+
+int			waggle=0				local
+vector		waggle_vec				local
+flex		waggle_spd				local
+
 message     activated
 message     deactivated
 message     selected
 message     deselected
-#message     newplayer
+message		startup
+message     newplayer
 message     autoselect
 message     fire
 message     timer
+message		user4					# waggle control
 
 end
 
 # ========================================================================================
 
 code
+
+startup:
+newplayer:
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
+	return;
 
 fire:
    player = GetSourceRef();
@@ -83,11 +98,17 @@ fire:
          SelectWeapon(player, AutoSelectWeapon(player, 1));
       Return;
    }
-
+	// Get random aiming error
+	err = GetInv(player, xhair_bin);
    jkPlayPOVKey(player, povfireAnim, 1, 0x38);
    SetPOVShake('0.0 -.01 0.0', '4.0 0.0 0.0', .05, 80.0);
 
-   rail = FireProjectile(player, projectile[mode], fireSound, 18, '0.0214 0.15 0.00', '0 0 0', 1.0, 0x20, autoAimFOV, autoAimFOV*2);
+   rail = FireProjectile(player, projectile[mode], fireSound, 18, '0.0214 0.15 0.00', VectorSet((rand()-0.5)*(err+0.25)*6, (rand()-0.5)*(err+0.25)*6, 0), 1.0, 0x20, autoAimFOV, autoAimFOV*2);
+	// make more accurate when crouched
+	if(IsThingCrouching(player))
+		SetThingRotVel(rail, VectorSet((rand()-0.5)*12*(err+0.2), (rand()-0.5)*12*(err+0.2), 90));
+	else
+   		SetThingRotVel(rail, VectorSet((rand()-0.5)*10*(err+0.5), (rand()-0.5)*10*(err+0.5), 90));
    if((mode == 1) && (rail != -1))
    {
       PlayKey(rail, railAnim, 1, 20);
@@ -97,6 +118,7 @@ fire:
    ApplyForce(player, VectorScale(GetThingLVec(player), -40));
 
    ChangeInv(player, 15, -1.0);
+   ChangeInv(player, xhair_bin, 0.75);	// error after shot
 
    powerBoost = GetInv(player, 63);
    ChangeFireRate(player, fireWait/powerBoost);
@@ -108,7 +130,8 @@ fire:
 activated:
    player = GetSourceRef();
    mode = GetSenderRef();
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
    powerBoost = GetInv(player, 63);
    ActivateWeapon( player, fireWait/powerBoost, mode );
    Return;
@@ -118,7 +141,8 @@ activated:
 deactivated:
    player = GetSourceRef();
    mode = GetSenderRef();
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
    DeactivateWeapon( player, mode );
    Return;
 
@@ -132,13 +156,14 @@ selected:
    jkSetPOVModel(player, povModel);
    SetArmedMode(player, 1);
    jkSetWeaponMesh(player, weaponMesh);
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
 
    trackID = jkPlayPOVKey(player, mountAnim, 0, 20);
    SetMountWait(player, GetKeyLen(mountAnim));
    jkClearFlags(player, 0x5);
    SetCurWeapon(player, 7);
-return;
+
    // Check Ammo - If we are out, autoselect best weapon.
    if(GetInv( player, 15 ) < 1.0)
    {
@@ -155,8 +180,7 @@ deselected:
    player = GetSourceRef();
 
    PlaySoundThing(dismountSound, player, 1.0, -1, -1, 0x80);
-   #jkPlayPOVKey( player, dismountAnim, 0, 18 );
-   jkPlayPOVKey( player, dismountAnim, 0, 0x14 );
+   jkPlayPOVKey( player, dismountAnim, 0, 18 );
 
    holsterWait = GetKeyLen(holsterAnim);
    SetMountWait(player, holsterWait);
@@ -167,7 +191,8 @@ deselected:
       jkStopPOVKey( player, trackID, 0 );
       trackID = -1;
    }
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
 
    Return;
 
@@ -242,6 +267,12 @@ autoselect:
 timer:
    StopKey(player, holsterTrack, 0.0);
    Return;
+   
+user4:
+	waggle_vec = VectorSet(GetParam(0), GetParam(1), GetParam(2));
+	waggle_spd = GetParam(3);
+	if(waggle) jkSetWaggle(player, waggle_vec, waggle_spd);
+	Return;
 
 end
 

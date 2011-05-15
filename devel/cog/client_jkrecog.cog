@@ -7,7 +7,9 @@
 # [darthslaw]
 #
 # (c) 2007 JK ReCog
+
 flags=0x240
+
 symbols
 
 message		trigger

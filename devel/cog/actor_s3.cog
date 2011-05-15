@@ -1,0 +1,109 @@
+# Jedi Knight Cog Script
+#
+# ACTOR_S3.COG
+#
+# ACTOR Script - Stormtrooper with Rail Detonator
+#
+# 7/28/97 [CR] Doubled saber damage for single player gameplay reasons
+#
+# [CYW, YB & CR]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+
+symbols
+message		fire
+message     damaged
+message     killed
+message     skill
+
+template    powerup=+DRailGun                local
+template    limb=+stormlimb                  local
+thing       newThing                         local
+int         victim                           local
+int         bin                              local
+int         senderref=-1                     local
+ai          flee_ai=noweapon.ai              local
+int         damage                           local
+thing		rail							local
+flex		vel								local
+end
+
+# ========================================================================================
+
+code
+
+fire:
+	victim = GetSenderRef();
+	rail = GetSourceRef();
+	vel = VectorLen(GetThingVel(victim)) + 0.1;
+	if(vel > 1) vel = 1;
+	// give the rail an initial rotational velocity; the rail class cog will take over from there
+	SetThingRotVel(rail, VectorSet((rand()-0.5)*vel*10, (rand()-0.5)*vel*10, 90));
+	return;
+
+damaged:
+   damage = GetParam(0);
+   if(GetParam(1) == 16)                        // saber damage might cause dismemberment
+   {
+      damage = (damage * 2.0);
+      if(GetThingHealth(victim) <= damage) // but only if damage is sufficient to kill
+      {
+         if(rand() < 0.05)                      // random chance
+         {
+            AmputateJoint(victim, 5);
+            newThing = CreateThingAtPos(limb, GetThingSector(victim), GetThingPos(victim), '0 0 0');
+            SetThingVel(newThing, '0.0 0.7 1.4');
+         }
+      }
+   }
+   ReturnEx(damage);
+   return;
+
+# ........................................................................................
+
+killed:
+   victim = GetSenderRef();
+
+   if (GetActorWeapon( victim, 1 ) != -1)
+   {
+      AmputateJoint( victim, 3 );
+      newThing = CreateThing(powerup, GetSenderRef());
+      SetLifeleft(newThing, 200.0);
+   }
+
+   return;
+
+# ........................................................................................
+
+skill:
+   bin = GetParam(0);
+   if (bin == 24)                            // Force Pull
+   {
+      senderref = GetSenderRef();
+      newThing = CreateThing(powerup, GetSenderRef());
+      SetLifeleft(newThing, 30.0);
+      ReturnEx(newThing);
+
+      AISetClass(senderref, flee_ai);
+      AIFlee(senderref, GetLocalPlayerThing());
+
+      Return;
+   }
+   else
+   if (bin == 31)                            // Force Grip
+   {
+      ReturnEx(10);                          // return base damage that is taken by this actor.
+      Return;
+   }
+   else
+   if (bin == 34)                            // Deadly Sight
+   {
+      ReturnEx(5);                           // return base damage that is taken by this actor.
+      Return;
+   }
+   ReturnEx(-1);
+   return;
+
+end
+

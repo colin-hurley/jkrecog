@@ -64,6 +64,10 @@ int         holsterTrack                  local
 
 int         selectMode=1                  local
 
+int			waggle=0				local
+vector		waggle_vec				local
+flex		waggle_spd				local
+
 message     startup
 message     activated
 message     deactivated
@@ -75,6 +79,7 @@ message     newplayer
 message		killed
 message     user2
 message     user3
+message		user4
 
 end
 
@@ -93,7 +98,8 @@ startup:
    #POVCockTrack = -1;
    deadman = 0;
    cocked = 0;
-
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
    Return;
 
 # ........................................................................................
@@ -105,7 +111,8 @@ activated:
       Return;
     killTimerEx(20);	// no fire 3 allowed now
     cocked = 1;
-
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
    PlaySoundThing(clickSound[mode], player, 1.0, -1.0, -1.0, 0x80);
 
    // Cock arm back for throw.
@@ -174,7 +181,8 @@ deactivated:
       }
    }
 
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
    SetTimerEx(throwWait, 0, 0, 0);
 
    Return;
@@ -184,8 +192,9 @@ deactivated:
 timer:
    if (GetSenderId() == 0)
    {
-      // Start waggling after the throw.
-      jkSetWaggle(player, '10.0 7.0 0.0', 350);
+		// Start waggling after the throw.
+		jkSetWaggle(player, waggle_vec, waggle_spd);
+		waggle = 1;
    }
    else
    if (GetSenderId() == 2)
@@ -209,7 +218,8 @@ timer:
 selected:
    player = GetSourceRef();
 
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
 
    // Play external mounting animation
    PlayMode(player, 40);
@@ -247,7 +257,8 @@ deselected:
       jkStopPOVKey(player, selectTrack, 0);
       selectTrack = -1;
    }
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
    KillTimerEx(0);
 
    if(preThrowTrack != -1 && prePOVThrowTrack != -1)
@@ -342,6 +353,7 @@ user2:
 	#POVCockTrack = jkPlayPOVKey(player, prePOVThrowAnim, 1, 0x14);
 	#CockTrack = PlayMode( player, 38 );
 	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
 	SetMountWait(player, 36000);	// don't let player fire until we tell him he can
 	return;
 
@@ -366,9 +378,16 @@ user3:
 	#	POVCockTrack = -1;
 	#}
 	PlaySoundThing(clickSound, player, 1.0, -1.0, -1.0, 0x80);
-	jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
 	SetMountWait(getLocalPlayerThing(), 0.5);
 	return;
+
+user4:
+	waggle_vec = VectorSet(GetParam(0), GetParam(1), GetParam(2));
+	waggle_spd = GetParam(3);
+	if(waggle) jkSetWaggle(player, waggle_vec, waggle_spd);
+	Return;
 
 end
 

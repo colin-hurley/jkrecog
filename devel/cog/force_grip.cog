@@ -45,6 +45,9 @@ vector		vel								local
 
 int			old_flags=0						local
 
+int			gripTrack=-1					local
+int			chokeTrack=-1					local
+
 message     startup
 message     activated
 message     deactivated
@@ -64,6 +67,8 @@ startup:
 	SetInvActivated(player, 31, 0);
 	victim = -1;
 	active = 0;
+	gripTrack = -1;
+	chokeTrack = -1;
 	Return;
 # .......................................................................
 activated:
@@ -84,7 +89,7 @@ activated:
 	Return;
 # .......................................................................
 deactivated:
-	if(active) return;
+	if(!active) return;
 	call stop_power;
 	SetBinWait(player, 31, 1.0);
 	Return;
@@ -152,19 +157,20 @@ pulse:
 			if(damage <= 0.0) return;
 			SetInvActivated(player, 31, 1);
 			// choke animation
-			PlayMode(victim, 25);
+			chokeTrack = PlayMode(victim, 25);
 			// grip animation
-			PlayMode(player, 36);
+			gripTrack = PlayMode(player, 36);
 			targetting = 0;
 		}
 	}
 	if(targetting == 0)
 	{
 		if(
-			victim == -1								//no target
-			|| GetThingHealth(victim) <= 0				//target dead
-			|| GetThingFlags(victim) & 0x200			//target dead
-			|| !HasLOS(player, victim)					//we've lost LOS
+			(victim == -1)													//no target
+			|| (GetThingHealth(victim) <= 0)								//target dead
+			|| (GetThingFlags(victim) & 0x200)								//target dead
+			|| (!HasLOS(player, victim))									//we've lost LOS
+			|| (VectorDist(GetThingPos(player), GetThingPos(victim)) > 1)	// out of range
 		)
 		{
 			call stop_power;
@@ -230,12 +236,16 @@ newplayer:
 # .......................................................................
 stop_power:
 #SetCameraFocus(0, player);
+	if(gripTrack != -1) StopKey(player, gripTrack, 0.05);
+	gripTrack = -1;
+	if(chokeTrack != -1) StopKey(victim, chokeTrack, 0.3);
+	chokeTrack = -1;
 	active = 0;
 	SetPulse(0);
 	SetInvActivated(player, 31, 0);
 	if(victim != -1)
 	{
-		printint(old_flags);
+		#printint(old_flags);
 		SetPhysicsFlags(victim, old_flags);
 		ClearActorFlags(victim, 0x40000);
 	}

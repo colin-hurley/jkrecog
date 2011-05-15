@@ -1,0 +1,99 @@
+# Jedi Knight Cog Script
+#
+# ACTOR_S2.COG
+#
+# ACTOR Script - Stormtrooper with Repeater
+#
+# [CYW, YB & CR]
+#
+# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+
+
+symbols
+
+message     killed
+message     damaged
+message     skill
+
+template    powerup=+DRepeaterGun            local
+template    limb=+stormlimb                  local
+thing       newThing                         local
+int         victim                           local
+int         bin                              local
+int         senderref=-1                     local
+ai          flee_ai=noweapon.ai              local
+int         damage                           local
+
+end
+
+# ========================================================================================
+
+code
+
+damaged:
+   damage = GetParam(0);
+   if(GetParam(1) == 16)                     // saber damage might cause dismemberment
+   {
+      damage = (damage * 2.0);
+      victim = GetSenderRef();
+      if(GetThingHealth(victim) <= damage) // but only if damage is sufficient to kill
+      {
+         if(rand() < 0.05)                   // random chance
+         {
+            AmputateJoint(victim, 5);
+            newThing = CreateThingAtPos(limb, GetThingSector(victim), GetThingPos(victim), '0 0 0');
+            SetThingVel(newThing, '0.0 0.7 1.4');
+         }
+      }
+   }
+   ReturnEx(damage);
+   return;
+
+# ........................................................................................
+
+killed:
+   victim = GetSenderRef();
+
+   if (GetActorWeapon( victim, 1 ) != -1)
+   {
+      AmputateJoint( victim, 3 );
+      newThing = CreateThing(powerup, victim);
+      SetLifeleft(newThing, 200.0);
+   }
+
+   return;
+
+# ........................................................................................
+
+skill:
+   bin = GetParam(0);
+   if (bin == 24)                            // Force Pull
+   {
+      senderref = GetSenderRef();
+      newThing = CreateThing(powerup, GetSenderRef());
+      SetLifeleft(newThing, 30.0);
+      ReturnEx(newThing);
+
+      AISetClass(senderref, flee_ai);
+      AIFlee(senderref, GetLocalPlayerThing());
+
+      return;
+   }
+   else
+   if (bin == 31)                            // Force Grip
+   {
+      ReturnEx(10);                          // return base damage that is taken by this actor.
+      return;
+   }
+   else
+   if (bin == 34)                            // Deadly Sight
+   {
+      ReturnEx(5);                           // return base damage that is taken by this actor.
+      return;
+   }
+   ReturnEx(-1);
+   return;
+
+end
+
+

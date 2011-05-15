@@ -33,8 +33,10 @@ int         old_flags=0                      local
 
 int         effectHandle=-1                  local
 
-flex		dlight							local
-flex		light=0.5						local
+int			dlight							local
+int			change=1						local	# rate of change in the light level
+int			lightlevel=5					local
+flex		light							local	# max can be 10
 
 message     startup
 message     shutdown
@@ -55,7 +57,8 @@ startup:
    player = GetLocalPlayerThing();
    old_flags = GetMapModeFlags();
    call stop_power;
-	dlight = 0.05;
+	dlight = change;
+	light = lightlevel / 10;
    Return;
 
 # ........................................................................................
@@ -107,19 +110,24 @@ activated:
 		// if crouching, change light level
 		if(isThingCrouching(player))
 		{
-			if(light >= 1.0)
+			if(lightlevel >= 10)
 			{
-				light = 1.0;
-				dlight = -0.05;
+				lightlevel = 10;
+				dlight = -change;
 			}
-			if(light <= 0.25)
+			if(lightlevel <= 3)
 			{
-				dlight = 0.05;
-				light = 0.25;
+				lightlevel = 3;
+				dlight = change;
 			}
-			light = light + dlight;
+			lightlevel = lightlevel + dlight;
+			light = lightlevel / 10;
 			if(!GetInv(player, 123))	// if weapon scope is not active
 				EnableIRMode(light, 1);
+			jkStringClear();
+			jkStringConcatAsciiString("Force Seeing Brightness Level: ");
+			jkStringConcatInt(lightlevel);
+			jkStringOutput(-1, -1);		// destination of -1 prints to local player only
 		}
 		// else turn off power
 		else

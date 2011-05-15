@@ -60,7 +60,6 @@ touched:
 		// Use FireProjectile() to preserve player-as-parent relationship among bullets
 		dummy = FireProjectile(parent, tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);
 	}
-printint(victim);
 	// Calculate the hit position offset
 	##hitdir = VectorNorm(VectorSub(GetThingPos(victim), GetThingPos(bullet)));	// unit vector from bullet to actor
 	##hitdir = VectorScale(hitdir, GetThingMoveSize(victim));						// scale to actor radius

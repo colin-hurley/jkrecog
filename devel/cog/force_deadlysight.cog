@@ -103,7 +103,7 @@ activated:
 
 pulse:
 	// if player was hurt or blinded, or out of force
-   if((GetThingHealth(player) < starthealth) || (GetActorFlags(player) & 0x800) || GetInv(player, 14) < 1)
+   if((GetThingHealth(player) < starthealth) || (GetActorFlags(player) & 0x800) || GetInv(player, 14) < cost/3)
    {
       call stop_power;
       Return;
@@ -130,7 +130,7 @@ pulse:
 				SkillTarget(victim, player, 34, rank);
 				damage = rank*rank;						// in kyle.cog, this is the damage dealt
 
-				damage = damage / 4;					// for balance, only absorb half of the damage dealt
+				damage = damage * 0.75 / 2;				// for balance, only absorb 75% of the damage dealt
 				ChangeInv(player, 14, damage);			// half of that will automatically go to mana
 				healthLeft = 100 - GetHealth(player);	// how much health is left to heal
 				if(damage <= healthLeft)				// if the amount of damage will not completely heal the player
@@ -172,7 +172,7 @@ pulse:
                   DamageThing(victim, damage, 0x8, player);
                   smoke = CreateThingAtPos(smoke_tpl, GetThingSector(victim), GetThingPos(victim), '0 0 0');
 
-					damage = damage / 4;					// for balance, only absorb half of the damage dealt
+					damage = damage * 0.75 / 2;				// for balance, only absorb 75% of the damage dealt
 					ChangeInv(player, 14, damage);			// half of that will automatically go to mana
 					healthLeft = 100 - GetHealth(player);	// how much health is left to heal
 					if(damage <= healthLeft)				// if the amount of damage will not completely heal the player

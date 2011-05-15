@@ -1,0 +1,40 @@
+#puppet file for Boc (bo.3do) [Anthony 12/20/96]
+Mode=0				# Idle
+stand		bostand.key	0x00	0	0	# standing
+walk		boleap.key	0x01	2	2	# "walk"
+run 		boleap.key	0x01	2	2	# "run"
+walkback	boleap.key	0x01	2	2	# "walk backwards"
+strafeleft	boleap.key	0x01	2	2	# "strafe left"
+straferight	boleap.key	0x01	2	2	# "strafe right"
+jump		bojumpa.key	0x38	2	2
+rising		bojumpb.key	0x04	2	2
+drop		bojumpc.key	0x04	2	2
+land		bojumpd.key	0x38	3	3
+death		bodie.key	0x14	5	5	# die
+death2		bodie.key	0x14	5	5	# alt. die
+hit		bohit.key	0x28	1	3	# hit (recoil)
+choke		bochoke.key	0x28	4	4	# Submode 25 - choke.
+turnleft	Boshuffl.key	0x00	2	2	# shufflin' left
+turnright	Boshuffl.key	0x00	2	2	# shufflin' right
+leap		bojumpb.key	0x00	3	3
+fire		bochop.key	0x28	1	4	# Medium and Big (2 Swings)
+fire2   	bocut.key	0x28	1	4	# Medium and Big (2 Swings)
+block           boblock.key     0x28    1       3
+block2          boblock.key     0x28    1       3
+magic		bobolt.key	0x28	1	3	# Submode 24
+magic2   	bothrow.key	0x28	1	3	# Submode 35
+magic3		bosabthrow.key	0x28	3	4	# Submode 36
+victory		BOwin.key	0x2C	1	4
+mode=1, basedon=0	# weapon drawn
+mode=2, basedon=1			# weapon drawn
+
+joints
+0=5	# 0 = head
+1=13	# 1 = neck
+2=24	# 2 = torso
+3=12	# 3 = primary weapon fire
+4=22	# 4 = secondard weapon fire
+5=7	# 5 = primary weapon aiming joint
+6=15	# 6 = secondary weapon aiming joint
+end
+

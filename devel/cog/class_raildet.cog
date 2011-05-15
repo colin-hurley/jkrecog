@@ -1,0 +1,97 @@
+# Jedi Knight Cog Script
+#
+# CLASS_RAILDET.COG
+#
+# Leave a smoke trail behind the rail charge.
+# Increase rot vel with time.
+#
+# [darthslaw]
+#
+# (C) 2007 JK ReCog
+
+flags=0x240
+
+symbols
+
+template	smoke=+smoke_tpl	local
+thing		rocket				local
+vector		rotvel				local
+flex		speed				local
+flex		x					local
+flex		y					local
+flex		rotvelscale=1.1		local
+flex		speedscale=1.025	local
+flex		maxrotvel=20		local
+flex		damage				local
+
+message     created
+message     pulse
+message		damaged
+
+end
+
+# ========================================================================================
+
+code
+created:
+   SetThingPulse(GetSenderRef(), 0.05);            // set 50 msec timer for smoke release
+   Return;
+   
+damaged:
+	damage = GetParam(0);
+	if(GetParam(1) & 64)	// surface collision
+	{
+		damage = 0;
+	}
+	returnEx(damage);
+	return;
+
+# ........................................................................................
+
+pulse:
+	rocket = GetSenderRef();
+	
+	// First, create smoke at the rocket's location
+	CreateThing(smoke, rocket);
+	
+	speed = VectorLen(GetThingVel(rocket));
+	if(speed > 0 && !(GetAttachFlags(rocket)))	// if the rocket is not attached to a wall or person
+	{
+		// first update the speed of the rocket
+		if(GetThingFlags(rocket) & 0x2000000)	// submerged
+		{
+			// slow down when underwater
+			speed = speed / (2*speedscale);
+			if(speed < 1) speed = 1;
+		}
+		else									// above water
+		{
+			// speed up when out of water
+			speed = speed * speedscale;
+			if(speed > 6) speed = 6;
+		}
+		#printflex(speed);
+		SetThingVel(rocket, VectorScale(GetThingLVec(rocket), speed));
+		
+		// then update the rotation of the rocket
+		rotvel = GetThingRotVel(rocket);
+		x = rotvelscale*VectorX(rotvel);
+		y = rotvelscale*VectorY(rotvel);
+		if(x > maxrotvel) x = maxrotvel;
+		if(x < -maxrotvel) x = -maxrotvel;
+		if(y > maxrotvel) y = maxrotvel;
+		if(y < -maxrotvel) y = -maxrotvel;
+		SetThingRotVel(rocket, VectorSet(x, y, VectorZ(rotvel)));
+	}
+	else
+	{
+		#print("attached");
+		SetThingRotVel(rocket, '0 0 0');
+		SetThingVel(rocket, '0 0 0');
+	}
+	#printvector(GetThingRotVel(rocket));
+	Return;
+
+end   
+
+

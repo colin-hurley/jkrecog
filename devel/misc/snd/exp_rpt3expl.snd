@@ -1,0 +1,10 @@
+# Foley description for repeater explosive shot explosion
+# JK ReCog
+#
+# class		filename		playflags	minRadius	maxRadius	maxVolume
+#####################################################################################################
+#
+
+create		rpt3_expl.wav		0x0		1.0		5.0		0.8
+
+

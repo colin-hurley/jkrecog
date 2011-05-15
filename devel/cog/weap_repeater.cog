@@ -11,7 +11,7 @@
 #
 # The weapon now experiences recoil, and the secondary fire now fires in a triangular
 #  cluster pattern.  The projectiles for secondary fire are now more accurate, but
-#  less precise.
+#  less precise. The third fire mode fires an explosive energy ball in an arc path.
 #
 # [10/18/2006]
 #   Added code that makes shots increase in error with each shot.
@@ -39,6 +39,7 @@ sound       mountSound=df_bry_ready.wav         local
 sound       dismountSound=PutWeaponAway01.wav   local
 sound       fireSound=rpeatrlp.wav              local
 sound       fireSound1=repeat-1.wav             local
+sound		fireSound3=rpt_fire3.wav			local
 sound       outSound=trprout.wav                local
 
 vector      fireOffset                          local
@@ -48,10 +49,13 @@ vector      shakeAngle                          local
 vector		vec									local
 
 template    projectile=+repeaterball            local
+template	projectile3=+expl_rpt_ball			local
 
 thing       player                              local
 
 flex        fireWait=0.1                        local
+flex		fireWait3=0.8						local
+flex		ammoCost3=5.0						local
 flex        powerBoost                          local
 #flex        lastFireTime=0                      local
 #flex        curFireTime=0                       local
@@ -73,6 +77,12 @@ int			anim=0								local
 
 int			xhair_bin=119							local
 
+int			fire3								local
+
+int			waggle=0				local
+vector		waggle_vec				local
+flex		waggle_spd				local
+
 message     startup
 message     activated
 message     deactivated
@@ -82,7 +92,11 @@ message     newplayer
 message     killed
 message     autoselect
 message     fire
+message		pulse	# for fire3
 message     timer
+message		user2	# start fire3
+message		user3	# stop fire3
+message		user4	# waggle control
 
 end
 
@@ -93,7 +107,9 @@ code
 startup:
    player = GetLocalPlayerThing();
    fireOffset = '0.0186 0.0102 0.00';
-
+	fire3=0;
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
    Return;
 
 # ........................................................................................
@@ -128,6 +144,11 @@ fire:
       Return;
    }
 
+	if(fire3 == 1)	// fire mode 3
+	{
+		return;
+	}
+
 	jkPlayPOVKey(player, povfireAnim[anim], 1, 0x38);
 	
 	r = rand();
@@ -141,6 +162,9 @@ fire:
 	
 	if (mode == 0)
 	{
+		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.7, 0, 0, 0);
+		if(fireChannel == -1)
+			fireChannel = PlaySoundThing(fireSound, player, 1.0, -1, -1, 0x181);
 		vec = VectorScale(VectorSet(3 * (rand() - 0.5), 3 * (rand() - 0.5), 0), err);
 		shakePos = VectorScale(RandVec(), .001);
 		shakeAngle = VectorScale(VectorSet(VectorX(vec), VectorY(vec), 0), 1);
@@ -150,6 +174,7 @@ fire:
 	else
 	if (mode == 1)
 	{
+		SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.5, 0, 0, 0);
 		shakePos = VectorScale(RandVec(), .002);
 		shakeAngle = VectorScale(RandVec(), 2);
 		vec = VectorSet(0.5 + 1.5 * rand(), 0, 0);							//from '2.0 0 0'
@@ -182,11 +207,54 @@ fire:
 
    Return;
 
+pulse:
+	// Check that the player is still alive.
+	if(GetThingHealth(player) <= 0)
+	{
+		SetPulse(0);
+		fire3=0;
+		Return;
+	}
+
+	if(GetInv(player, 12) < ammoCost3)
+	{
+		if(GetAutoSwitch() & 1)
+			SelectWeapon(player, AutoSelectWeapon(player, 1));
+		PlaySoundThing(outSound, player, 1.0, -1, -1, 0x180);
+		Return;
+	}
+
+	r = rand();
+	if(r > 0.67) anim = 2;
+	else if(r > 0.33) anim = 1;
+	else anim = 0;
+	jkPlayPOVKey(player, povfireAnim[anim], 1, 0x38);
+	
+	// Get random aiming error
+	err = GetInv(player, xhair_bin);
+	
+	vec = VectorScale(VectorSet(3 * (rand() - 0.5), 3 * (rand() - 0.5), 0), err + 0.05);
+	ChangeInv( player, xhair_bin, 0.8 );
+	FireProjectile(player, projectile3, fireSound3, 8, fireOffset, vec, 1.0, 0, autoAimFOV, autoAimMaxDist );
+
+	SetPOVShake('0 -0.005 0.005', '5 5 0', .05, 80.0);
+	ChangeInv(player, 12, -ammoCost3);
+	
+	powerBoost = GetInv(player, 63);
+	SetPulse(fireWait3/powerBoost);
+	
+	if(GetInv(player, 12) == 0)
+		if(GetAutoSwitch() & 1)
+			SelectWeapon(player, AutoSelectWeapon(player, 1));
+
+	return;
+
 # ........................................................................................
 
 activated:
    mode   = GetSenderRef();
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
 
    if(mode > 1) Return;
 
@@ -200,7 +268,7 @@ activated:
 
    if (mode == 0)
    {
-      if(fireChannel == -1)
+      if(fireChannel == -1 && fire3 == 0)
          fireChannel = PlaySoundThing(fireSound, player, 1.0, -1, -1, 0x181);
       fireWait = 0.1;
       ammoCost = 1.0;
@@ -224,7 +292,8 @@ activated:
 deactivated:
    mode = GetSenderRef();
 
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
    if(fireChannel != -1)
    {
       StopSound( fireChannel, 0.1);
@@ -246,14 +315,16 @@ selected:
    jkSetPOVModel(player, povModel);
    SetArmedMode(player, 1);
    jkSetWeaponMesh(player, weaponMesh);
-   jkSetWaggle(player, '10.0 7.0 0.0', 350);
+	jkSetWaggle(player, waggle_vec, waggle_spd);
+	waggle = 1;
 
    trackID = jkPlayPOVKey(player, mountAnim, 0, 20);
    SetMountWait(player, GetKeyLen(mountAnim));
 
    jkClearFlags(player, 0x5);
    SetCurWeapon(player, 6);
-
+SetPulse(0);
+fire3=0;
    SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
 
    Return;
@@ -266,7 +337,8 @@ deselected:
       StopSound(fireChannel, 0.1);
       fireChannel = -1;
    }
-
+SetPulse(0);
+fire3=0;
    PlaySoundThing(dismountSound, player, 1.0, -1, -1, 0x80);
    jkPlayPOVKey(player, dismountAnim, 0, 18);
 
@@ -279,7 +351,8 @@ deselected:
       jkStopPOVKey(player, trackID, 0);
       trackID = -1;
    }
-   jkSetWaggle(player, '0.0 0.0 0.0', 0);
+	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
 
    Return;
 
@@ -294,6 +367,8 @@ newplayer:
       StopSound(fireChannel, 0.1);
       fireChannel = -1;
    }
+   	jkSetWaggle(player, '0 0 0', 0);
+	waggle = 0;
 
    Return;
    
@@ -336,8 +411,62 @@ autoselect:
 # ........................................................................................
 
 timer:
-   StopKey(player, holsterTrack, 0.0);
+	if(GetSenderID() == 2)
+	{
+		StopKey(player, holsterTrack, 0.0);
+		return;
+	}
+	if(GetSenderID() == 40)	// fire 3 deactivated
+	{
+		fire3 = 0;
+		return;
+	}
    Return;
+
+user2:
+	SetMountWait(player, 36000);
+	if(fireChannel != -1)
+	{
+		StopSound(fireChannel, 0.1);
+		fireChannel = -1;
+	}
+	if(GetInv(player, 12) < ammoCost3)
+	{
+		if(GetAutoSwitch() & 1)
+			SelectWeapon(player, AutoSelectWeapon(player, 1));
+		PlaySoundThing(outSound, player, 1.0, -1, -1, 0x180);
+		Return;
+	}
+	if(fireChannel != -1)
+	{
+		StopSound( fireChannel, 0.1);
+		fireChannel = -1;
+	}
+	powerBoost = GetInv(player, 63);
+	SetPulse(fireWait3/powerBoost);
+	SetBinWait(player, 130, fireWait3/powerBoost);
+	KillTimerEx(40);
+	SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.5, 0, 0, 0);
+	fire3 = 1;	// let the FIRE message know we are firing third fire now
+	goto pulse;
+	return;
+
+user3:
+	SetPulse(0);
+	#fire3 = 0;
+	SetTimerEx(fireWait3/powerBoost, 40, 0, 0);
+	SetMountWait(player, 0);
+	powerBoost = GetInv(player, 63);
+	SetFireWait(player, fireWait3/powerBoost);
+	ChangeFireRate(player, fireWait/powerBoost);
+	SendMessageEx(GetInvCog(player, xhair_bin), user0, 0.0, 0, 0, 0);
+	return;
+	
+user4:
+	waggle_vec = VectorSet(GetParam(0), GetParam(1), GetParam(2));
+	waggle_spd = GetParam(3);
+	if(waggle) jkSetWaggle(player, waggle_vec, waggle_spd);
+	Return;
 
 end
 

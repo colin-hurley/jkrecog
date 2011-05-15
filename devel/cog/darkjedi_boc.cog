@@ -4,11 +4,13 @@
 #
 # DARK JEDI Script - Boc
 #
-# [YB]
+# Has the powers of destruction, repel, and saber throw
+# The power of the destruction increases with game difficulty
+# The "homing" ability of the thrown saber increases with difficulty
 #
-# 8/22 [CR] Added ability to turn on force powers from other COG.
+# [darthslaw]
 #
-# (C) 1997 LucasArts Entertainment Co. All Rights Reserved
+# (C) 2007 JK ReCog
 
 symbols
 
@@ -19,11 +21,14 @@ message        killed
 message        user0
 message        user1
 message        skill
+message			pulse
+message			timer
+message			trigger
 
 thing          darkjedi                      mask=0xfff
 
-material       tip_mat=saberpurple0.mat      local
-material       side_mat=saberpurple1.mat     local
+material       tip_mat=saberblue0.mat      local
+material       side_mat=saberblue1.mat     local
 
 template       tpl_wall=+ssparks_wall        local
 template       tpl_blood=+ssparks_blood      local
@@ -31,29 +36,51 @@ template       tpl_saber=+ssparks_saber      local
 
 int            victim                        local
 int            forcepower                    local
-int            forcepulse                    local
+#int            forcepulse                    local
+int				oldflags					local
 
-template       destProj=+force_dest_p3       local
+int				damagetype					local
+flex			damage						local
+int				bin							local
+
+template	destProj0=+f_dest_p4			local
+template	destProj1=+f_dest_p5			local
+template	destProj2=+f_dest_p6			local
+
 sound          destSound=ForceDestruct01.wav local
+
+template		saberthrow_tpl=+boc_saberthrow	local
 
 flex           autoAimFOV=10                 local
 flex           autoAimMaxDist=5              local
 
 template       repel=+force_repel            local
 
-sound          s1z=I00bo01z.wav              local
+#sound          s1z=I00bo01z.wav              local
 sound          s2z=I00bo02z.wav              local
-sound          s3z=I00bo03z.wav              local
+#sound          s3z=I00bo03z.wav              local
 sound          s4z=I00bo04z.wav              local
-sound          s5z=I00bo05z.wav              local
-sound          s6z=I00bo06z.wav              local
+#sound          s5z=I00bo05z.wav              local
+#sound          s6z=I00bo06z.wav              local
 sound          s7z=I00bo07z.wav              local
-sound          s71=I00bo071.wav              local
+#sound          s71=I00bo071.wav              local
 sound          s72=I00bo072.wav              local
 sound          s73=I00bo073.wav              local
 
+sound			saber_ignite=LtSaberOn01.WAV	local
+sound			saber_off=LtSaberOff01.WAV		local
+sound			humSound01=LtSaberLp01.WAV		local
+int				humChannel=-1					local
 int            snd=-1                        local
 int            okay                          local
+
+int				Channel1=-1						local	# sound channels for the thrown sabers
+thing			saber1=-1						local	# the thrown saber things
+int				dir1							local	# the direction of each of the saber things
+
+sound			saber_spin=ltsabertwirl2.wav	local		# played while saber is spinning
+
+model			saberthrow_nofan=boc_saberthrow_nofan.3do	local	# model to give the saber while returning
 
 end
 
@@ -63,60 +90,40 @@ code
 
 startup:
 newplayer:
+	sleep(0.1);
    jkSetSaberInfo(darkjedi, side_mat, tip_mat, 0.003, 0.001, 0.110, tpl_wall, tpl_blood, tpl_saber);
    jkSetFlags(darkjedi, 0x15);
-
+	PlaySoundThing(saber_ignite, darkjedi, 1.0, -1, -1, 0x80);
+	humChannel = PlaySoundThing(humSound01, darkjedi, 1.0, -1, -1, 0x81);
    Return;
-
 # ........................................................................................
 
 killed:
-   SetPulse(0);
-   jkSetFlags(darkjedi, 0x8);
+   jkSetFlags(darkjedi, 0x8);			// shrink sabers
+   SetActorFlags(darkjedi, 0x40000);	// immobilize
+   StopSound( humChannel, 0.5 );
+	PlaySoundThing(saber_off, darkjedi, 1.0, -1, -1, 0x80);
+	if(saber1 != -1) SetThingUserData(saber1, darkjedi);		// tell saber to return to DJ
+	KillTimerEx(2);
 
-   snd = PlaySoundThing(s1z, darkjedi, 1.0, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(1);
-
-   snd = PlaySoundThing(s71, darkjedi, 1.0, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(0.01);
-
-   snd = PlaySoundThing(s1z, darkjedi, 0.33, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(0.01);
+	Sleep(1.6);
 
    snd = PlaySoundThing(s2z, darkjedi, 0.66, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(1);
+   Sleep(GetSoundLen(s2z) + 0.4);
 
    snd = PlaySoundThing(s72, darkjedi, 1.0, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(1);
+   Sleep(GetSoundLen(s72) + 0.6);
 
    snd = PlaySoundThing(s73, darkjedi, 1.0, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(1.5);
+   Sleep(GetSoundLen(s73) + 0.9);
 
    snd = PlaySoundThing(s7z, darkjedi, 1.0, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(1);
+   Sleep(0.7);
 
    snd = PlaySoundThing(s2z, darkjedi, 0.5, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(0.01);
+   Sleep(0.4);
 
    snd = PlaySoundThing(s4z, darkjedi, 0.5, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(0.5);
-
-   snd = PlaySoundThing(s2z, darkjedi, 0.5, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   Sleep(0.5);
-
-   snd = PlaySoundThing(s2z, darkjedi, 0.33, -1, -1, 0x180);
-   Sleep(GetSoundLen(snd));
-   StopSound(snd, 0);
 
    Return;
 
@@ -169,7 +176,12 @@ user0:
       if(GetThingHealth(darkjedi) <= 0) Return;
 
       AddDynamicTint(victim, 0.3, 0.0, 0.15);
-      FireProjectile(darkjedi, destProj, destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
+		if(GetDifficulty() == 2)
+			FireProjectile(darkjedi, destProj2, destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
+		else if(GetDifficulty() == 1)
+			FireProjectile(darkjedi, destProj1, destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
+		else
+			FireProjectile(darkjedi, destProj0, destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
    }
    else
    if (forcepower == 2)
@@ -185,9 +197,57 @@ user0:
    else
    if (forcepower == 3)
    {
-      // Print("Force Power 3");
+		#Print("Force Power 3 : FORCE SABER THROW");
+		okay = 0;
+		oldflags = GetActorFlags(darkjedi);
+		SetActorFlags(darkjedi, 0x40000);
+		PlayMode(darkjedi, 36);		// make him throw the lightsaber
+		sleep(0.5);
+		// He could die during the sleep
+		if(GetThingHealth(darkjedi) <= 0) Return;
+		saber1 = FireProjectile(darkjedi, saberthrow_tpl, -1, -1, '0.075 0.04 0', '0 0 0', 0, 0, 0, 0);
+		jkClearFlags(darkjedi, 0x10);	// give DJ only 1 saber now
+		SetThingUserData(saber1, victim);		// tell saber to seek out Kyle
+		dir1=0;	// 0 = after kyle; 1 = returning to DJ
+		Channel1 = PlaySoundThing(saber_spin, saber1, 1.0, -1, -1, 0x81);
+		SetPulse(0.1);
+		if(GetDifficulty() == 2)		// hard ; 5 seconds of throw time
+		{
+			SetTimerEx(5.0, 2, 0, 0);
+			sleep(1.0);	// delay before allowing him to move again
+		}
+		else if(GetDifficulty() == 1)	// medium ; 4 seconds of throw time
+		{
+			SetTimerEx(4.0, 2, 0, 0);
+			sleep(1.5);	// delay before allowing him to move again
+		}
+		else							// easy ; 3 seconds of throw time
+		{
+			SetTimerEx(3.0, 2, 0, 0);
+			sleep(2.0);	// delay before allowing him to move again
+		}		
+		ClearActorFlags(darkjedi, 0x40000);
+		SetActorFlags(darkjedi, oldflags);	// make sure no lost flags for some reason
    }
    Return;
+
+timer:
+	if(GetSenderID() == 2)
+	{
+		if(saber1 != -1) SetThingUserData(saber1, darkjedi);		// tell saber to return to DJ
+	}
+	return;
+
+pulse:
+	if(dir1 == 0 && GetThingUserData(saber1) == darkjedi)	// saber on the return
+	{
+		dir1 = 1;
+		StopSound(Channel1, 0.1);
+		Channel1 = PlaySoundThing(humSound01, saber1, 1.0, -1, -1, 0x81);
+		SetThingModel(saber1, saberthrow_nofan);	// no twirl fan; travelling straight path
+		SetPulse(0);
+	}
+	return;
 
 # ........................................................................................
 
@@ -207,6 +267,16 @@ skill:
 
    ReturnEx(-1);
    Return;
+
+trigger:
+	if(GetSourceRef() == 1037)	// thrown saber retrieved
+	{
+		if(channel1 != -1) StopSound(channel1, 0.1);
+		jkSetFlags(darkjedi, 0x10);		// give back the second saber
+		saber1 = -1;
+		okay = 1;
+	}
+	return;
 
 end
 

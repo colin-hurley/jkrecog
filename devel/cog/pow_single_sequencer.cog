@@ -1,8 +1,8 @@
 # Jedi Knight Cog Script
 #
-# POW_THERMAL.COG
+# POW_SINGLE_SEQUENCER.COG
 #
-# POWERUP Script - Thermal Detonators
+# POWERUP Script - Single Sequencer
 #
 # [YB & CYW]
 #
@@ -13,7 +13,7 @@ symbols
 
 thing       powerup                          local
 thing       player                           local
-int         bin=4                            local
+int         bin=8                            local
 sound       pickupsnd=thrmlpu2.wav           local
 sound       respawnsnd=Activate01.wav        local
 flex        amount                           local
@@ -21,8 +21,7 @@ flex        amount                           local
 int         bin_contents=0                   local
 int         autopickup=0                     local
 
-template	expl_tpl=+grenade_exp			local
-template	sphere_tpl=+TD_Expl_Sphere		local
+template	expl_tpl=+sequencer_exp			local
 sector		sec								local
 vector		pos								local
 
@@ -48,9 +47,8 @@ timer:
 	pos = GetThingPos(powerup);
 	TakeItem(powerup, powerup);
 	CreateThingAtPos(expl_tpl, sec, pos, '0 0 0');
-	CreateThingAtPos(sphere_tpl, sec, pos, '0 0 0');
 	return;
-	
+
 touched:
    player = GetSourceRef();
    amount = GetInv(player, bin);
@@ -69,8 +67,8 @@ taken:
    player = GetSourceRef();
    powerup = GetSenderRef();
 	killTimerEx(powerup);
-   // Print("Thermal Detonators");
-   jkPrintUNIString(player, bin);
+   // Print("Sequencer Charge");
+   jkPrintUNIString(player, 206);
 
    // Do effects.
    PlaySoundThing(pickupsnd, powerup, 1.0, -1, -1, 0);
@@ -80,7 +78,7 @@ taken:
    bin_contents = GetInv(player, bin);
 
    // Increment powerup amount.
-   ChangeInv(player, bin, 3.0);
+   ChangeInv(player, bin, 1.0);
 
    // Check for Auto Pickup
    autopickup = GetAutoPickup();
@@ -106,8 +104,8 @@ taken:
       {
          if(!((GetAutoReload() & 2) && (GetCurWeapon(player) == 10)))
          {
-            // Try to autoselect and see if the best weapon is the TD
-            if(AutoSelectWeapon(player, 2) == 4) SelectWeapon(player, 4);
+            // Try to autoselect and see if the best weapon is the sequencer
+            if(AutoSelectWeapon(player, 2) == 8) SelectWeapon(player, 8);
          }
       }
    }
@@ -119,11 +117,9 @@ taken:
 respawn:
    powerup = GetSenderRef();
    PlaySoundThing(respawnsnd, powerup, 0.6, 5.0, 10.0, 0);
+
    Return;
 
 end
-
-
-
 
 

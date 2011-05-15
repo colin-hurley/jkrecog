@@ -36,12 +36,8 @@ int         okay=0                           local
 template    repel=+force_repel               local
 
 flex        starthealth                      local
+int         griptrackID=-1                   local
 
-flex		damage							local
-int			damagetype						local
-int			count							local
-int			limit							local
-int			bin								local
 end
 
 # ========================================================================================
@@ -115,6 +111,11 @@ pulse:
 
       DamageThing(victim, 5, 0x8, darkjedi);
 
+      if(griptrackID != -1)
+      {
+         StopKey(player, griptrackID);
+         griptrackID = -1;
+      }
       count = count + 1;
    }
 

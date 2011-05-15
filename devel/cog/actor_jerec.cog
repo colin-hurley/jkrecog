@@ -1,0 +1,41 @@
+# Jedi Knight Cog Script
+#
+# ACTOR_JEREC.COG
+#
+# Handles the 'skill' message for Jerec
+#
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+symbols
+
+message	skill
+
+int		bin		local
+
+end
+
+# ========================================================================================
+
+code
+
+skill:
+	bin = GetParam(0);
+	if(bin == 31)			// Force Grip
+	{
+		ReturnEx(10);
+		Return;
+	}
+	else
+	if(bin == 34)			// Deadly Sight
+	{
+		ReturnEx(5);
+		Return;
+	}
+	
+	ReturnEx(-1);
+	Return;
+
+end
+

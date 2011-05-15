@@ -22,10 +22,6 @@ hurtspecial	I00BO073.WAV	0x010000     1.0     4.0
 hurtspecial	I00BO073.WAV	0x010000     1.0     4.0
 choking		C10BO04A.WAV	0x010000
 
-landhurt	landhard01.wav		0x0            1.5     2.5
-splattered	landhard01.wav		0x0            1.5     2.5
-hitdamaged	landhard01.wav		0x0            1.5     2.5
-
 fire1		LtSaberSwingDbl01.wav	0x0     1.0     4.0
 fire2		LtSaberSwingDbl01.wav	0x0     1.0     4.0
 

@@ -1,0 +1,37 @@
+# Jedi Knight Cog Script
+#
+# class_rpttrail.cog
+#
+# Creates particles after the explosive repeater ball
+#
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+flags=0x240
+
+symbols
+
+message		created
+message		pulse
+
+thing		dummy				local
+
+template	par_tpl=+rpt_trail	local
+
+end
+
+# ========================================================================================
+
+code
+
+created:
+	SetThingPulse(GetSenderRef(), 0.1);
+	return;
+
+pulse:
+	dummy = CreateThing(par_tpl, GetSenderRef());
+	return;
+
+end
+

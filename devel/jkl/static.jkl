@@ -76,7 +76,7 @@ end
 ################################
 
 Section: AICLASS
-World AIClasses 400
+World AIClasses 1000
 0: grfist.ai
 end
 
@@ -153,6 +153,8 @@ World scripts 1000
 0:	class_det.cog
 1:	class_sniperbolt.cog
 2:	class_crossbowbolt.cog
+3:	class_rpttrail.cog
+4:	class_rptexpl.cog
 
 end
 ################################
@@ -170,17 +172,19 @@ end
 SECTION: TEMPLATES
 World templates 1000
 #Name				Parent			Values
-_weaponn			none			orient=(0.000000/0.000000/0.000000) type=weapon collide=1 move=physics thingflags=0x20000000 timer=10.000000 mass=5.000000 physflags=0x200 maxrotvel=90.000000 damageclass=0x2 typeflags=0x1
+_weaponn			none			orient=(0/0/0) type=weapon collide=1 move=physics thingflags=0x20000000 timer=10.0 mass=5.0 physflags=0x200 maxrotvel=90 damageclass=0x2 typeflags=0x1
 _explosionn			none			orient=(0/0/0) type=explosion typeflags=0x1 damageclass=0x4
 +laserhitn			_explosionn		thingflags=0x1 light=0.200000 timer=0.500000 sprite=bryx.spr soundclass=exp_laserhit.snd typeflags=0x33 blasttime=0.300000 maxlight=0.400000
 +laserfleshhitn			+laserhitn		soundclass=exp_fleshy.snd
 +whitecloudn			none			orient=(0/0/0) type=particle timer=0.2 typeflags=0x3f material=00gsmoke.mat range=0.02 rate=256 maxthrust=30.0 elementsize=0.004 count=256
 +dustcloudn			+whitecloudn		timer=0.120000 material=dusty.mat range=0.015000 rate=256.000000 maxthrust=80.000000 elementsize=0.005
 +firecloudn			+dustcloudn		material=00explosion.mat range=0.20000 rate=128.000000 maxthrust=60.000000 count=128 elementsize=0.0025
+
+## THERMAL DETONATORS ##########################################################
 +grenade_exp			_explosionn		thingflags=0x1 light=0.2 timer=0.8 sprite=detx.spr soundclass=exp_det.snd creatething=+firecloudn typeflags=0x17 damage=150.000000 blasttime=1.000000 force=220.000000 maxlight=1.250000 range=0.850000
 +egrenade_exp			+grenade_exp		damage=100.000000
-+grenade2			_weaponn		timer=3.000000 model3d=det0.3do size=0.014895 movesize=0.014895 soundclass=det.snd surfdrag=3.000000 airdrag=0.800000 mass=1.000000 physflags=0x225 vel=(0.000000/2.000000/1.500000) angvel=(90.000000/45.000000/90.000000) buoyancy=0.250000 explode=+grenade_exp fleshhit=+grenade_exp damageclass=0x4 typeflags=0x40309 cog=class_det.cog
-+grenade1			+grenade2		timer=10.000000 typeflags=0x4030d
++grenade2			_weaponn		timer=3.0 model3d=det0.3do size=0.014895 movesize=0.014895 soundclass=det.snd surfdrag=3.0 airdrag=0.8 mass=1.0 physflags=0x225 vel=(0/2/1.5) angvel=(90/45/90) buoyancy=0.25 explode=+grenade_exp fleshhit=+grenade_exp damageclass=0x4 typeflags=0x40309 cog=class_det.cog
++grenade1			+grenade2		timer=10.0 typeflags=0x4030d
 +actor_grenade			+grenade1		surfdrag=0.000000 airdrag=0.000000 vel=(0.000000/2.000000/0.000000) explode=+egrenade_exp fleshhit=+egrenade_exp
 +actor_grenade2			+grenade2		vel=(0.000000/2.000000/0.000000) explode=+egrenade_exp fleshhit=+egrenade_exp
 +spec_grenade			+grenade2		vel=(0.000000/0.000000/0.000000)
@@ -188,13 +192,14 @@ _explosionn			none			orient=(0/0/0) type=explosion typeflags=0x1 damageclass=0x4
 +TD_flame_pars			none			orient=(0/0/0) type=particle move=physics timer=1.2 typeflags=0x3f material=00explosion.mat range=0.015 rate=64.0 maxthrust=30.0 elementsize=0.005 count=256
 +TD_Expl_Sphere			none			orient=(0/0/0) type=weapon collide=0 move=physics mass=0 physflags=0x0 maxrotvel=90 typeflags=0x1 size=0.001 movesize=0.001 maxvel=0 vel=(0/0/0) timer=1.0 thingflags=0x0 damageclass=0x0 cog=class_detexplsphere.cog
 
-# modify the powerups... make them not rotate anymore
+## POWERUP BASE (make powerups not rotate anymore) #############################
 _powerup			none			orient=(0/0/0) type=item collide=1 move=physics size=0.1 movesize=0.01 surfdrag=3.0 airdrag=1.0 mass=10.0 height=0.05 physflags=0x400000 angvel=(0/0/0) typeflags=0x1 respawn=30.0
 _droppowerup			_powerup		timer=30.0 height=0.011 physflags=0x41 typeflags=0x0
 
 +smflashn			_explosionn		thingflags=0x1 light=0.400000 timer=0.100000 typeflags=0x0
 +lgflashn			_explosionn		thingflags=0x1 light=0.3 timer=0.4 typeflags=0x12 blasttime=0.2 maxlight=1.0
 
+## BOWCASTER ###################################################################
 # Normal Crossbow Bolt Explosions
 +crossbowhit			_explosionn		thingflags=0x1 light=0.2 timer=0.5 sprite=bowx2.spr soundclass=exp_bowhit.snd typeflags=0x33 blasttime=0.3 maxlight=0.4
 +crossbowhit2			+crossbowhit		sprite=bowx.spr soundclass=none
@@ -207,7 +212,6 @@ _droppowerup			_powerup		timer=30.0 height=0.011 physflags=0x41 typeflags=0x0
 # Exploding Crossbow Bolt Explosions
 +crossbow_sparks		none			orient=(0/0/0) type=particle move=physics timer=0.3 mass=0.1 physflags=0x400201 vel=(0/0/0.2) typeflags=0x2D material=crossbow_sparks.mat range=0.04 rate=128 maxthrust=7.0 elementsize=0.003 count=64
 +expl_crossbowhit		+crossbowhit		creatething=+crossbow_sparks blasttime=0.5 damage=100.0 range=0.15 damageclass=0x4
-# typeflags=0x13
 +expl_crossbowhit2		+crossbowhit2		creatething=+crossbow_sparks blasttime=0.5 damage=75.0 range=0.15 damageclass=0x4
 
 # Exploding Crossbow Bolt Projectiles (damage caused by explosion only)
@@ -219,22 +223,51 @@ _droppowerup			_powerup		timer=30.0 height=0.011 physflags=0x41 typeflags=0x0
 +bcscopehit			+crossbowhit2		creatething=+crossbow_sparks2 light=0.5 maxlight=0.7
 +bcscopebolt			+crossbowbolt		thingflags=0x20000401 vel=(0/20/0) angvel=(0/0/540) explode=+bcscopehit fleshhit=+bcscopehit damage=100.0 mindamage=100.0 typeflags=0x20040d cog=class_sniperbolt.cog
 
+## BRYAR PISTOL ################################################################
 +bryarbolt			_weaponn		thingflags=0x20000001 light=0.4 model3d=bry0.3do size=0.001 movesize=0.001 soundclass=bry.snd creatething=+smflashn maxrotvel=0.0 vel=(0.0/7.0/0.0) explode=+laserhitn fleshhit=+laserfleshhitn damage=65.0 mindamage=20.0 typeflags=0x20440d rate=20.0
 
 +smack_cloud			+dustcloudn		timer=0.15 material=00gsmoke.mat range=0.006 rate=64.0 maxthrust=4.0 elementsize=0.002 count=32
 +smack_exp			_explosionn		timer=0.001 soundclass=exp_punch.snd creatething=+smack_cloud typeflags=0x0
 +bryarsmack			_weaponn		size=0.001 movesize=0.001 mass=100.0 explode=+smack_exp fleshhit=+smack_exp damage=30.0 damageclass=0x1 typeflags=0x200d range=0.15 force=50.0
-+gr_punch			+bryarsmack		damage=6.0 force=20.0 mass=50.0
 
+## STORMTROOPER RIFLE ##########################################################
 +stlaser			+bryarbolt		model3d=str0.3do soundclass=stlaser.snd vel=(0.0/7.0/0.0) damage=50.0 mindamage=10.0 rate=20.0
 +stscopelaser			+stlaser		vel=(0.0/36.0/0.0) damage=100.0 mindamage=80.0 rate=5.0
 +elaser				+stlaser		damage=35.0 mindamage=10.0 rate=20.0
 +ebolt				+bryarbolt		model3d=bry1.3do damage=40.0 mindamage=10.0 rate=30.0
 
-## force Power Stuff ##
++gr_punch			+bryarsmack		damage=6.0 force=20.0 mass=50.0
 
-+grip_ghost			none			orient=(0/0/0) type=weapon collide=1 move=physics size=0.001 movesize=0.001 thingflags=0x0 mass=0.1 physflags=0x200 maxvel=0 vel=(0/0/0) timer=0.01 damageclass=0x0 typeflags=0x1
-+timed_ghost			none			orient=(0/0/0) type=weapon collide=1 move=physics size=0.001 movesize=0.001 thingflags=0x0 mass=0.1 physflags=0x200 maxvel=0 vel=(0/0/0) timer=0.01 damageclass=0x0 typeflags=0x1
+## REPEATER ####################################################################
++rpt_trail			none			orient=(0/0/0) type=particle move=physics timer=0.1 mass=0.1 physflags=0x400200 vel=(0/0/0.1) typeflags=0x2f material=sparky.mat range=0.02 rate=96 maxthrust=6.0 elementsize=0.0025 count=64
++expl_rpt_sparks		none			orient=(0/0/0) type=particle move=physics timer=0.1 mass=0.1 physflags=0x400201 vel=(0/0/0.7) typeflags=0x29 material=sparky.mat range=0.12 rate=208 maxthrust=7.5 elementsize=0.004 count=256
++expl_rpt_hit			_explosionn		timer=0.5 blasttime=0.5 soundclass=exp_rpt3expl.snd range=0.5 damage=110 damageclass=0x4 force=250 light=0.4 maxlight=0.6 creatething=+expl_rpt_sparks typeflags=0x12 thingflags=0x1 cog=class_rptexpl.cog
++expl_rpt_ball			_weaponn		model3d=rpt3.3do light=0.3 maxlight=0.4 mass=20.0 size=0.005 movesize=0.005 explode=+expl_rpt_hit fleshhit=+expl_rpt_hit physflags=0x201 vel=(0/3/1) damage=20 mindamage=10 typeflags=0x410d rate=10 thingflags=0x20000001 cog=class_rpttrail.cog
++rpt_debris_sparks		none			orient=(0/0/0) type=particle move=physics timer=0.1 mass=0.1 physflags=0x200 vel=(0/0/0) typeflags=0x29 material=sparky.mat range=0.02 rate=32 maxthrust=2.0 elementsize=0.004 count=16
++rpt_debris			_weaponn		collide=0 timer=0.45 mass=1.0 physflags=0x40201 vel=(0/0/1) typeflags=0x101
+
+## RAIL DETONATOR ##############################################################
++raildet_exp			_explosionn		thingflags=0x1 light=0.4 timer=0.5 sprite=rldx.spr soundclass=exp_raildet.snd typeflags=0x17 damage=150 blasttime=0.7 force=325 maxlight=0.9 range=0.65
+#debris=shrapnel_1 debris=shrapnel_2 debris=shrapnel_3 debris=shrapnel_4
++raildet2			_weaponn		thingflags=0x20000400 timer=2.5 model3d=rld0.3do size=0.003 movesize=0.003 puppet=ra.pup soundclass=rail.snd creatething=+lgflashn surfdrag=3.0 airdrag=0.8 mass=1.0 physflags=0x200 vel=(0/2.5/0) angvel=(0/0/90) buoyancy=0.25 explode=+raildet_exp fleshhit=+raildet_exp damageclass=0x4 damage=5.0 typeflags=0x240b81 cog=class_raildet.cog airdrag=0.0 height=0.003
++raildet_exp2			+raildet_exp		debris=shrapnel_1 debris=shrapnel_2 debris=shrapnel_3 debris=shrapnel_4
+#+raildet			+raildet2		timer=10.000000 explode=+raildet_exp2 fleshhit=+raildet_exp2 damage=20.000000 typeflags=0x24020d
++raildet			+raildet2		timer=10 explode=+raildet_exp fleshhit=+raildet_exp damage=20 typeflags=0x24020d
+
+## FORCE POWERS ################################################################
+
++boc_saberthrow			_weaponn		collide=1 light=0.6 model3d=boc_saberthrow.3do movesize=0.1 size=0.1 thingflags=0x20000401 timer=10 physflags=0x0 vel=(0/1/0) angvel=(0/720/0) typeflags=0x101 cog=class_saberthrow.cog damage=0 damageclass=0x10
+
++saber_spks_wall		none			orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=0.100000 mass=0.050000 physflags=0x400201 vel=(0.000000/0.000000/0.150000) typeflags=0x2b material=00ramp1.mat range=0.030000 rate=4.000000 maxthrust=8.000000 elementsize=0.003000 count=48
++saber_sparks_wall		_explosionn		thingflags=0x1 light=0.300000 timer=0.800000 soundclass=exp_saber_wall.snd creatething=+saber_spks_wall typeflags=0x112 blasttime=0.700000 maxlight=0.500000 flashrgb=(80/90/80)
++saber_spks_blood		none			orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=0.200000 mass=0.100000 physflags=0x400201 vel=(0.000000/0.000000/0.200000) typeflags=0x2b material=00ramp2.mat range=0.040000 rate=4.000000 maxthrust=9.000000 elementsize=0.005000 count=24
++saber_sparks_blood		_explosionn		thingflags=0x1 light=0.100000 timer=0.800000 soundclass=exp_saber_blood.snd creatething=+saber_spks_blood typeflags=0x12 blasttime=0.700000 maxlight=0.300000
++saberthrow_hit			_weaponn		size=0.02 movesize=0.02 mass=20.0 soundclass=saberthrow.snd explode=+saber_sparks_wall fleshhit=+saber_sparks_blood damage=40.0 damageclass=0x10 typeflags=0x40d timer=0.01 vel=(0/9/0)
++saberthrow_hit2		+saberthrow_hit		size=0.01 movesize=0.01 vel=(0/8/0)
+#range=0.2 force=50.0
+
++grip_ghost			none			orient=(0/0/0) type=weapon collide=1 move=physics size=0.001 movesize=0.001 thingflags=0x0 mass=0.1 physflags=0x0 maxvel=0 vel=(0/0/0) timer=0.01 damageclass=0x0 typeflags=0x1
++timed_ghost			none			orient=(0/0/0) type=weapon collide=1 move=physics size=0.001 movesize=0.001 thingflags=0x0 mass=0.1 physflags=0x0 maxvel=0 vel=(0/0/0) timer=0.01 damageclass=0x0 typeflags=0x1
 
 +force_ltpeice			none			orient=(0.000000/0.000000/0.000000) type=weapon move=physics timer=0.15 model3d=ligt2.3do size=0.005000 movesize=0.005000 physflags=0x200 maxrotvel=720.000000 angvel=(0.000000/0.000000/720.000000)
 +lightninghit			none			orient=(0.000000/0.000000/0.000000) type=particle move=physics timer=0.1500000 typeflags=0x2b material=00ramp4.mat range=0.020000 rate=16.000000 maxthrust=8.000000 elementsize=0.003000 count=16
@@ -244,6 +277,7 @@ _droppowerup			_powerup		timer=30.0 height=0.011 physflags=0x41 typeflags=0x0
 +f_lightning4			+f_lightning		damage=6.5
 
 +smoke_tpl			none			orient=(0/0/0) type=particle move=physics timer=0.8 physflags=0x20000 vel=(0/0/0.12) angvel=(0/90/0) typeflags=0x3e material=00gsmoke.mat range=0.04 elementsize=0.0025 count=24
++rocketbubbles			+smoke_tpl		material=00ramp4.mat
 +f_dest_trail			+smoke_tpl		vel=(0/0/0) material=dstructparts.mat
 +f_dest_cloud			+firecloudn		material=dstructparts.mat
 
@@ -281,7 +315,9 @@ _droppowerup			_powerup		timer=30.0 height=0.011 physflags=0x41 typeflags=0x0
 
 +forcetwinkle			none			orient=(0/0/0) type=explosion collide=0 move=physics timer=0.35 sprite=twinkle.spr thingflags=0x0 typeflags=0x1
 
-## Crosshair Templates
+## Crosshair Templates #########################################################
++xhairhit			none			orient=(0/0/0) type=weapon collide=1 move=physics mass=0 physflags=0x0 typeflags=0x181 size=0.00001 movesize=0.00001 timer=0.01 thingflags=0x0 damageclass=0x0 surfdrag=1000 staticdrag=1000
+
 _crosshair			none			orient=(0/0/0) type=weapon collide=0 move=physics mass=0 physflags=0x0 maxrotvel=90 typeflags=0x1 size=0.001 movesize=0.001 maxvel=0 vel=(0/0/0) timer=0.01 thingflags=0 damageclass=0 
 
 +crosshair_red_scope		_crosshair		model3d=crosshair_red_scope.3do

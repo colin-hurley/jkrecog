@@ -1,0 +1,50 @@
+# Jedi Knight Cog Script
+#
+# class_rptexpl.cog
+#
+# Creates extra debris/effects in a repeater explosion.
+#
+# [darthslaw]
+#
+# (c) 2007 JK ReCog
+
+flags=0x240
+
+symbols
+
+message		created
+message		pulse
+
+template	tpl=+rpt_debris					local
+template	trail=+rpt_debris_sparks		local
+
+thing		dummy						local
+
+end
+
+# ========================================================================================
+
+code
+
+created:
+	if(GetThingTemplate(GetSenderRef()) == tpl) return;		// just in case... no infinite loops
+	dummy = CreateThing(tpl, GetSenderRef());
+	SetThingVel(dummy, VectorSet((rand() - 0.5) * 0.4, (rand() - 0.5) * 0.4, rand() * 0.5 + 0.3));
+	CaptureThing(dummy);
+	SetThingPulse(dummy, 0.1);
+	dummy = CreateThing(tpl, GetSenderRef());
+	SetThingVel(dummy, VectorSet((rand() - 0.5) * 0.4, (rand() - 0.5) * 0.4, rand() * 0.5 + 0.3));
+	CaptureThing(dummy);
+	SetThingPulse(dummy, 0.1);
+	dummy = CreateThing(tpl, GetSenderRef());
+	SetThingVel(dummy, VectorSet((rand() - 0.5) * 2, (rand() - 0.5) * 2, rand() * 0.5 + 0.6));
+	CaptureThing(dummy);
+	SetThingPulse(dummy, 0.1);
+	return;
+
+pulse:
+	CreateThing(trail, GetSenderRef());
+	return;	 
+
+end
+

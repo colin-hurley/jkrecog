@@ -58,8 +58,7 @@ timer:
 	powerup = getSenderID();
 	sec = GetThingSector(powerup);
 	pos = GetThingPos(powerup);
-	SetThingUserData(powerup, 1);	// 1 = blown up
-	TakeItem(powerup, GetLocalPlayerThing());
+	TakeItem(powerup, powerup);
 	CreateThingAtPos(expl_tpl, sec, pos, '0 0 0');
 	CreateThingAtPos(sphere_tpl, sec, pos, '0 0 0');
 	return;
@@ -81,7 +80,7 @@ touched:
 taken:
    player = GetSourceRef();
    powerup = GetSenderRef();
-	if(GetThingUserData(powerup) == 1) return;			// was blown up, not taken
+	killTimerEx(powerup);
    // Print("Thermal Detonator");
    jkPrintUNIString(player, 205);
 
@@ -133,8 +132,6 @@ respawn:
    powerup = GetSenderRef();
    PlaySoundThing(respawnsnd, powerup, 0.6, 5.0, 10.0, 0);
    	parseArg(GetSenderRef(), "soundclass=det.snd");				// so it makes "ping" noises when it bounces
-   ClearPhysicsFlags(powerup, 0x1);
-
    Return;
 
 end

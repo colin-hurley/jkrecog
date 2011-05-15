@@ -26,7 +26,7 @@ message		user0
 message		user1
 message		pulse
 message		timer
-message		skill
+#message		skill
 
 thing		darkjedi						mask=0xfff
 
@@ -59,6 +59,8 @@ int			count							local
 int			rank							local
 
 flex		r								local
+flex		delay							local
+flex		dist							local
 flex		startHealth						local
 
 template	destProj0=+f_dest_p5			local
@@ -85,7 +87,15 @@ template	tpl9=ConcRifle					local
 int			PulledWeapon					local
 int			okay							local
 
-int			bin								local
+#int			bin								local
+int			cog_bin=166						local
+
+int		aimode		local
+sound	pushSound=ForceThrow01.WAV	local
+vector	dir			local
+int		difficulty	local
+thing	source		local
+int		gripTrack	local
 
 end
 
@@ -95,6 +105,9 @@ code
 
 startup:
 	forcepulse = 0;
+	aimode = 0;
+	difficulty = GetDifficulty();
+	gripTrack = -1;
 
 newplayer:
    jkSetSaberInfo(darkjedi, side_mat, tip_mat, 0.003, 0.001, 0.101, tpl_wall, tpl_blood, tpl_saber);
@@ -117,6 +130,7 @@ newplayer:
 		limit2 = 4;
 		rank = 2;
 	}
+	SetTimerEx(5, 25, 0, 0);	// set a looping timer to set the DJ's class cog
 
    Return;
 
@@ -133,24 +147,85 @@ killed:
 damaged:
    damage = GetParam(0);
    damageType = GetParam(1);
+   source = GetSourceRef();
 
-   if(damageType & 1)                        // FISTS / DEBRIS IMPACT
-      damage = damage / 2;
-   else
-   if(damageType & 2)                        // ENERGY
-      damage = damage / 2;
-   else
-   if(damageType & 4)                        // FIRE
-      damage = damage / 10;
-   else
-   if(damageType & 8)                        // FORCE
-      damage = damage;
-   else
-   if(damageType & 16)                       // SABER
-      damage = damage;
-   else
-   if(damageType & 64)                       // SURFACE IMPACT
-      damage = damage / 5;
+	if(damageType & 1)                        // FISTS / DEBRIS IMPACT
+		damage = damage / 2;
+	else
+	if(damageType & 2)                        // ENERGY
+		damage = damage / 2;
+	else
+	if(damageType & 4)                        // FIRE
+		damage = damage / 10;
+	else
+	if(damageType & 8)                        // FORCE
+	{
+		damage = damage;
+		if((IsInvActivated(source, 31)) && !(aimode & 0x1))		// player is using grip and DJ hasnt reacted yet
+		{
+			#print("ATTACK: Grip ; RETALIATE WITH: Push");
+			aimode = BitSet(aimode, 0x1);		// only one reaction allowed
+			SetTimerEx(6, 2, 1, 0);	// timer to clear grip aimode
+			if(difficulty == 2)
+			{
+				if(rand() < 0.96)
+					delay = 0.3 + rand()*0.6;
+				else
+					delay = 0.9;
+			}
+			else if(difficulty == 1)
+			{
+				if(rand() < 0.92)
+					delay = 0.3 + rand()*0.9;
+				else
+					delay = 1.2;
+			}
+			else
+			{
+				if(rand() < 0.88)
+					delay = 0.3 + rand()*1.2;
+				else
+					delay = 1.5;
+			}
+			SetTimerEx(delay, 12, darkjedi, source);		// timer to push the player
+			AISetLookPos(darkjedi, GetThingPos(source));	// look at the player
+		}
+		if((IsInvActivated(source, 34)) && !(aimode & 0x2))		// player is using dsight, and DJ hasn't reacted yet
+		{
+			#print("ATTACK: Deadly Sight ; RETALIATE WITH: Jump");
+			aimode = BitSet(aimode, 0x2);		// only one reaction allowed
+			SetTimerEx(6, 3, 2, 0);	// timer to clear deadly sight aimode
+			if(difficulty == 2)
+			{
+				if(rand() < 0.94)
+					delay = 0.2 + rand()*0.4;
+				else
+					delay = 0.7; 
+			}
+			else if(difficulty == 1)
+			{
+				if(rand() < 0.88)
+					delay = 0.25 + rand()*0.55;
+				else
+					delay = 0.9;
+			}
+			else
+			{
+				if(rand() < 0.82)
+					delay = 0.3 + rand()*0.7;
+				else
+					delay = 1.1;
+			}
+			SetTimerEx(delay, 13, darkjedi, source);		// timer to jump
+			AISetLookPos(darkjedi, GetThingPos(source));	// look at the player
+		}
+	}
+	else
+	if(damageType & 16)                       // SABER
+		damage = damage;
+	else
+	if(damageType & 64)                       // SURFACE IMPACT
+		damage = damage / 5;
 
    ReturnEx(damage);
    Return;
@@ -174,8 +249,9 @@ user0:
    if(forcepower == 1)
    {
 		r = rand();
-		// if player is far enough away and random chance permits, do grip instead of lightning
-		if(VectorDist(GetThingPos(darkjedi), GetThingPos(victim)) > 0.5 && r < 0.4)
+		dist = VectorDist(GetThingPos(darkjedi), GetThingPos(victim));
+		// if player is between 5 and 10 meters away and random chance permits, do grip instead of lightning
+		if(dist > 0.5 && dist < 1.0 && r < 0.6)
 		{
 			// Print("Force Power 4 : FORCE GRIP");
 			if(!IsInvActivated(victim, 29))
@@ -186,7 +262,7 @@ user0:
 				// He could die during the sleep
 				if(GetThingHealth(darkjedi) <= 0) Return;
 				SetActorFlags(victim, 0x40000);		// make the victim stay in place
-				PlayMode(victim, 25);				// play victim's choke anim
+				gripTrack = PlayMode(victim, 25);	// play victim's choke anim
 				count = 0;
 				forcepulse = 4;						// indicate which power is active
 				starthealth = GetThingHealth(darkjedi);
@@ -194,7 +270,7 @@ user0:
 			}
 		}
 		// else, should probably do lightning, but occasionally don't do anything
-		else if(r < 0.85)
+		else if(r < 0.9)
 		{
 			// Print("Force Power 1 : FORCE LIGHTNING...");
 			bolt = 1;
@@ -257,11 +333,14 @@ pulse:
 	}
 	else if(forcepulse == 4)	// grip
 	{
+		dist = VectorDist(GetThingPos(darkjedi), GetThingPos(victim));
+		// if DJ did maximum damage, DJ was hurt, victim is dead, DJ lost LOS with victim, or victim out of range, then stop grip pulse
 		if(
 			(count > limit2) ||
 			(GetThingHealth(darkjedi) < starthealth) ||
 			(GetHealth(victim) < 1) ||
-			!HasLOS(darkjedi, victim)
+			!(HasLOS(darkjedi, victim)) ||
+			(dist > 1.0)
 		)
 		{
 			call stop_grip;
@@ -281,10 +360,64 @@ pulse:
 # ........................................................................................
 
 timer:
+	if(GetSenderID() == 2)	// clear grip aimode
+	{
+		aimode = BitClear(aimode, 0x1);
+		return;
+	}
+	if(GetSenderID() == 3)	// clear dsight aimode
+	{
+		aimode = BitClear(aimode, 0x2);
+		return;
+	}
+	if(GetSenderID() == 12)	// push
+	{
+		source = GetParam(1);
+		#print("Push player");
+		// if DJ isn't even looking at the player right now, or player isn't gripping anymore don't push
+		if( (ThingViewDot(darkjedi, source) < 0.2) || !(isInvActivated(source, 31)) )
+		{
+			aimode = BitClear(aimode, 0x1);
+			KillTimerEx(2);
+			return;
+		}
+		dir = vectorNorm(VectorSub(GetThingPos(source), GetThingPos(darkjedi)));
+		dir = vectorSet(vectorX(dir), vectorY(dir), 0.15);
+		dir = VectorScale(vectorNorm(dir), 600);
+		DetachThing(source);
+		ApplyForce(source, dir);
+		ApplyForce(darkjedi, VectorScale(GetThingLVec(darkjedi), -60));
+		PlayMode(darkjedi, 35);
+		PlaySoundThing(pushSound, darkjedi, 1.0, -1, -1, 0x80);
+		return;
+	}
+	if(GetSenderID() == 13)	// jump
+	{
+		source = GetParam(1);
+		#print("DJ Jump");
+		// if DJ is too far from the player, or player isn't using DSight anymore, or DJ airborne, don't jump
+		if((VectorDist(getthingPos(source), getThingPos(darkjedi)) > 4) || !(isInvActivated(source, 34)) || !(GetAttachFlags(darkjedi)))
+		{
+			aimode = BitClear(aimode, 0x2);
+			KillTimerEx(3);
+			return;
+		}
+		dir = VectorScale(VectorSub(GetThingPos(source), GetThingPos(darkjedi)), 1.1);
+		dir = VectorSet(vectorX(dir), vectorY(dir), 3);
+		DetachThing(darkjedi);
+		SetThingVel(darkjedi, dir);		// jump behind the player
+		return;
+	}
+
 	if(GetSenderID() == 10)						// Lightning (stop power)
 	{
 		call stop_lightning;
 		return;
+	}
+	if(GetSenderID() == 25)						// set class cog
+	{
+		SetThingClassCog(darkjedi, GetInvCog(getLocalPlayerThing(), cog_bin));
+		SetTimerEx(5, 25, 0, 0);	// set a looping timer to set the DJ's class cog
 	}
 	if(GetSenderID() == 30)						// PULL (part 1)
 	{
@@ -325,22 +458,21 @@ timer:
 
 # ........................................................................................
 
-skill:
-   bin = GetParam(0);
-   if(bin == 31)                             // Force Grip
-   {
-      ReturnEx(10);
-      Return;
-   }
-   else
-   if(bin == 34)                             // Deadly Sight
-   {
-      ReturnEx(5);
-      Return;
-   }
-
-   ReturnEx(-1);
-   Return;
+#skill:
+#   bin = GetParam(0);
+#   if(bin == 31)                             // Force Grip
+#   {
+#      ReturnEx(10);
+#      Return;
+#   }
+#   else
+#   if(bin == 34)                             // Deadly Sight
+#   {
+#      ReturnEx(5);
+#      Return;
+#   }
+#   ReturnEx(-1);
+#   Return;
 
 stop_lightning:
 	SetPulse(0);
@@ -354,6 +486,8 @@ stop_grip:
 	ClearActorFlags(victim, 0x40000);		// allow him to move again
 	ClearActorFlags(darkjedi, 0x40000);		// allow him to move again
 	forcepulse = 0;							// no force power active now
+	if(gripTrack != -1) StopKey(victim, gripTrack, 0.3);	// stop the grip animation
+	gripTrack = -1;
 	return;
 
 end
