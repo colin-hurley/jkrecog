@@ -21,9 +21,8 @@ flex        amount                           local
 int         bin_contents=0                   local
 int         autopickup=0                     local
 
-template	expl_tpl=+grenade_exp			local
-template	sphere_tpl=+TD_Expl_Sphere		local
-sector		sec								local
+#template	expl_tpl=+grenade_exp			local
+#template	sphere_tpl=+TD_Expl_Sphere		local
 vector		pos								local
 
 message		damaged
@@ -39,16 +38,15 @@ end
 code
 
 damaged:
-	SetTimerEx(rand() * 0.4, GetSenderRef(), 0, 0);
+	SetTimerEx(rand() * 0.4, GetSenderRef(), GetThingParent(GetSourceRef()), 0);
 	return;
 
 timer:
 	powerup = getSenderID();
-	sec = GetThingSector(powerup);
 	pos = GetThingPos(powerup);
 	TakeItem(powerup, powerup);
-	CreateThingAtPos(expl_tpl, sec, pos, '0 0 0');
-	CreateThingAtPos(sphere_tpl, sec, pos, '0 0 0');
+	// trigger the client to create the explosion
+	SendTrigger(-1, 4010, VectorX(pos), VectorY(pos), VectorZ(pos), GetParam(0));
 	return;
 	
 touched:

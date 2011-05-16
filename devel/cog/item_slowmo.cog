@@ -1,0 +1,22 @@
+# Toggle slow motion gameplay with a hotkey
+# Intended only to aid debugging - not to be included in final release
+
+symbols
+
+message activated
+
+end
+
+code
+
+activated:
+	if (GetDebugModeFlags() & 0x400) {
+		Print("Slow motion OFF");
+		ClearDebugModeFlags(0x400);
+	} else {
+		Print("Slow motion ON");
+		SetDebugModeFlags(0x400);
+	}
+	return;
+
+end

@@ -122,12 +122,15 @@ pulse:
 	{
 		player = GetPlayerThing(i);
 		rank = rank0[i];
-		vel = VectorLen(GetThingVel(player)) * 1.5 / (1 + rank / 4);
-		vel = vel + 0.2 * (4 - rank);		// add some extra stars for lower ranks (4=perfect cloak when not moving)
-		for(j = 0.1; j < vel; j = j + 0.1)
+		if(rank > 0)	// rank > 0 means effects are on
 		{
-			#printint(j*10);
-			SetTimerEx(0.25 * j / vel, 10, player, 0);
+			vel = VectorLen(GetThingVel(player)) * 1.5 / (1 + rank / 4);
+			vel = vel + 0.2 * (4 - rank);	// add some extra stars for lower ranks (4=perfect cloak when not moving)
+			for(j = 0.1; j < vel; j = j + 0.1)
+			{
+				#printint(j*10);
+				SetTimerEx(0.25 * j / vel, 10, player, 0);
+			}
 		}
 	}
 	return;

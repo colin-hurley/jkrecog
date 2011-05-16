@@ -31,18 +31,18 @@ keyframe    dismountAnim=RldVdis.key            local
 keyframe    povfireAnim=RldVpst1.key            local
 keyframe    holsterAnim=kyhlstr.key             local
 
-template    projectile=+raildet                 local
-template    projectile2=+raildet2               local
+#template    projectile=+raildet                 local
+#template    projectile2=+raildet2               local
 
-thing       rail                                local
+#thing       rail                                local
 
 flex        fireWait=1.0                        local
 flex        powerBoost                          local
-flex        autoAimFOV=25                       local
+#flex        autoAimFOV=25                       local
 #flex        autoAimMaxDist=5                    local
 flex        holsterWait                         local
 
-keyframe    railAnim=rld0anim.key               local
+#keyframe    railAnim=rld0anim.key               local
 
 int         trackID=-1                          local
 int         mode                                local
@@ -52,6 +52,8 @@ int         selectMode=1                        local
 
 int			xhair_bin=119						local
 flex		err									local
+
+vector		rVec					local
 
 int			waggle=0				local
 vector		waggle_vec				local
@@ -103,16 +105,33 @@ fire:
    jkPlayPOVKey(player, povfireAnim, 1, 0x38);
    SetPOVShake('0.0 -.01 0.0', '4.0 0.0 0.0', .05, 80.0);
 
-   rail = FireProjectile(player, projectile[mode], fireSound, 18, '0.0214 0.15 0.00', VectorSet((rand()-0.5)*(err+0.25)*6, (rand()-0.5)*(err+0.25)*6, 0), 1.0, 0x20, autoAimFOV, autoAimFOV*2);
+	PlaySoundThing(fireSound, player, 1.0, -1, -1, 0x80);
+	PlayMode(player, 18);
+#	rail = FireProjectile(player, projectile[mode], fireSound, 18, '0.0214 0.15 0.00', VectorSet((rand()-0.5)*(err+0.25)*6, (rand()-0.5)*(err+0.25)*6, 0), 1.0, 0x20, autoAimFOV, autoAimFOV*2);
 	// make more accurate when crouched
-	if(IsThingCrouching(player))
-		SetThingRotVel(rail, VectorSet((rand()-0.5)*12*(err+0.2), (rand()-0.5)*12*(err+0.2), 90));
-	else
-   		SetThingRotVel(rail, VectorSet((rand()-0.5)*10*(err+0.5), (rand()-0.5)*10*(err+0.5), 90));
-   if((mode == 1) && (rail != -1))
-   {
-      PlayKey(rail, railAnim, 1, 20);
-   }
+	if(!IsThingCrouching(player))
+		rVec = VectorSet(
+			(rand()-0.5)*3*(err+3.5),
+			(rand()-0.5)*3*(err+3.5),
+			0
+		);
+#		SetThingRotVel(rail, VectorSet((rand()-0.5)*12*(err+0.2), (rand()-0.5)*12*(err+0.2), 0));
+	else	// if crouching
+		rVec = VectorSet(
+			(rand()-0.5)*2*(err+2.6),
+			(rand()-0.5)*2*(err+2.6),
+			0
+		);
+#		SetThingRotVel(rail, VectorSet((rand()-0.5)*10*(err+0.5), (rand()-0.5)*10*(err+0.5), 0));
+
+	if(mode == 0) SendTrigger(-1, 7000, VectorX(rVec), VectorY(rVec), VectorZ(rVec), 0.0);
+	else SendTrigger(-1, 7001, VectorX(rVec), VectorY(rVec), VectorZ(rVec), 0.0);
+
+
+#   if((mode == 1) && (rail != -1))
+#   {
+#      PlayKey(rail, railAnim, 1, 20);
+#   }
 
    // Provide a kick backwards
    ApplyForce(player, VectorScale(GetThingLVec(player), -40));

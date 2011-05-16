@@ -19,7 +19,6 @@
 symbols
 
 message		startup
-message		newplayer
 message		damaged
 message		killed
 message		user0
@@ -97,6 +96,10 @@ int		difficulty	local
 thing	source		local
 int		gripTrack	local
 
+sound			saber_ignite=LtSaberOn01.WAV	local
+sound			saber_off=LtSaberOff01.WAV		local
+sound			humSound01=LtSaberLp01.WAV		local
+
 end
 
 # ========================================================================================
@@ -108,35 +111,38 @@ startup:
 	aimode = 0;
 	difficulty = GetDifficulty();
 	gripTrack = -1;
-
-newplayer:
+	sleep(0.1);
+	PlaySoundThing(saber_ignite, darkjedi, 1.0, -1, -1, 0x80);
+	humChannel = PlaySoundThing(humSound01, darkjedi, 1.0, -1, -1, 0x81);
    jkSetSaberInfo(darkjedi, side_mat, tip_mat, 0.003, 0.001, 0.101, tpl_wall, tpl_blood, tpl_saber);
    jkSetFlags(darkjedi, 0x5);
 	if(GetDifficulty() == 2)
 	{
-	   	limit = 7;
-	   	limit2 = 6;
+	   	limit = 7;	// lightning -- the bolt fan spread (1,3,5,7 for players)
+	   	limit2 = 6;	// grip -- how many damage pulses
 	   	rank = 4;
 	}
 	else if(GetDifficulty() == 1)
 	{
-		limit = 5;
-		limit2 = 5;
+		limit = 5;	// lightning
+		limit2 = 5;	// grip
 		rank = 3;
 	}
 	else
 	{
-		limit = 3;
-		limit2 = 4;
+		limit = 3;	// lightning
+		limit2 = 4;	// grip
 		rank = 2;
 	}
-	SetTimerEx(5, 25, 0, 0);	// set a looping timer to set the DJ's class cog
+	SetTimerEx(1.0, 25, 0, 0);	// set a looping timer to set the DJ's class cog
 
    Return;
 
 # ........................................................................................
 
 killed:
+   if(humChannel != -1) StopSound( humChannel, 0.5 );
+	PlaySoundThing(saber_off, darkjedi, 1.0, -1, -1, 0x80);
    jkSetFlags(darkjedi, 0x8);
 	if(forcepulse == 1) call stop_lightning;
 	if(forcepulse == 4) call stop_grip;

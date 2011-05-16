@@ -19,6 +19,10 @@ template	tpl=+rpt_debris					local
 template	trail=+rpt_debris_sparks		local
 
 thing		dummy						local
+thing		expl						local
+thing		player						local
+
+int			i							local
 
 end
 
@@ -27,19 +31,31 @@ end
 code
 
 created:
-	if(GetThingTemplate(GetSenderRef()) == tpl) return;		// just in case... no infinite loops
-	dummy = CreateThing(tpl, GetSenderRef());
+	expl = GetSenderRef();
+	if(GetThingTemplate(expl) == tpl) return;		// just in case... no infinite loops
+	dummy = CreateThing(tpl, expl);
 	SetThingVel(dummy, VectorSet((rand() - 0.5) * 0.4, (rand() - 0.5) * 0.4, rand() * 0.5 + 0.3));
 	CaptureThing(dummy);
 	SetThingPulse(dummy, 0.1);
-	dummy = CreateThing(tpl, GetSenderRef());
+	dummy = CreateThing(tpl, expl);
 	SetThingVel(dummy, VectorSet((rand() - 0.5) * 0.4, (rand() - 0.5) * 0.4, rand() * 0.5 + 0.3));
 	CaptureThing(dummy);
 	SetThingPulse(dummy, 0.1);
-	dummy = CreateThing(tpl, GetSenderRef());
+	dummy = CreateThing(tpl, expl);
 	SetThingVel(dummy, VectorSet((rand() - 0.5) * 2, (rand() - 0.5) * 2, rand() * 0.5 + 0.6));
 	CaptureThing(dummy);
 	SetThingPulse(dummy, 0.1);
+
+	// do the light flash effects
+	for(i=0;i<=GetNumPlayers();i=i+1)
+	{
+		player = GetPlayerThing(i);
+		if(HasLOS(player, expl))
+		{
+			// check local players' bins for IR Goggles usage and do blinding effects
+			SkillTarget(player, expl, 41, 150);
+		}
+	}
 	return;
 
 pulse:

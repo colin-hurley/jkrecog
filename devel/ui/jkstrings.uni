@@ -722,6 +722,7 @@ MSGS 900   # <--- DON'T FORGET TO UPDATE THIS COUNT
    "ACTIVATE16"      0 "Field Light"
    "ACTIVATE17"      0 "Fire 3"
    "ACTIVATE18"      0 "Safe Save"
+   "ACTIVATE19"      0 "[DEBUG] slow motion"
    ### ACTIVATExx bins up to ACTIVATE31 are available for user defined Hotkeys.
    ### In items.dat, the script for the 'xx'th item with the hotkey flag 0x100 will be bound.
 

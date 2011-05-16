@@ -12,6 +12,7 @@ flags=0x240
 
 symbols
 
+message		startup
 message		trigger
 
 # Bryar Templates
@@ -33,15 +34,41 @@ template	tpl5_0a=+crossbowbolt2			local
 template	tpl5_1a=+expl_crossbowbolt2		local
 template	tpl5_2=+bcscopebolt				local
 
+# Repeater Templates
+
+# Rail Detonator Templates
+template	tpl7_0=+raildet				local
+template	tpl7_1=+raildet2			local
+keyframe    tpl7_1_Anim=rld0anim.key	local
+
+# Explosion Templates
+template	expl4a=+grenade_exp		local
+template	expl4b=+TD_Expl_Sphere	local
+template	expl7=+raildet_exp		local
+template	expl8=+sequencer_exp	local
+
+
 # General Variables
 thing		player					local
+thing		dummy=-1				local
 vector		fire_offset				local
+
+int			garbage					local
+int			isJKUP					local
 
 end
 
 # ========================================================================================
 
 code
+
+startup:
+	// this code courtesy of ZeqMacaw =)
+	garbage = -1;
+	garbage = floor(4.2);
+	if(garbage == 4) isJKUP = 1;
+	else isJKUP = 0;
+	return;
 
 trigger:
 	player = GetSenderRef();
@@ -105,6 +132,7 @@ trigger:
 			FireProjectile(player, tpl5_0a[GetParam(2)], -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1) + 12, 0), 1.0, 0x60, 30, 60);
 			FireProjectile(player, tpl5_0a[GetParam(2)], -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1) - 12, 0), 1.0, 0x60, 30, 60);
 		}
+		return;
 	}
 	if(GetSourceRef() == 5002)		// bowcaster zoomed
 	{
@@ -113,6 +141,67 @@ trigger:
 		fire_offset = '0 0 0.037';
 		FireProjectile(player, tpl5_2, -1, -1, fire_offset, VectorSet(GetParam(0), GetParam(1), 0), 1.0, 0x60, 25, 50);
 		return; 
+	}
+	if(GetSourceRef() == 7000)		// Rail Detonator fire 1 - impact
+	{
+		fire_offset = '0.0214 0.15 0.00';
+		dummy = FireProjectile(player, tpl7_0, -1, -1, fire_offset, '0 0 0', 1.0, 0x60, 25, 50);
+		if(dummy != -1)
+		{
+			SetThingRotVel(dummy, VectorSet(GetParam(0), GetParam(1), GetParam(2)));
+		}
+		return;
+	}
+	if(GetSourceRef() == 7001)		// Rail Detonator fire 2 - sticky
+	{
+		fire_offset = '0.0214 0.15 0.00';
+		dummy = FireProjectile(player, tpl7_1, -1, -1, fire_offset, '0 0 0', 1.0, 0x60, 25, 50);
+		if(dummy != -1)
+		{
+			SetThingRotVel(dummy, VectorSet(GetParam(0), GetParam(1), GetParam(2)));
+			PlayKey(dummy, tpl7_1_Anim, 1, 20);
+		}
+		return;
+	}
+	if(GetSourceRef() == 4010)		// Thermal Det powerup exploded
+	{
+		# param 0-2 = xyz coords 
+		# param 3 = player that damaged the powerup
+		dummy = CreateThingAtPos(expl4a, GetThingSector(getLocalPlayerThing()), vectorSet(GetParam(0), GetParam(1), GetParam(2)), '0 0 0');
+		CreateThingAtPos(expl4b, GetThingSector(getLocalPlayerThing()), vectorSet(GetParam(0), GetParam(1), GetParam(2)), '0 0 0');
+		if(isJKUP)	// if new cog verbs are available, use them
+		{
+			SetThingParent(dummy, GetParam(3));
+		}
+		return;
+	}
+	if(GetSourceRef() == 7010)		// Rail charge powerup exploded
+	{
+		# param 0-2 = xyz coords 
+		# param 3 = player that damaged the powerup
+		dummy = CreateThingAtPos(expl7, GetThingSector(getLocalPlayerThing()), vectorSet(GetParam(0), GetParam(1), GetParam(2)), '0 0 0');
+		if(isJKUP)	// if new cog verbs are available, use them
+		{
+			SetThingParent(dummy, GetParam(3));
+			print("Parent:");
+			printint(getParam(3));
+			print("Dummy:");
+			printint(dummy);
+			print("Local Player:");
+			printint(getLocalPlayerThing());
+		}
+		return;
+	}
+	if(GetSourceRef() == 8010)		// Sequencer charge powerup exploded
+	{
+		# param 0-2 = xyz coords 
+		# param 3 = player that damaged the powerup
+		dummy = CreateThingAtPos(expl8, GetThingSector(getLocalPlayerThing()), vectorSet(GetParam(0), GetParam(1), GetParam(2)), '0 0 0');
+		if(isJKUP)	// if new cog verbs are available, use them
+		{
+			SetThingParent(dummy, GetParam(3));
+		}
+		return;
 	}
 	return;
 

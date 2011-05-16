@@ -90,6 +90,12 @@ activated:
          SetThingCurGeoMode(player, 0);
          SendTrigger(-1, 1200, GetPlayerNum(player), rank, 0, 0);
          
+         // Let JK know that the player is invisible, so he is rendered when a player has force seeing on
+         // this setting creates one twinkle star per second or two, but it's the closest I can get it to
+         // a twinkle-free cloak
+         jkSetPersuasionInfo(player, 1, 0);
+         jkSetFlags(player, 0x20);
+         
          # FROM MEMORY:
 		 # 1.68 = run speed
          # 0.8 = fast walk speed

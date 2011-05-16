@@ -40,7 +40,6 @@ template	tpl4=+actor_grenade2			local
 template	tpl5=+spec_grenade				local
 
 int			i								local
-flex		dot								local
 
 end
 
@@ -77,14 +76,11 @@ removed:
 			player = GetPlayerThing(i);
 			if(HasLOS(player, TD))
 			{
-				dot = ThingViewDot(player, TD);
-				dot = 200 * (1 - VectorDist(GetThingPos(player), GetThingPos(TD)) / 5) * ((dot + 1) / 2 * 0.6 + 0.4);
-				if(dot > 155)
-					dot = 155;
-				if(dot > 0)
-					AddDynamicAdd(player, dot, dot, dot / 1.05);
+				// move this code to kyle.cog / skill message... need to check local players' bins for IR Goggles usage
+				SkillTarget(player, TD, 41, 200);
 			}
 		}
+		// move to a trigger
 		FireProjectile(TD, expl_sphere, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);
 	}
 	return;

@@ -1,0 +1,5 @@
+created:
+	head_offset = '0.0 0.02 0.05';
+	newthing = FireProjectile(GetSenderRef(), LoadTemplate("+gran_head_sphere"), -1, -1, head_offset, '0 0 0', 0, 0, 0, 0);
+	attachthingtothingex(newthing, getsenderref(), 0xc);
+	return;
