@@ -4,29 +4,18 @@
 #
 # Class cog for the thrown saber projectiles
 #
-# Makes the saber chase after the thing number stored in the projectile's user data.
-# After a timer, the saber will seek out its parent to "return" to him.
-# Higher game difficulty results in better seeking
-#
 # [darthslaw]
 #
-# (c) 2007 JK ReCog
+# (c) 2012 JK ReCog
 
 symbols
 
 message		created
 message		pulse
-message		timer
-message		removed
 
-thing		dest		local
 thing		saber		local
-thing		parent		local
-vector		vec			local
-flex		len			local
 template	hit_tpl=+saberthrow_hit	local
 template	hit_tpl2=+saberthrow_hit2	local
-int			count=0		local
 
 end
 
@@ -36,87 +25,15 @@ code
 
 created:
 	saber = GetSenderRef();
-	SetThingPulse(saber, 0.05);
-	//SetTimerEx(2, saber + 10, GetThingParent(saber), 0);
-	killTimerEx(2);		// kill timer
-	SetTimerEx(0.025, 2, 0, 0);	// set timer to increment var 'count'
-	return;
-
-timer:
-	if(GetSenderID() == 2)
-	{
-		SetTimerEx(0.05, 2, 0, 0);	// reset timer
-		count=count+1;
-		if(count >= 3) count = 0;
-	}
-	else	// id's 10 and up are thing references
-	{
-		//changed -- take care of this in the Darkjedi cogs instead
-		SetThingUserData(GetSenderID()-10, GetParam(0));	// timer exceeded; return to the dark jedi
-	}
+	SetThingPulse(saber, 0.2);
 	return;
 
 pulse:
 	saber = GetSenderRef();
-	dest = GetThingUserData(saber);
-	parent = GetThingParent(saber);
-	
-	vec = vectorSub(GetThingPos(dest), GetThingPos(saber));
-	len = vectorLen(vec);
-	if(len < 0.1)	// close proximity; return to parent, or remove
-	{		
-		if(dest == parent)		// if we returned to the parent
-		{
-			KillTimerEx(saber + 10);
-			DestroyThing(saber);	// removed will "return" the saber with a trigger
-			return;
-		}
-		else					// if we reached the target
-		{
-			// To try to increase the hit/miss ratio of the blade, only turn back if the blade should have hit the target
-			#if(VectorDot(VectorNorm(vec), GetThingLVec(saber)) > 0)
-			{
-				KillTimerEx(saber + 10);
-				dest = parent;
-				SetThingUserData(saber, parent);
-			}
-		}
-	}
-	if(dest == parent)	// if returning, force the saber's lookvec
-	{
-		vec = VectorScale(VectorNorm(vectorSub(GetThingPos(dest), GetThingPos(saber))), 1.5);
-		SetThingLook(saber, VectorScale(vec, -1));
-		SetThingRotVel(saber, '0 0 0');
-	}
-	else
-	{
-		// with higher difficulty, give greater weight to the desired direction
-		vec = VectorNorm(vec);
-		if(GetDifficulty() == 2)	// hard
-		{
-			vec = vectorScale(vec, 2);
-		}
-		else if(GetDifficulty() == 1)	// medium
-		{
-			vec = vectorScale(vec, 1.5);
-		}
-		vec = VectorScale(VectorAdd(vec, GetThingVel(saber)), 0.5);	// average the two together
-		vec = VectorScale(VectorNorm(vec), 1.5);	// scale velocity to 1.5 jku/s
-	}
-	if(count <= 0)	// a timer updates the count variable...
-	{
-		if(dest == parent)	// if returning, fire the projectile with shorter range
-			FireProjectile(saber, hit_tpl2, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);	// fire a template to hit stuff
-		else				// else, fire the normal one
-			FireProjectile(saber, hit_tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);	// fire a template to hit stuff
-	}
-
-	SetThingVel(saber, vec);
-	return;
-
-removed:
-	SendTrigger(-1, 1037, GetThingParent(GetSenderRef()), 0, 0, 0);		// tell DJ cog that saber has been removed
+	if(GetThingUserData(saber) != 0)	// if returning, fire the projectile with shorter range
+		FireProjectile(saber, hit_tpl2, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);	// fire a template to hit stuff
+	else				// else, fire the normal one
+		FireProjectile(saber, hit_tpl, -1, -1, '0 0 0', '0 0 0', 0, 0, 0, 0);	// fire a template to hit stuff
 	return;
 
 end
-

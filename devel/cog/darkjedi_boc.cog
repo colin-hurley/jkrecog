@@ -11,83 +11,127 @@
 #
 # [darthslaw]
 #
-# (C) 2007 JK ReCog
+# (C) 2012 JK ReCog
 
 symbols
 
 message        startup
+message        newplayer
 message        damaged
 message        killed
 message        user0
 message        user1
-message			pulse
-message			timer
-message			trigger
+message        timer
+message        pulse
 
-thing          darkjedi                      mask=0xfff
+# Dark Jedi actor
+thing          darkjedi                      mask=-1
 
-material       tip_mat=saberblue0.mat      local
-material       side_mat=saberblue1.mat     local
+# DJ's saber colors
+material       tip_mat=saberblue0.mat        local
+material       side_mat=saberblue1.mat       local
 
+# Saber collision templates
 template       tpl_wall=+ssparks_wall        local
 template       tpl_blood=+ssparks_blood      local
 template       tpl_saber=+ssparks_saber      local
 
-int            victim                        local
-int            forcepower                    local
-#int            forcepulse                    local
-int				oldflags					local
-
-int				damagetype					local
-flex			damage						local
-
-template	destProj0=+f_dest_p4			local
-template	destProj1=+f_dest_p5			local
-template	destProj2=+f_dest_p6			local
+# Force power FX
+template       repel=+force_repel            local
 
 sound          destSound=ForceDestruct01.wav local
 
-template		saberthrow_tpl=+boc_saberthrow	local
+template       destProj0=+f_dest_p4          local
+template       destProj1=+f_dest_p5          local
+template       destProj2=+f_dest_p6          local
 
-flex           autoAimFOV=10                 local
-flex           autoAimMaxDist=5              local
+sound          pushSound=ForceThrow01.WAV    local
 
-template       repel=+force_repel            local
-
-#sound          s1z=I00bo01z.wav              local
+# Death sounds
 sound          s2z=I00bo02z.wav              local
-#sound          s3z=I00bo03z.wav              local
 sound          s4z=I00bo04z.wav              local
-#sound          s5z=I00bo05z.wav              local
-#sound          s6z=I00bo06z.wav              local
 sound          s7z=I00bo07z.wav              local
-#sound          s71=I00bo071.wav              local
 sound          s72=I00bo072.wav              local
 sound          s73=I00bo073.wav              local
 
-sound			saber_ignite=LtSaberOn01.WAV	local
-sound			saber_off=LtSaberOff01.WAV		local
-sound			humSound01=LtSaberLp01.WAV		local
-int				humChannel=-1					local
-int            snd=-1                        local
-int            okay                          local
+# Saber sounds
+sound          saber_ignite=LtSaberOn01.WAV  local
+sound          saber_off=LtSaberOff01.WAV    local
+sound          humSound01=LtSaberLp01.WAV    local
+int            humChannel=-1                 local
 
-int				Channel1=-1						local	# sound channels for the thrown sabers
-thing			saber1=-1						local	# the thrown saber things
-int				dir1							local	# the direction of each of the saber things
+# Minimum reaction delays by difficulty
+flex           react_delay_min0=0.7          local
+flex           react_delay_min1=0.5          local
+flex           react_delay_min2=0.3          local
 
-sound			saber_spin=ltsabertwirl2.wav	local		# played while saber is spinning
+# Maximum reaction delays by difficulty
+flex           react_delay_max0=2.0          local
+flex           react_delay_max1=1.5          local
+flex           react_delay_max2=1.0          local
 
-model			saberthrow_nofan=boc_saberthrow_nofan.3do	local	# model to give the saber while returning
+# Saber throw timeouts by difficulty
+flex           saber_throw_timeout0=3.0      local
+flex           saber_throw_timeout1=4.0      local
+flex           saber_throw_timeout2=5.0      local
 
-int			cog_bin=165						local
+# Saber throw DJ pause durations by difficulty
+flex           saber_throw_pause0=2.5        local
+flex           saber_throw_pause1=2.0        local
+flex           saber_throw_pause2=1.5        local
 
-int		aimode		local
-sound	pushSound=ForceThrow01.WAV	local
-vector	dir			local
-thing	source		local
-int		difficulty	local
-flex	delay		local
+# How fast the thrown saber will travel (JKU/s)
+flex           saber_throw_speed=1.5         local
+
+# After this duration, the saber throw is forcefully terminated and the DJ's saber
+# is returned.
+flex           saber_throw_reset_delay=10.0  local
+
+# The thrown saber projectile will play this sound while spinning
+sound          saber_spin=ltsabertwirl2.wav  local
+
+# Thrown saber will be given this model when returning to the DJ
+model          saberthrow_nofan=boc_saberthrow_nofan.3do  local
+
+# DJ will fire this projectile as a thrown saber
+template       saberthrow_tpl=+boc_saberthrow  local
+
+# Misc. vars
+flex           autoAimFOV=10                 local
+flex           autoAimMaxDist=5              local
+int            damagetype                    local
+flex           damage                        local
+thing          victim                        local
+int            forcepower                    local
+flex           delay                         local
+flex           delay_min                     local
+flex           delay_max                     local
+vector         dir                           local
+thing          saberProj=-1                  local
+thing          saberProjTarget=-1            local
+int            saberProjChannel=-1           local
+
+# Lock to prevent use of force powers before intro cutscene completes
+int            startup_lock                  local
+
+# Lock to ensure only one force power is used at a time
+int            force_lock=0                  local
+
+# Lock to prevent multiple reactions to a single force attack
+int            react_lock=0                  local
+
+# The cog of this inventory bin entry will be set as the class cog of the DJ
+# The inventory cog provides the implementation for the skill message that makes some
+# force powers work on the DJ.
+int            cog_bin=165                   local
+
+# Timer Constants
+int            timer_react_reset=2           local
+int            timer_force_push=12           local
+int            timer_force_jump=13           local
+int            timer_saber_return=20         local
+int            timer_throw_pause=30          local
+int            timer_saber_reset=40          local
 
 end
 
@@ -96,294 +140,380 @@ end
 code
 
 startup:
-	aimode = 0;
-	sleep(0.1);
-   jkSetSaberInfo(darkjedi, side_mat, tip_mat, 0.003, 0.001, 0.110, tpl_wall, tpl_blood, tpl_saber);
-   jkSetFlags(darkjedi, 0x15);
+newplayer:
+	// Suppress force powers until intro cutscene completes
+	startup_lock = 1;
+	
+	// Initialize saber info
+	jkSetSaberInfo(darkjedi, side_mat, tip_mat, 0.003, 0.001, 0.110, tpl_wall, tpl_blood, tpl_saber);
+	
+	// Play saber ignite sound
 	PlaySoundThing(saber_ignite, darkjedi, 1.0, -1, -1, 0x80);
+	
+	// Loop saber hum sound
 	humChannel = PlaySoundThing(humSound01, darkjedi, 1.0, -1, -1, 0x81);
-	SetTimerEx(1.0, 25, 0, 0);	// set a looping timer to set the DJ's class cog
-	difficulty = GetDifficulty();
-   Return;
+	
+	// Extend the DJ's two sabers
+	jkSetFlags(darkjedi, 0x15);
+	
+	// Set DJ's class cog
+	SetThingClassCog(darkjedi, GetInvCog(GetLocalPlayerThing(), cog_bin));
+	
+	Return;
+
+user1:
+	// Receives message from 20b_camera.cog or 20_rahnlines.cog -- Allow force powers now
+	startup_lock = 0;
+	
+	Return;
+
 # ........................................................................................
 
 killed:
-   jkSetFlags(darkjedi, 0x8);			// shrink sabers
-   SetActorFlags(darkjedi, 0x40000);	// immobilize
-   if(humChannel != -1) StopSound( humChannel, 0.5 );
+	// Immobilize the DJ
+	SetActorFlags(darkjedi, 0x40000);
+	
+	// Stop saber hum sound
+	if(humChannel != -1) StopSound( humChannel, 0.5 );
+	
+	// Play saber off sound
 	PlaySoundThing(saber_off, darkjedi, 1.0, -1, -1, 0x80);
-	if(saber1 != -1) SetThingUserData(saber1, darkjedi);		// tell saber to return to DJ
-	KillTimerEx(20);
-
+	
+	// Shrink the DJ's sabers
+	jkSetFlags(darkjedi, 0x8);
+	
+	// Play DJ death sounds
 	Sleep(1.6);
+	
+	PlaySoundThing(s2z, darkjedi, 0.66, -1, -1, 0x180);
+	Sleep(GetSoundLen(s2z) + 0.4);
 
-   snd = PlaySoundThing(s2z, darkjedi, 0.66, -1, -1, 0x180);
-   Sleep(GetSoundLen(s2z) + 0.4);
+	PlaySoundThing(s72, darkjedi, 1.0, -1, -1, 0x180);
+	Sleep(GetSoundLen(s72) + 0.6);
 
-   snd = PlaySoundThing(s72, darkjedi, 1.0, -1, -1, 0x180);
-   Sleep(GetSoundLen(s72) + 0.6);
+	PlaySoundThing(s73, darkjedi, 1.0, -1, -1, 0x180);
+	Sleep(GetSoundLen(s73) + 0.9);
 
-   snd = PlaySoundThing(s73, darkjedi, 1.0, -1, -1, 0x180);
-   Sleep(GetSoundLen(s73) + 0.9);
+	PlaySoundThing(s7z, darkjedi, 1.0, -1, -1, 0x180);
+	Sleep(0.7);
 
-   snd = PlaySoundThing(s7z, darkjedi, 1.0, -1, -1, 0x180);
-   Sleep(0.7);
+	PlaySoundThing(s2z, darkjedi, 0.5, -1, -1, 0x180);
+	Sleep(0.4);
 
-   snd = PlaySoundThing(s2z, darkjedi, 0.5, -1, -1, 0x180);
-   Sleep(0.4);
+	PlaySoundThing(s4z, darkjedi, 0.5, -1, -1, 0x180);
 
-   snd = PlaySoundThing(s4z, darkjedi, 0.5, -1, -1, 0x180);
-
-   Return;
+	Return;
 
 # ........................................................................................
 
 damaged:
-   damage = GetParam(0);
-   damageType = GetParam(1);
-	source = GetSourceRef();
+	damage = GetParam(0);
+	damageType = GetParam(1);
 
-   if (damageType & 1)                       // IMPACT
-      damage = damage / 2;
-   else
-   if (damageType & 2)                       // ENERGY
-      damage = damage / 2;
-   else
-   if (damageType & 4)                       // FIRE
-      damage = damage / 10;
-   else
-   if (damageType & 8)                       // FORCE
-	{
-		damage = damage;
-		if((IsInvActivated(source, 31)) && !(aimode & 0x1))		// player is using grip and DJ hasnt reacted yet
-		{
-			#print("ATTACK: Grip ; RETALIATE WITH: Push");
-			aimode = BitSet(aimode, 0x1);		// only one reaction allowed
-			SetTimerEx(6, 2, 1, 0);	// timer to clear grip aimode
-			if(difficulty == 2)
-			{
-				if(rand() < 0.96)
-					delay = 0.3 + rand()*0.6;
-				else
-					delay = 0.9;
+	// Scale damage based on damage type
+	if (damageType & 1)                       // IMPACT
+		damage = damage / 2;
+	else
+	if (damageType & 2)                       // ENERGY
+		damage = damage / 2;
+	else
+	if (damageType & 4)                       // FIRE
+		damage = damage / 10;
+	else
+	if (damageType & 8) {                     // FORCE
+		if(!react_lock) {
+			if(IsInvActivated(GetSourceRef(), 31)) {
+				#print("ATTACK: Grip ; RETALIATE WITH: Push");
+				
+				// Remember that DJ reacted and start a timer to reset
+				react_lock = 1;
+				SetTimerEx(6.0, timer_react_reset, 0, 0);
+				
+				// Make the DJ look at the player now
+				AISetLookPos(darkjedi, GetThingPos(GetSourceRef()));
+				
+				// Calculate a delay based on difficulty
+				delay_min = react_delay_min0[GetDifficulty()];
+				delay_max = react_delay_max0[GetDifficulty()];
+				delay = delay_min + (delay_max - delay_min) * Rand();
+				
+				// After the delay, the DJ should perform the push
+				SetTimerEx(delay, timer_force_push, darkjedi, GetSourceRef());
+			} else if(IsInvActivated(GetSourceRef(), 34)) {
+				#print("ATTACK: Deadly Sight ; RETALIATE WITH: Jump");
+				
+				// Remember that DJ reacted and start a timer to reset
+				react_lock = 1;
+				SetTimerEx(6.0, timer_react_reset, 0, 0);
+				
+				// Make the DJ look at the player now
+				AISetLookPos(darkjedi, GetThingPos(GetSourceRef()));
+				
+				// Calculate a delay based on difficulty
+				delay_min = react_delay_min0[GetDifficulty()];
+				delay_max = react_delay_max0[GetDifficulty()];
+				delay = delay_min + (delay_max - delay_min) * Rand();
+				
+				// After the delay, the DJ should perform the jump
+				SetTimerEx(delay, timer_force_jump, darkjedi, GetSourceRef());
 			}
-			else if(difficulty == 1)
-			{
-				if(rand() < 0.92)
-					delay = 0.3 + rand()*0.9;
-				else
-					delay = 1.2;
-			}
-			else
-			{
-				if(rand() < 0.88)
-					delay = 0.3 + rand()*1.2;
-				else
-					delay = 1.5;
-			}
-			SetTimerEx(delay, 12, darkjedi, source);		// timer to push the player
-			AISetLookPos(darkjedi, GetThingPos(source));	// look at the player
-		}
-		if((IsInvActivated(source, 34)) && !(aimode & 0x2))		// player is using dsight, and DJ hasn't reacted yet
-		{
-			#print("ATTACK: Deadly Sight ; RETALIATE WITH: Jump");
-			aimode = BitSet(aimode, 0x2);		// only one reaction allowed
-			SetTimerEx(6, 3, 2, 0);	// timer to clear deadly sight aimode
-			if(difficulty == 2)
-			{
-				if(rand() < 0.94)
-					delay = 0.2 + rand()*0.4;
-				else
-					delay = 0.7; 
-			}
-			else if(difficulty == 1)
-			{
-				if(rand() < 0.88)
-					delay = 0.25 + rand()*0.55;
-				else
-					delay = 0.9;
-			}
-			else
-			{
-				if(rand() < 0.82)
-					delay = 0.3 + rand()*0.7;
-				else
-					delay = 1.1;
-			}
-			SetTimerEx(delay, 13, darkjedi, source);		// timer to jump
-			AISetLookPos(darkjedi, GetThingPos(source));	// look at the player
 		}
 	}
-   else
-   if (damageType & 16)                      // SABER
-      damage = damage;
+	
+	// Note: FORCE and SABER damage do not get scaled
+	
+	ReturnEx(damage);
 
-   ReturnEx(damage);
-
-   Return;
+	Return;
 
 # ........................................................................................
 
-user1:
-   // Receives message from 20b_camera.cog or 20_rahnlines.cog
-   okay = 1;
-   return;
-
-
 user0:
-   // Don't start using force powers until message is received
-   if(okay == 0) return;
+	// Don't start using force powers until message is received
+	if(startup_lock) return;
 
-   victim = GetParam(0);
-   forcepower = GetParam(1);
+	// Only permit one active power at a time -- each procedure will release this lock when the power completes
+	if(force_lock) return;
+	force_lock = 1;
 
-   if (forcepower == 1)
-   {
-      // Print("Force Power 2 : FORCE DESTRUCTION");
-      PlayMode(darkjedi, 24);
-      Sleep(0.3);
-      // He could die during the sleep
-      if(GetThingHealth(darkjedi) <= 0) Return;
+	victim = GetParam(0);
+	forcepower = GetParam(1);
 
-      AddDynamicTint(victim, 0.3, 0.0, 0.15);
-		if(GetDifficulty() == 2)
-			FireProjectile(darkjedi, destProj2, destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
-		else if(GetDifficulty() == 1)
-			FireProjectile(darkjedi, destProj1, destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
-		else
-			FireProjectile(darkjedi, destProj0, destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
-   }
-   else
-   if (forcepower == 2)
-   {
-      // Print("Force Power 2 : FORCE REPEL...");
-      PlayMode(darkjedi, 35);
-      Sleep(0.3);
-      // He could die during the sleep
-      if(GetThingHealth(darkjedi) <= 0) Return;
-
-      CreateThing(repel, darkjedi);
-   }
-   else
-   if (forcepower == 3)
-   {
-		#Print("Force Power 3 : FORCE SABER THROW");
-		okay = 0;
-		oldflags = GetActorFlags(darkjedi);
-		SetActorFlags(darkjedi, 0x40000);
-		PlayMode(darkjedi, 36);		// make him throw the lightsaber
-		sleep(0.5);
-		// He could die during the sleep
-		if(GetThingHealth(darkjedi) <= 0) Return;
-		saber1 = FireProjectile(darkjedi, saberthrow_tpl, -1, -1, '0.075 0.04 0', '0 0 0', 0, 0, 0, 0);
-		jkClearFlags(darkjedi, 0x10);	// give DJ only 1 saber now
-		SetThingUserData(saber1, victim);		// tell saber to seek out Kyle
-		dir1=0;	// 0 = after kyle; 1 = returning to DJ
-		Channel1 = PlaySoundThing(saber_spin, saber1, 1.0, -1, -1, 0x81);
-		SetPulse(0.1);
-		if(GetDifficulty() == 2)		// hard ; 5 seconds of throw time
-		{
-			SetTimerEx(5.0, 20, 0, 0);
-			sleep(1.0);	// delay before allowing him to move again
-		}
-		else if(GetDifficulty() == 1)	// medium ; 4 seconds of throw time
-		{
-			SetTimerEx(4.0, 20, 0, 0);
-			sleep(1.5);	// delay before allowing him to move again
-		}
-		else							// easy ; 3 seconds of throw time
-		{
-			SetTimerEx(3.0, 20, 0, 0);
-			sleep(2.0);	// delay before allowing him to move again
-		}		
-		ClearActorFlags(darkjedi, 0x40000);
-		SetActorFlags(darkjedi, oldflags);	// make sure no lost flags for some reason
-   }
-   Return;
+	if (forcepower == 1) {
+		goto force_destruction;
+	} else if (forcepower == 2) {
+		goto force_repel;
+	} else if (forcepower == 3) {
+		goto force_saberthrow;
+	}
+	
+	Return;
 
 timer:
-	if(GetSenderID() == 2)	// clear grip aimode
-	{
-		aimode = BitClear(aimode, 0x1);
+	if(GetSenderID() == timer_react_reset) {
+		// Allow DJ to react to force powers again
+		react_lock = 0;
 		return;
 	}
-	if(GetSenderID() == 3)	// clear dsight aimode
-	{
-		aimode = BitClear(aimode, 0x2);
+	if(GetSenderID() == timer_force_push) {
+		// DJ will do force push
+		victim = GetParam(1);
+		goto force_push;
+	}
+	if(GetSenderID() == timer_force_jump) {
+		// DJ will do force jump
+		victim = GetParam(1);
+		goto force_jump;
+	}
+	if(GetSenderID() == timer_saber_return) {
+		// TODO: saber attempts to return to DJ
+		saberProjTarget = darkjedi;
 		return;
 	}
-	if(GetSenderID() == 12)	// push
-	{
-		source = GetParam(1);
-		#print("Push player");
-		// if DJ isn't even looking at the player right now, or player isn't gripping anymore don't push
-		if( (ThingViewDot(darkjedi, source) < 0.2) || !(isInvActivated(source, 31)) )
-		{
-			aimode = BitClear(aimode, 0x1);
-			KillTimerEx(2);
-			return;
-		}
-		dir = vectorNorm(VectorSub(GetThingPos(source), GetThingPos(darkjedi)));
-		dir = vectorSet(vectorX(dir), vectorY(dir), 0.15);
-		dir = VectorScale(vectorNorm(dir), 600);
-		DetachThing(source);
-		ApplyForce(source, dir);
-		ApplyForce(darkjedi, VectorScale(GetThingLVec(darkjedi), -60));
-		PlayMode(darkjedi, 35);
-		PlaySoundThing(pushSound, darkjedi, 1.0, -1, -1, 0x80);
+	if(GetSenderID() == timer_throw_pause) {
+		// Don't do anything if DJ is dead
+		if(GetThingHealth(darkjedi) <= 0) return;
+		// Allow DJ to move again
+		ClearActorFlags(darkjedi, 0x40000);
 		return;
 	}
-	if(GetSenderID() == 13)	// jump
-	{
-		source = GetParam(1);
-		#print("DJ Jump");
-		// if DJ is too far from the player, or player isn't using DSight anymore, don't jump
-		if((VectorDist(getthingPos(source), getThingPos(darkjedi)) > 4) || !(isInvActivated(source, 34)))
-		{
-			aimode = BitClear(aimode, 0x2);
-			KillTimerEx(3);
-			return;
-		}
-		dir = VectorScale(VectorSub(GetThingPos(source), GetThingPos(darkjedi)), 1.1);
-		dir = VectorSet(vectorX(dir), vectorY(dir), 3);
-		DetachThing(darkjedi);
-		SetThingVel(darkjedi, dir);		// jump behind the player
-		return;
-	}
-	if(GetSenderID() == 20)				// thrown saber to return to DJ
-	{
-		if(saber1 != -1) SetThingUserData(saber1, darkjedi);		// tell saber to return to DJ
-		return;
-	}
-	if(GetSenderID() == 25)						// set class cog
-	{
-		SetThingClassCog(darkjedi, GetInvCog(getLocalPlayerThing(), cog_bin));
-		SetTimerEx(5, 25, 0, 0);	// set a looping timer to set the DJ's class cog
+	if(GetSenderID() == timer_saber_reset) {
+		// Return saber to DJ
+		goto stop_force_saberthrow;
 	}
 	return;
 
 pulse:
-	if(dir1 == 0 && GetThingUserData(saber1) == darkjedi)	// saber on the return
-	{
-		dir1 = 1;
-		StopSound(Channel1, 0.1);
-		Channel1 = PlaySoundThing(humSound01, saber1, 1.0, -1, -1, 0x81);
-		SetThingModel(saber1, saberthrow_nofan);	// no twirl fan; travelling straight path
-		SetPulse(0);
+	goto force_saberthrow_movement;
+	return; // Note: This return is unreachable, but it keeps parsec happy...
+
+force_destruction:
+	// Print("Force Power 2 : FORCE DESTRUCTION");
+	
+	// Play force anim and wait a bit
+	PlayMode(darkjedi, 24);
+	Sleep(0.3);
+	
+	// Make sure the DJ is still alive
+	if(GetThingHealth(darkjedi) <= 0) return;
+	
+	// Tint the player's screen
+	AddDynamicTint(victim, 0.3, 0.0, 0.15);
+	// Fire the projectile
+	FireProjectile(darkjedi, destProj0[GetDifficulty()], destSound, -1, '0 0 0', '0 0 0', 1.0, 0, autoAimFOV, autoAimMaxDist);
+	
+	// Release force power lock
+	force_lock = 0;
+	
+	return;
+
+force_repel:
+	// Print("Force Power 2 : FORCE REPEL...");
+	
+	// Play force anim and wait a bit
+	PlayMode(darkjedi, 35);
+	Sleep(0.3);
+	
+	// Make sure the DJ is still alive
+	if(GetThingHealth(darkjedi) <= 0) return;
+	
+	// Push the player back
+	CreateThing(repel, darkjedi);
+	
+	// Release force power lock
+	force_lock = 0;
+	
+	return;
+
+force_saberthrow:
+	// Print("Force Power 3 : FORCE SABER THROW...");
+	
+	// Temporarily immobilize DJ if not already immobilized
+	if(!(GetActorFlags(darkjedi) & 0x40000)) {
+		SetActorFlags(darkjedi, 0x40000);
+		SetTimerEx(saber_throw_pause0[GetDifficulty()], timer_throw_pause, 0, 0);
+	}
+	
+	// Set timeout to have saber return to DJ
+	SetTimerEx(saber_throw_timeout0[GetDifficulty()], timer_saber_return, 0, 0);
+	
+	// Set maximum timeout for power to complete
+	SetTimerEx(saber_throw_reset_delay, timer_saber_reset, 0, 0);
+	
+	// Play saber throw animation and wait a bit
+	PlayMode(darkjedi, 36);
+	Sleep(0.5);
+	
+	// Don't do anything if the DJ died
+	if(GetThingHealth(darkjedi) <= 0) return;
+	
+	// Throw saber and start pulse to navigate the projectile
+	saberProj = FireProjectile(darkjedi, saberthrow_tpl, -1, -1, '0.075 0.04 0', '0 0 0', 0, 0, 0, 0);
+	saberProjTarget = victim;
+	saberProjChannel = PlaySoundThing(saber_spin, saberProj, 1.0, -1, -1, 0x81);
+	SetPulse(0.05);
+	
+	// give DJ only 1 saber now
+	jkClearFlags(darkjedi, 0x10);
+	
+	return;
+
+force_saberthrow_movement:
+	call force_saberthrow_check_distance;
+	
+	if(saberProjTarget == darkjedi) {
+		// Saber is returning to DJ
+		
+		// Calculate direction to DJ and move the saber that way
+		dir = VectorNorm(VectorSub(GetThingPos(saberProj), GetThingPos(darkjedi)));
+		SetThingLook(saberProj, dir);
+		dir = VectorScale(dir, -saber_throw_speed);
+		SetThingVel(saberProj, dir);
+	} else {
+		// Saber is chasing player
+		
+		// Calculate direction to player
+		dir = VectorNorm(VectorSub(GetThingPos(saberProjTarget), GetThingPos(saberProj)));
+		// Weight it by difficulty
+		dir = VectorScale(dir, 1.0 + GetDifficulty() / 2);
+		// Average with current velocity
+		dir = VectorScale(VectorAdd(dir, GetThingVel(saberProj)), 0.5);
+		// Scale to desired speed
+		dir = VectorScale(VectorNorm(dir), saber_throw_speed);
+		
+		// Move saber toward player
+		SetThingVel(saberProj, dir);
 	}
 	return;
 
-# ........................................................................................
-
-trigger:
-	if(GetSourceRef() == 1037)	// thrown saber retrieved
-	{
-		if(channel1 != -1) StopSound(channel1, 0.1);
-		jkSetFlags(darkjedi, 0x10);		// give back the second saber
-		saber1 = -1;
-		okay = 1;
+force_saberthrow_check_distance:
+	if(VectorLen(VectorSub(GetThingPos(saberProjTarget), GetThingPos(saberProj))) < 0.1) {
+		if(saberProjTarget == darkjedi) {
+			// Saber has returned to DJ
+			KillTimerEx(timer_saber_reset);
+			goto stop_force_saberthrow;
+		} else {
+			// Saber has hit the target
+			goto force_saberthrow_return;
+		}
 	}
+	return;
+
+force_saberthrow_return:
+	// Return to DJ
+	saberProjTarget = darkjedi;
+	
+	// Travel in straight line -- no spinning
+	if(saberProjChannel != -1) StopSound(saberProjChannel, 0.1);
+	saberProjChannel = PlaySoundThing(humSound01, saberProj, 1.0, -1, -1, 0x81);
+	SetThingModel(saberProj, saberthrow_nofan);
+	SetThingRotVel(saberProj, '0 0 0');
+	
+	// Tell saber to fire smaller damage projectiles now (not spinning)
+	SetThingUserData(saberProj, 1);
+	return;
+
+stop_force_saberthrow:
+	// Give DJ second saber again
+	jkSetFlags(darkjedi, 0x10);
+	
+	// Stop movement processing
+	SetPulse(0);
+	
+	// Remove thrown saber projectile
+	DestroyThing(saberProj);
+	saberProj = -1;
+	
+	// Forget target
+	saberProjTarget = -1;
+	
+	// Release force power lock
+	force_lock = 0;
+	
+	return;
+
+force_push:
+	// If DJ is dead, don't do anything
+	if(GetThingHealth(darkjedi) <= 0) return;
+	
+	// if DJ isn't even looking at the player right now, or player isn't gripping anymore don't push
+	if( (GetThingHealth(darkjedi) <= 0) || (ThingViewDot(darkjedi, victim) < 0.2) || !(isInvActivated(victim, 31)) ) {
+		// Release react lock early
+		react_lock = 0;
+		KillTimerEx(timer_react_reset);
+		return;
+	}
+	
+	// Push the player and DJ away from each other
+	dir = vectorNorm(VectorSub(GetThingPos(victim), GetThingPos(darkjedi)));
+	dir = vectorSet(vectorX(dir), vectorY(dir), 0.15);
+	dir = VectorScale(vectorNorm(dir), 600);
+	DetachThing(victim);
+	ApplyForce(victim, dir);
+	ApplyForce(darkjedi, VectorScale(GetThingLVec(darkjedi), -60));
+	PlayMode(darkjedi, 35);
+	PlaySoundThing(pushSound, darkjedi, 1.0, -1, -1, 0x80);
+	
+	return;
+
+force_jump:
+	// If DJ is dead, don't do anything
+	if(GetThingHealth(darkjedi) <= 0) return;
+	
+	// if DJ is too far from the player, or player isn't using DSight anymore, don't jump
+	if( (VectorDist(GetThingPos(victim), GetThingPos(darkjedi)) > 4) || !(IsInvActivated(victim, 34)) ) {
+		// Release react lock early
+		react_lock = 0;
+		KillTimerEx(timer_react_reset);
+		return;
+	}
+	
+	// Jump behind the player's current position
+	dir = VectorScale(VectorSub(GetThingPos(victim), GetThingPos(darkjedi)), 1.1);
+	dir = VectorSet(vectorX(dir), vectorY(dir), 3);
+	DetachThing(darkjedi);
+	SetThingVel(darkjedi, dir);
+	
 	return;
 
 end
-
