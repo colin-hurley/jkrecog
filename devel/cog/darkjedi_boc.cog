@@ -132,6 +132,7 @@ int            timer_force_jump=13           local
 int            timer_saber_return=20         local
 int            timer_throw_pause=30          local
 int            timer_saber_reset=40          local
+int            timer_class_cog=50            local
 
 end
 
@@ -156,8 +157,8 @@ newplayer:
 	// Extend the DJ's two sabers
 	jkSetFlags(darkjedi, 0x15);
 	
-	// Set DJ's class cog
-	SetThingClassCog(darkjedi, GetInvCog(GetLocalPlayerThing(), cog_bin));
+	// Set DJ's class cog via repeating timer
+	SetTimerEx(1.0, timer_class_cog, 0, 0);
 	
 	Return;
 
@@ -320,6 +321,13 @@ timer:
 	if(GetSenderID() == timer_saber_reset) {
 		// Return saber to DJ
 		goto stop_force_saberthrow;
+	}
+	if(GetSenderID() == timer_class_cog) {
+		// Set DJ class cog
+		SetThingClassCog(darkjedi, GetInvCog(GetLocalPlayerThing(), cog_bin));
+		// Refresh timer
+		SetTimerEx(5.0, timer_class_cog, 0, 0);
+		return;
 	}
 	return;
 
